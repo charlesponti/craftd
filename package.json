@@ -1,0 +1,52 @@
+{
+  "name": "craftd",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "react-router build",
+    "cf-typegen": "wrangler types",
+    "deploy": "npm run build && wrangler deploy",
+    "dev": "react-router dev",
+    "dev:debug": "node --inspect-brk ./node_modules/.bin/react-router dev",
+    "lint": "biome check --fix --reporter=github",
+    "postinstall": "npm run cf-typegen",
+    "preview": "npm run build && vite preview",
+    "typecheck": "npm run cf-typegen && react-router typegen && tsc -b",
+    "db:up": "docker-compose up -d",
+    "db:down": "docker-compose down",
+    "db:generate": "npx drizzle-kit generate",
+    "db:migrate": "npx drizzle-kit migrate"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.52.0",
+    "@react-router/node": "^7.6.2",
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.49.10",
+    "@tanstack/react-query": "^5.80.6",
+    "dotenv": "^16.5.0",
+    "drizzle-orm": "^0.44.2",
+    "isbot": "^5.1.27",
+    "lucide-react": "^0.513.0",
+    "postgres": "^3.4.7",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-hook-form": "^7.57.0",
+    "react-router": "^7.5.3"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@cloudflare/vite-plugin": "^1.0.12",
+    "@react-router/dev": "^7.5.3",
+    "@tailwindcss/vite": "^4.1.4",
+    "@tanstack/react-query-devtools": "^5.80.6",
+    "@types/node": "^20",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "drizzle-kit": "^0.31.1",
+    "tailwindcss": "^4.1.4",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.3",
+    "vite-tsconfig-paths": "^5.1.4",
+    "wrangler": "^4.13.2"
+  }
+}

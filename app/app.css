@@ -1,4 +1,7 @@
 @import 'tailwindcss';
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
 
 @theme {
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
@@ -11,5 +14,635 @@ body {
 
   @media (prefers-color-scheme: dark) {
     color-scheme: dark;
+  }
+}
+
+/* ===== CSS VARIABLES LAYER ===== */
+:root {
+  /* Neumorphism Color Palette */
+  --neuro-50: #f8f9fa;
+  --neuro-100: #f1f3f4;
+  --neuro-200: #e8eaed;
+  --neuro-300: #dadce0;
+  --neuro-400: #bdc1c6;
+  --neuro-500: #9aa0a6;
+  --neuro-600: #80868b;
+  --neuro-700: #5f6368;
+  --neuro-800: #3c4043;
+  --neuro-900: #202124;
+
+  /* Accent Colors */
+  --accent-primary: #667eea;
+  --accent-secondary: #764ba2;
+  --accent-success: #10b981;
+  --accent-warning: #f59e0b;
+  --accent-danger: #ef4444;
+  --accent-info: #06b6d4;
+
+  /* Shadow Colors for Neumorphism */
+  --shadow-light: #ffffff;
+  --shadow-dark: #a3a3a3;
+
+  /* Box Shadows */
+  --shadow-neuro-raised: 9px 9px 16px var(--shadow-dark), -9px -9px 16px var(--shadow-light);
+  --shadow-neuro-raised-sm: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+  --shadow-neuro-raised-lg: 12px 12px 20px var(--shadow-dark), -12px -12px 20px var(--shadow-light);
+
+  --shadow-neuro-inset: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+  --shadow-neuro-inset-sm: inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light);
+  --shadow-neuro-inset-lg: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+
+  --shadow-neuro-flat: 2px 2px 4px var(--shadow-dark), -2px -2px 4px var(--shadow-light);
+  --shadow-neuro-float: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+  --shadow-neuro-float-hover: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
+  --shadow-neuro-glow: 0 0 20px rgba(102, 126, 234, 0.3), 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+
+  /* Border Radius */
+  --radius-neuro: 20px;
+  --radius-neuro-sm: 12px;
+  --radius-neuro-lg: 24px;
+  --radius-neuro-xl: 32px;
+  --radius-neuro-pill: 50px;
+
+  /* Gradients */
+  --gradient-neuro: linear-gradient(145deg, #f0f0f0, #e6e7ee);
+  --gradient-neuro-dark: linear-gradient(145deg, #d1d5db, #e5e7eb);
+  --gradient-neuro-light: linear-gradient(145deg, #ffffff, #f8f9fa);
+
+  /* Spacing */
+  --space-neuro-xs: 0.5rem;
+  --space-neuro-sm: 0.75rem;
+  --space-neuro-md: 1rem;
+  --space-neuro-lg: 1.5rem;
+  --space-neuro-xl: 2rem;
+  --space-neuro-2xl: 3rem;
+
+  /* Typography */
+  --font-neuro-xs: 0.75rem;
+  --font-neuro-sm: 0.875rem;
+  --font-neuro-base: 1rem;
+  --font-neuro-lg: 1.125rem;
+  --font-neuro-xl: 1.25rem;
+  --font-neuro-2xl: 1.5rem;
+  --font-neuro-3xl: 1.875rem;
+
+  /* Line Heights */
+  --leading-neuro-xs: 1rem;
+  --leading-neuro-sm: 1.25rem;
+  --leading-neuro-base: 1.5rem;
+  --leading-neuro-lg: 1.75rem;
+  --leading-neuro-xl: 1.75rem;
+  --leading-neuro-2xl: 2rem;
+  --leading-neuro-3xl: 2.25rem;
+
+  /* Letter Spacing */
+  --tracking-neuro-tight: -0.05em;
+  --tracking-neuro-normal: 0rem;
+  --tracking-neuro-wide: 0.025em;
+
+  /* Transitions */
+  --transition-neuro: all 0.3s ease;
+  --transition-neuro-fast: all 0.2s ease;
+  --transition-neuro-press: all 0.1s ease-in-out;
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+/* ===== UTILITY CLASSES LAYER ===== */
+
+/* Background Utilities */
+.bg-neuro { background-color: var(--neuro-200); }
+.bg-neuro-light { background-color: var(--neuro-100); }
+.bg-neuro-dark { background-color: var(--neuro-300); }
+.bg-neuro-50 { background-color: var(--neuro-50); }
+.bg-neuro-100 { background-color: var(--neuro-100); }
+.bg-neuro-200 { background-color: var(--neuro-200); }
+.bg-neuro-300 { background-color: var(--neuro-300); }
+.bg-neuro-400 { background-color: var(--neuro-400); }
+.bg-neuro-500 { background-color: var(--neuro-500); }
+.bg-neuro-600 { background-color: var(--neuro-600); }
+.bg-neuro-700 { background-color: var(--neuro-700); }
+.bg-neuro-800 { background-color: var(--neuro-800); }
+.bg-neuro-900 { background-color: var(--neuro-900); }
+
+/* Gradient Backgrounds */
+.bg-neuro-gradient { background-image: var(--gradient-neuro); }
+.bg-neuro-gradient-dark { background-image: var(--gradient-neuro-dark); }
+.bg-neuro-gradient-light { background-image: var(--gradient-neuro-light); }
+
+/* Accent Colors */
+.bg-accent-primary { background-color: var(--accent-primary); }
+.bg-accent-secondary { background-color: var(--accent-secondary); }
+.bg-accent-success { background-color: var(--accent-success); }
+.bg-accent-warning { background-color: var(--accent-warning); }
+.bg-accent-danger { background-color: var(--accent-danger); }
+.bg-accent-info { background-color: var(--accent-info); }
+
+/* Text Color Utilities */
+.text-neuro { color: var(--neuro-800); }
+.text-neuro-light { color: var(--neuro-600); }
+.text-neuro-muted { color: var(--neuro-500); }
+.text-neuro-50 { color: var(--neuro-50); }
+.text-neuro-100 { color: var(--neuro-100); }
+.text-neuro-200 { color: var(--neuro-200); }
+.text-neuro-300 { color: var(--neuro-300); }
+.text-neuro-400 { color: var(--neuro-400); }
+.text-neuro-500 { color: var(--neuro-500); }
+.text-neuro-600 { color: var(--neuro-600); }
+.text-neuro-700 { color: var(--neuro-700); }
+.text-neuro-800 { color: var(--neuro-800); }
+.text-neuro-900 { color: var(--neuro-900); }
+
+/* Accent Text Colors */
+.text-accent-primary { color: var(--accent-primary); }
+.text-accent-secondary { color: var(--accent-secondary); }
+.text-accent-success { color: var(--accent-success); }
+.text-accent-warning { color: var(--accent-warning); }
+.text-accent-danger { color: var(--accent-danger); }
+.text-accent-info { color: var(--accent-info); }
+
+/* Border Utilities */
+.border-neuro { border-color: var(--neuro-300); }
+.border-neuro-light { border-color: var(--neuro-200); }
+
+/* Border Radius Utilities */
+.rounded-neuro { border-radius: var(--radius-neuro); }
+.rounded-neuro-sm { border-radius: var(--radius-neuro-sm); }
+.rounded-neuro-lg { border-radius: var(--radius-neuro-lg); }
+.rounded-neuro-xl { border-radius: var(--radius-neuro-xl); }
+.rounded-neuro-pill { border-radius: var(--radius-neuro-pill); }
+
+/* Shadow Utilities */
+.shadow-neuro-raised { box-shadow: var(--shadow-neuro-raised); }
+.shadow-neuro-raised-sm { box-shadow: var(--shadow-neuro-raised-sm); }
+.shadow-neuro-raised-lg { box-shadow: var(--shadow-neuro-raised-lg); }
+.shadow-neuro-inset { box-shadow: var(--shadow-neuro-inset); }
+.shadow-neuro-inset-sm { box-shadow: var(--shadow-neuro-inset-sm); }
+.shadow-neuro-inset-lg { box-shadow: var(--shadow-neuro-inset-lg); }
+.shadow-neuro-flat { box-shadow: var(--shadow-neuro-flat); }
+.shadow-neuro-float { box-shadow: var(--shadow-neuro-float); }
+.shadow-neuro-float-hover { box-shadow: var(--shadow-neuro-float-hover); }
+.shadow-neuro-glow { box-shadow: var(--shadow-neuro-glow); }
+
+/* State Modifier Utilities */
+.neuro-pressed { box-shadow: var(--shadow-neuro-inset); }
+.neuro-raised { box-shadow: var(--shadow-neuro-raised); }
+.neuro-floating { box-shadow: var(--shadow-neuro-float); }
+
+/* Spacing Utilities */
+.p-neuro-xs { padding: var(--space-neuro-xs); }
+.p-neuro-sm { padding: var(--space-neuro-sm); }
+.p-neuro-md { padding: var(--space-neuro-md); }
+.p-neuro-lg { padding: var(--space-neuro-lg); }
+.p-neuro-xl { padding: var(--space-neuro-xl); }
+.p-neuro-2xl { padding: var(--space-neuro-2xl); }
+
+.m-neuro-xs { margin: var(--space-neuro-xs); }
+.m-neuro-sm { margin: var(--space-neuro-sm); }
+.m-neuro-md { margin: var(--space-neuro-md); }
+.m-neuro-lg { margin: var(--space-neuro-lg); }
+.m-neuro-xl { margin: var(--space-neuro-xl); }
+.m-neuro-2xl { margin: var(--space-neuro-2xl); }
+
+/* Typography Utilities */
+.text-neuro-xs { 
+  font-size: var(--font-neuro-xs);
+  line-height: var(--leading-neuro-xs);
+  letter-spacing: var(--tracking-neuro-wide);
+}
+.text-neuro-sm { 
+  font-size: var(--font-neuro-sm);
+  line-height: var(--leading-neuro-sm);
+  letter-spacing: var(--tracking-neuro-wide);
+}
+.text-neuro-base { 
+  font-size: var(--font-neuro-base);
+  line-height: var(--leading-neuro-base);
+  letter-spacing: var(--tracking-neuro-normal);
+}
+.text-neuro-lg { 
+  font-size: var(--font-neuro-lg);
+  line-height: var(--leading-neuro-lg);
+  letter-spacing: var(--tracking-neuro-tight);
+}
+.text-neuro-xl { 
+  font-size: var(--font-neuro-xl);
+  line-height: var(--leading-neuro-xl);
+  letter-spacing: var(--tracking-neuro-tight);
+}
+.text-neuro-2xl { 
+  font-size: var(--font-neuro-2xl);
+  line-height: var(--leading-neuro-2xl);
+  letter-spacing: var(--tracking-neuro-tight);
+}
+.text-neuro-3xl { 
+  font-size: var(--font-neuro-3xl);
+  line-height: var(--leading-neuro-3xl);
+  letter-spacing: var(--tracking-neuro-tight);
+}
+
+/* Transition Utilities */
+.transition-neuro { transition: var(--transition-neuro); }
+.transition-neuro-fast { transition: var(--transition-neuro-fast); }
+
+/* ===== COMPONENT CLASSES LAYER ===== */
+
+/* Card Component */
+.neuro-card {
+  background-color: var(--neuro-200);
+  border-radius: var(--radius-neuro);
+  box-shadow: var(--shadow-neuro-raised);
+  padding: var(--space-neuro-lg);
+  transition: var(--transition-neuro);
+}
+
+.neuro-card:hover {
+  box-shadow: var(--shadow-neuro-float-hover);
+}
+
+/* Button Component */
+.neuro-btn {
+  background-color: var(--neuro-200);
+  border: none;
+  border-radius: var(--radius-neuro-sm);
+  box-shadow: var(--shadow-neuro-raised-sm);
+  color: var(--neuro-800);
+  cursor: pointer;
+  font-weight: 600;
+  padding: var(--space-neuro-sm) var(--space-neuro-lg);
+  position: relative;
+  transition: var(--transition-neuro-fast);
+  display: inline-block;
+  text-decoration: none;
+  font-family: inherit;
+  font-size: var(--font-neuro-base);
+  line-height: var(--leading-neuro-base);
+}
+
+.neuro-btn:hover {
+  box-shadow: var(--shadow-neuro-float);
+}
+
+.neuro-btn:active {
+  box-shadow: var(--shadow-neuro-inset-sm);
+  transform: scale(0.98);
+}
+
+.neuro-btn:focus {
+  outline: none;
+  box-shadow: var(--shadow-neuro-glow);
+}
+
+.neuro-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Input Component */
+.neuro-input {
+  background-color: var(--neuro-200);
+  border: none;
+  border-radius: var(--radius-neuro-sm);
+  box-shadow: var(--shadow-neuro-inset);
+  color: var(--neuro-800);
+  font-size: var(--font-neuro-base);
+  padding: var(--space-neuro-sm);
+  transition: var(--transition-neuro-fast);
+  width: 100%;
+  font-family: inherit;
+}
+
+.neuro-input:focus {
+  box-shadow: var(--shadow-neuro-inset), 0 0 0 2px var(--accent-primary);
+  outline: none;
+}
+
+.neuro-input::placeholder {
+  color: var(--neuro-500);
+}
+
+/* Textarea variant */
+.neuro-textarea {
+  background-color: var(--neuro-200);
+  border: none;
+  border-radius: var(--radius-neuro-sm);
+  box-shadow: var(--shadow-neuro-inset);
+  color: var(--neuro-800);
+  font-size: var(--font-neuro-base);
+  padding: var(--space-neuro-sm);
+  transition: var(--transition-neuro-fast);
+  width: 100%;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 100px;
+}
+
+.neuro-textarea:focus {
+  box-shadow: var(--shadow-neuro-inset), 0 0 0 2px var(--accent-primary);
+  outline: none;
+}
+
+.neuro-textarea::placeholder {
+  color: var(--neuro-500);
+}
+
+/* Icon Container */
+.neuro-icon {
+  align-items: center;
+  background-color: var(--neuro-200);
+  border-radius: 50%;
+  box-shadow: var(--shadow-neuro-inset-sm);
+  display: flex;
+  justify-content: center;
+  transition: var(--transition-neuro-fast);
+}
+
+/* Progress Bar */
+.neuro-progress {
+  background-color: var(--neuro-200);
+  border-radius: var(--radius-neuro-pill);
+  box-shadow: var(--shadow-neuro-inset);
+  height: 8px;
+  overflow: hidden;
+  width: 100%;
+  position: relative;
+}
+
+.neuro-progress-fill {
+  border-radius: var(--radius-neuro-pill);
+  height: 100%;
+  transition: width 0.8s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Panel/Container */
+.neuro-panel {
+  background-color: var(--neuro-200);
+  border-radius: var(--radius-neuro-lg);
+  box-shadow: var(--shadow-neuro-flat);
+  padding: var(--space-neuro-xl);
+}
+
+/* Stat Box */
+.neuro-stat {
+  background-color: var(--neuro-200);
+  border-radius: var(--radius-neuro-sm);
+  box-shadow: var(--shadow-neuro-inset-sm);
+  padding: var(--space-neuro-md);
+  text-align: center;
+}
+
+/* Toggle Switch */
+.neuro-toggle {
+  background-color: var(--neuro-200);
+  border-radius: var(--radius-neuro-pill);
+  box-shadow: var(--shadow-neuro-inset);
+  cursor: pointer;
+  display: inline-block;
+  height: 24px;
+  position: relative;
+  transition: var(--transition-neuro-fast);
+  width: 48px;
+}
+
+.neuro-toggle-thumb {
+  background-color: var(--neuro-100);
+  border-radius: 50%;
+  box-shadow: var(--shadow-neuro-raised-sm);
+  height: 20px;
+  left: 2px;
+  position: absolute;
+  top: 2px;
+  transition: var(--transition-neuro-fast);
+  width: 20px;
+}
+
+.neuro-toggle.active .neuro-toggle-thumb {
+  left: 26px;
+  background-color: var(--accent-success);
+}
+
+/* Checkbox */
+.neuro-checkbox {
+  background-color: var(--neuro-200);
+  border: none;
+  border-radius: var(--radius-neuro-sm);
+  box-shadow: var(--shadow-neuro-inset);
+  cursor: pointer;
+  height: 20px;
+  position: relative;
+  width: 20px;
+  appearance: none;
+}
+
+.neuro-checkbox:checked {
+  background-color: var(--accent-primary);
+  box-shadow: var(--shadow-neuro-raised-sm);
+}
+
+.neuro-checkbox:checked::after {
+  content: '✓';
+  color: white;
+  font-size: 14px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Radio Button */
+.neuro-radio {
+  background-color: var(--neuro-200);
+  border: none;
+  border-radius: 50%;
+  box-shadow: var(--shadow-neuro-inset);
+  cursor: pointer;
+  height: 20px;
+  position: relative;
+  width: 20px;
+  appearance: none;
+}
+
+.neuro-radio:checked {
+  box-shadow: var(--shadow-neuro-raised-sm);
+}
+
+.neuro-radio:checked::after {
+  content: '';
+  background-color: var(--accent-primary);
+  border-radius: 50%;
+  height: 8px;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+}
+
+/* Animations */
+@keyframes neuro-press {
+  0% { transform: scale(1); }
+  100% { transform: scale(0.98); }
+}
+
+@keyframes neuro-lift {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-2px); }
+}
+
+.animate-neuro-press {
+  animation: neuro-press 0.1s ease-in-out;
+}
+
+.animate-neuro-lift {
+  animation: neuro-lift 0.2s ease-out;
+}
+
+/* Responsive Design Helpers */
+@media (max-width: 768px) {
+  :root {
+    --space-neuro-lg: 1rem;
+    --space-neuro-xl: 1.5rem;
+    --space-neuro-2xl: 2rem;
+  }
+
+  .neuro-card {
+    padding: var(--space-neuro-md);
+  }
+
+  .neuro-panel {
+    padding: var(--space-neuro-lg);
+  }
+}
+
+/* Dark Theme Support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --neuro-50: #1a1a1a;
+    --neuro-100: #2d2d2d;
+    --neuro-200: #3a3a3a;
+    --neuro-300: #4a4a4a;
+    --neuro-400: #5a5a5a;
+    --neuro-500: #6a6a6a;
+    --neuro-600: #8a8a8a;
+    --neuro-700: #aaaaaa;
+    --neuro-800: #cccccc;
+    --neuro-900: #eeeeee;
+
+    --shadow-light: #4a4a4a;
+    --shadow-dark: #1a1a1a;
+  }
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }

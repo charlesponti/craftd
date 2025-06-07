@@ -1,7 +1,16 @@
-import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router'
-import type { LoaderFunctionArgs } from 'react-router'
-import { AuthProvider } from './hooks/useAuth'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import type { LoaderFunctionArgs } from 'react-router'
+import {
+  isRouteErrorResponse,
+  Link,
+  Links,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+} from 'react-router'
+import { AuthProvider } from './hooks/useAuth'
+import { ToastProvider } from './hooks/useToast'
 
 import './app.css'
 import Navigation from './components/Navigation'
@@ -51,38 +60,59 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Navigation />
-        <div className="font-['SF_Pro_Display',_sans-serif] pt-16">
-          <Outlet />
-        </div>
+        <ToastProvider>
+          <Navigation />
+          <div className="font-['SF_Pro_Display',sans-serif] pt-16">
+            <Outlet />
+          </div>
+        </ToastProvider>
       </AuthProvider>
     </QueryClientProvider>
   )
 }
 
-export function ErrorBoundary({ error }: { error: Error }) {
-  let message = 'Oops!'
-  let details = 'An unexpected error occurred.'
-  let stack: string | undefined
-
+export function ErrorBoundary({ error }: { error: unknown }) {
   if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? '404' : 'Error'
-    details =
-      error.status === 404 ? 'The requested page could not be found.' : error.statusText || details
-  } else if (import.meta.env.DEV && error && error instanceof Error) {
-    details = error.message
-    stack = error.stack
+    const err = error
+    if (err.status === 404) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-linear-to-br from-blue-50 via-white to-purple-50">
+          <h1 className="text-9xl font-extrabold text-gray-900">404</h1>
+          <p className="mt-4 text-2xl text-gray-700">Page Not Found</p>
+          <Link
+            to="/"
+            className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Go Home
+          </Link>
+        </div>
+      )
+    }
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-red-50">
+        <h1 className="text-6xl font-bold text-red-900">{err.status}</h1>
+        <p className="mt-2 text-xl text-red-700">{err.statusText}</p>
+        <Link to="/" className="mt-6 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700">
+          Go Home
+        </Link>
+      </div>
+    )
   }
-
+  const isDev = import.meta.env.DEV
+  const message = isDev && error instanceof Error ? error.message : 'An unexpected error occurred.'
+  const stack = isDev && error instanceof Error ? error.stack : null
   return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
+      <h1 className="text-4xl font-bold text-gray-900 mb-4">Oops!</h1>
+      <p className="text-gray-700 mb-4">{message}</p>
       {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
-          <code>{stack}</code>
+        <pre className="w-full max-w-2xl p-4 bg-white rounded shadow overflow-auto text-sm text-gray-800 mb-4">
+          {stack}
         </pre>
       )}
-    </main>
+      <Link to="/" className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+        Go Home
+      </Link>
+    </div>
   )
 }

@@ -1,12 +1,167 @@
-import type { MetaFunction, ActionFunctionArgs } from 'react-router'
-import { withAuthAction, createSuccessResponse, parseFormData } from '../lib/route-utils'
+import { and, eq, inArray } from 'drizzle-orm'
+import { useEffect } from 'react'
+import { useForm, type SubmitHandler } from 'react-hook-form'
+import type { ActionFunctionArgs, MetaFunction } from 'react-router'
+import { useFetcher, useOutletContext } from 'react-router'
 import { db } from '~/lib/db'
+import type { NewSocialLinks, SocialLinks } from '~/lib/db/schema'
 import { socialLinks } from '~/lib/db/schema'
-import { eq, inArray, and } from 'drizzle-orm'
-
-import { useOutletContext } from 'react-router'
+import { useToast } from '../hooks/useToast'
 import type { FullPortfolio } from '../lib/portfolio.server'
-import SocialLinksEditorSection from '../components/Editor/SocialLinksEditorSection'
+import { createSuccessResponse, parseFormData, withAuthAction } from '../lib/route-utils'
+
+// Use schema types
+interface SocialLinksFormValues extends Partial<NewSocialLinks> {}
+
+interface SocialLinksEditorSectionProps {
+  socialLinks?: SocialLinks | null
+  portfolioId: string
+}
+
+function SocialLinksEditorSection({
+  socialLinks: initialSocialLinks,
+  portfolioId,
+}: SocialLinksEditorSectionProps) {
+  const fetcher = useFetcher()
+  const { addToast } = useToast()
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { isDirty },
+  } = useForm<SocialLinksFormValues>({
+    defaultValues: initialSocialLinks || {},
+    mode: 'onChange',
+  })
+
+  useEffect(() => {
+    reset(initialSocialLinks || {})
+  }, [initialSocialLinks, reset])
+
+  // Handle fetcher errors and success
+  useEffect(() => {
+    if (fetcher.state === 'idle' && fetcher.data) {
+      const result = fetcher.data as { success: boolean; error?: string; message?: string }
+      if (result.success) {
+        addToast(result.message || 'Social links saved successfully!', 'success')
+      } else {
+        addToast(`Failed to save social links: ${result.error || 'Unknown error'}`, 'error')
+      }
+    }
+  }, [fetcher.state, fetcher.data, addToast])
+
+  const onSubmit: SubmitHandler<SocialLinksFormValues> = (formData) => {
+    if (!isDirty) {
+      addToast('No changes to save in social links.', 'info')
+      return
+    }
+
+    // Clean up the data - only send essential fields
+    const socialLinksToSave = {
+      id: formData.id,
+      github: formData.github,
+      linkedin: formData.linkedin,
+      twitter: formData.twitter,
+      website: formData.website,
+      portfolioId,
+    }
+
+    const formData2 = new FormData()
+    formData2.append('socialLinksData', JSON.stringify([socialLinksToSave]))
+
+    fetcher.submit(formData2, {
+      method: 'POST',
+      action: '/editor/social',
+    })
+  }
+
+  const isSaving = fetcher.state === 'submitting'
+
+  return (
+    <section className="p-6 bg-white shadow-md rounded-lg mt-8">
+      <h2 className="text-2xl font-semibold mb-4 text-gray-800">Social Links</h2>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <div className="p-4 border border-gray-300 rounded-md space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="github" className="block text-sm font-medium text-gray-700">
+                GitHub
+              </label>
+              <input
+                id="github"
+                {...register('github')}
+                className="mt-1 block w-full input-class"
+                placeholder="GitHub profile URL"
+              />
+            </div>
+            <div>
+              <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700">
+                LinkedIn
+              </label>
+              <input
+                id="linkedin"
+                {...register('linkedin')}
+                className="mt-1 block w-full input-class"
+                placeholder="LinkedIn profile URL"
+              />
+            </div>
+            <div>
+              <label htmlFor="twitter" className="block text-sm font-medium text-gray-700">
+                Twitter
+              </label>
+              <input
+                id="twitter"
+                {...register('twitter')}
+                className="mt-1 block w-full input-class"
+                placeholder="Twitter profile URL"
+              />
+            </div>
+            <div>
+              <label htmlFor="website" className="block text-sm font-medium text-gray-700">
+                Website
+              </label>
+              <input
+                id="website"
+                {...register('website')}
+                className="mt-1 block w-full input-class"
+                placeholder="Personal website URL"
+              />
+            </div>
+          </div>
+        </div>
+        <div>
+          <button
+            type="submit"
+            disabled={isSaving || !isDirty}
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400"
+          >
+            {isSaving ? 'Saving...' : 'Save Social Links'}
+          </button>
+        </div>
+      </form>
+      <style>{`
+        .input-class {
+          display: block;
+          width: 100%;
+          padding-left: 0.75rem;
+          padding-right: 0.75rem;
+          padding-top: 0.5rem;
+          padding-bottom: 0.5rem;
+          border-width: 1px;
+          border-color: #D1D5DB; /* gray-300 */
+          border-radius: 0.375rem; /* rounded-md */
+          box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+        }
+        .input-class:focus {
+          outline: 2px solid transparent;
+          outline-offset: 2px;
+          border-color: #6366F1; /* indigo-500 */
+          box-shadow: 0 0 0 0.2rem rgba(99,102,241,.25); /* focus:ring-indigo-500 with some opacity */
+        }
+      `}</style>
+    </section>
+  )
+}
 
 export const meta: MetaFunction = () => [{ title: 'Social Links - Portfolio Editor | Craftd' }]
 
@@ -55,7 +210,6 @@ export async function action(args: ActionFunctionArgs) {
 }
 
 export default function EditorSocial() {
-  // Consume portfolio from parent editor layout loader via outlet context
   const portfolio = useOutletContext<FullPortfolio>()
 
   return <SocialLinksEditorSection socialLinks={portfolio.socialLinks} portfolioId={portfolio.id} />

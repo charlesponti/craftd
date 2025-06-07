@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import { useState, useEffect } from 'react'
-import type { MetaFunction } from 'react-router'
+import type { MetaFunction, LoaderFunctionArgs } from 'react-router'
 
 export const meta: MetaFunction = () => {
   return [
@@ -17,6 +17,13 @@ export const meta: MetaFunction = () => {
         'Create stunning portfolios in minutes, not hours. Our AI-powered builder makes professional portfolio creation simple and beautiful.',
     },
   ]
+}
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  const { getAuthenticatedUser, redirectIfAuthenticated } = await import('../lib/auth.server')
+  const user = await getAuthenticatedUser(request)
+  redirectIfAuthenticated(user, '/account')
+  return null
 }
 
 export default function Home() {
@@ -128,7 +135,7 @@ export default function Home() {
 
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-8 leading-tight">
               Create Your{' '}
-              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                 Dream Portfolio
               </span>{' '}
               in Minutes
@@ -189,7 +196,7 @@ export default function Home() {
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-6">
               Everything you need to{' '}
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 stand out
               </span>
             </h2>
@@ -203,12 +210,12 @@ export default function Home() {
             {features.map((feature, index) => (
               <div
                 key={feature.title}
-                className="h-full group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50 rounded-lg p-8 hover:scale-105"
+                className="h-full group hover:shadow-xl transition-all duration-300 border-0 bg-linear-to-br from-white to-gray-50 rounded-lg p-8 hover:scale-105"
                 onMouseEnter={() => setHoveredFeature(index)}
                 onMouseLeave={() => setHoveredFeature(null)}
               >
                 <div
-                  className={`w-12 h-12 rounded-lg bg-gradient-to-br flex items-center justify-center mb-6 group-hover:scale-110 transition-transform text-white text-xl ${feature.gradient}`}
+                  className={`w-12 h-12 rounded-lg bg-linear-to-br flex items-center justify-center mb-6 group-hover:scale-110 transition-transform text-white text-xl ${feature.gradient}`}
                 >
                   {feature.icon}
                 </div>
@@ -226,7 +233,7 @@ export default function Home() {
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-6">
               Loved by{' '}
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 professionals
               </span>
             </h2>
@@ -274,7 +281,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold text-gray-900 mb-6">
             Ready to write your{' '}
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               success story?
             </span>
           </h2>
@@ -324,7 +331,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="flex items-center gap-2 mb-4 md:mb-0">
-              <div className="w-6 h-6 rounded bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+              <div className="w-6 h-6 rounded bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center">
                 ✨
               </div>
               <span className="font-semibold text-gray-900">Craftd</span>

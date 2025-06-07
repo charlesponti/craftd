@@ -158,7 +158,7 @@ export default function Navigation() {
               to="/"
               className="flex items-center gap-2 group transition-all duration-300 hover:scale-105 hover:opacity-80"
             >
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center text-white text-sm font-medium shadow-lg">
+              <div className="w-8 h-8 rounded-xl bg-linear-to-br from-gray-900 to-gray-800 flex items-center justify-center text-white text-sm font-medium shadow-lg">
                 C
               </div>
               <span className="font-sans text-xl font-medium tracking-tight text-gray-900">

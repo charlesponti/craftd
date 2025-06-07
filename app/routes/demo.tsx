@@ -1,6 +1,6 @@
 import { ArrowLeft } from 'lucide-react'
-import { Link } from 'react-router'
 import type { MetaFunction } from 'react-router'
+import { Link } from 'react-router'
 
 export const meta: MetaFunction = () => {
   return [
@@ -50,7 +50,7 @@ const demoPortfolio = {
     {
       title: 'Stripe',
       role: 'Senior Product Designer',
-      subtitle: 'Payments Infrastructure Team',
+      company: 'Stripe',
       startDate: '2022-01-01',
       endDate: null,
       description:
@@ -62,7 +62,7 @@ const demoPortfolio = {
     {
       title: 'Figma',
       role: 'Product Designer',
-      subtitle: 'Collaboration & Sharing',
+      company: 'Figma',
       startDate: '2020-03-01',
       endDate: '2021-12-31',
       description:
@@ -185,7 +185,7 @@ export default function Demo() {
                     <div>
                       <h3 className="font-medium text-gray-900">{job.title}</h3>
                       <p className="text-gray-700">{job.role}</p>
-                      {job.subtitle && <p className="text-sm text-gray-600">{job.subtitle}</p>}
+                      {job.company && <p className="text-sm text-gray-600">{job.company}</p>}
                     </div>
                     <div className="text-sm text-gray-500">
                       {new Date(job.startDate).getFullYear()} -

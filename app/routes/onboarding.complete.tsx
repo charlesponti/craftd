@@ -1,19 +1,18 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router'
 import {
-  Sparkles,
+  ArrowRight,
   CheckCircle2,
-  Share2,
   Edit3,
   Eye,
-  Users,
-  ArrowRight,
   Gift,
+  Share2,
+  Sparkles,
   Star,
   Trophy,
+  Users,
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import type { MetaFunction } from 'react-router'
-import type { User } from '@supabase/supabase-js'
+import { useNavigate } from 'react-router'
 
 export const meta: MetaFunction = () => {
   return [
@@ -25,15 +24,10 @@ export const meta: MetaFunction = () => {
   ]
 }
 
-interface OnboardingCompleteProps {
-  user?: User
-  justCompleted?: boolean
-}
-
 export default function OnboardingComplete() {
   const navigate = useNavigate()
   const [showCelebration, setShowCelebration] = useState(false)
-  const [justCompleted] = useState(true) // This would come from URL params or state
+  const [justCompleted] = useState(true)
 
   useEffect(() => {
     if (justCompleted) {
@@ -72,7 +66,7 @@ export default function OnboardingComplete() {
         </div>
       )}
 
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50">
         <div className="max-w-4xl mx-auto px-6 py-12">
           {/* Main Success Message */}
           <div className="text-center mb-16">
@@ -157,7 +151,7 @@ export default function OnboardingComplete() {
                 onClick={() => navigate('/portfolio-editor')}
                 className="flex items-start gap-4 p-6 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors group text-left"
               >
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-blue-200 transition-colors">
+                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-blue-200 transition-colors">
                   <Edit3 className="w-5 h-5 text-blue-600" />
                 </div>
                 <div>
@@ -174,7 +168,7 @@ export default function OnboardingComplete() {
                 onClick={shareTips}
                 className="flex items-start gap-4 p-6 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-colors group text-left"
               >
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-green-200 transition-colors">
+                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-green-200 transition-colors">
                   <Share2 className="w-5 h-5 text-green-600" />
                 </div>
                 <div>
@@ -191,7 +185,7 @@ export default function OnboardingComplete() {
           {/* Sharing Tips Section */}
           <div
             id="sharing-tips"
-            className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-8"
+            className="bg-linear-to-r from-blue-50 to-purple-50 rounded-xl p-8"
           >
             <div className="text-center mb-8">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -210,17 +204,17 @@ export default function OnboardingComplete() {
                 <h3 className="font-semibold text-gray-900 mb-4">🎯 LinkedIn Strategy</h3>
                 <ul className="space-y-3 text-gray-700">
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-green-600 mt-1 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-green-600 mt-1 shrink-0" />
                     <span className="text-sm">
                       Add your portfolio URL to your LinkedIn headline
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-green-600 mt-1 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-green-600 mt-1 shrink-0" />
                     <span className="text-sm">Include it in your LinkedIn "About" section</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-green-600 mt-1 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-green-600 mt-1 shrink-0" />
                     <span className="text-sm">Share a post announcing your new portfolio</span>
                   </li>
                 </ul>
@@ -230,19 +224,19 @@ export default function OnboardingComplete() {
                 <h3 className="font-semibold text-gray-900 mb-4">📧 Job Applications</h3>
                 <ul className="space-y-3 text-gray-700">
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-green-600 mt-1 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-green-600 mt-1 shrink-0" />
                     <span className="text-sm">
                       Include your portfolio link in your email signature
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-green-600 mt-1 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-green-600 mt-1 shrink-0" />
                     <span className="text-sm">
                       Add it to your cover letter and job applications
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-green-600 mt-1 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-green-600 mt-1 shrink-0" />
                     <span className="text-sm">Mention it during networking conversations</span>
                   </li>
                 </ul>

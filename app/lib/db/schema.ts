@@ -29,17 +29,17 @@ export const users = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     email: varchar("email", { length: 255 }).notNull().unique(),
-    name: varchar("name", { length: 100 }).notNull(), // Reduced length for names
+    name: varchar("name", { length: 100 }).notNull(),
+    supabaseUserId: varchar("supabase_user_id", { length: 255 }).unique(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (table) => [
     index("users_email_idx").on(table.email),
-    index("users_created_at_idx").on(table.createdAt), // For analytics queries
+    index("users_supabase_user_id_idx").on(table.supabaseUserId),
   ]
 );
 
-// Portfolios table - stores basic portfolio information
 export const portfolios = pgTable(
   "portfolios",
   {
@@ -82,6 +82,9 @@ export const portfolios = pgTable(
 
     // Copyright
     copyright: varchar("copyright", { length: 255 }),
+
+    // Profile Image
+    profileImageUrl: varchar("profile_image_url", { length: 500 }),
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -154,10 +157,9 @@ export const workExperiences = pgTable(
       .references(() => portfolios.id, { onDelete: "cascade" })
       .notNull(),
 
-    title: varchar("title", { length: 255 }).notNull(),
-    subtitle: varchar("subtitle", { length: 255 }).notNull(),
-    description: text("description").notNull(),
     role: varchar("role", { length: 255 }).notNull(),
+    company: varchar("company", { length: 255 }).notNull(),
+    description: text("description").notNull(),
     startDate: timestamp("start_date"),
     endDate: timestamp("end_date"),
 

@@ -1,20 +1,266 @@
-import { useOutletContext } from 'react-router'
+import { and, eq, inArray } from 'drizzle-orm'
+import { LoaderPinwheel, PlusIcon, XIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import type { ActionFunctionArgs, MetaFunction } from 'react-router'
+import { useFetcher, useOutletContext } from 'react-router'
+import { db } from '~/lib/db'
+import { skills, type NewSkill } from '~/lib/db/schema'
+import { useToast } from '../hooks/useToast'
 import type { FullPortfolio } from '../lib/portfolio.server'
-import SkillsEditorSection from '../components/Editor/SkillsEditorSection'
-import type { MetaFunction, ActionFunctionArgs } from 'react-router'
 import {
-  withAuthAction,
   createErrorResponse,
   createSuccessResponse,
-  tryAsync,
   parseFormData,
+  tryAsync,
+  withAuthAction,
 } from '../lib/route-utils'
-import { db } from '~/lib/db'
-import { skills } from '~/lib/db/schema'
-import { eq, and, inArray } from 'drizzle-orm'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Skills - Portfolio Editor | Craftd' }]
+}
+
+interface NewSkillForm {
+  name: string
+  category: string
+  level: number
+}
+
+interface SkillsEditorSectionProps {
+  skills?: NewSkill[] | null
+  portfolioId: string
+}
+
+function SkillsEditorSection({ skills: initialSkills, portfolioId }: SkillsEditorSectionProps) {
+  const [skills, setSkills] = useState<NewSkill[]>(initialSkills || [])
+  const [isAddingSkill, setIsAddingSkill] = useState(false)
+  const fetcher = useFetcher()
+  const { addToast } = useToast()
+
+  const {
+    register: registerNewSkill,
+    handleSubmit: handleNewSkillSubmit,
+    reset: resetNewSkillForm,
+  } = useForm<NewSkillForm>({
+    defaultValues: {
+      name: '',
+      category: '',
+      level: 50,
+    },
+  })
+
+  useEffect(() => {
+    setSkills(initialSkills || [])
+  }, [initialSkills])
+
+  // Group skills by category
+  const skillsByCategory = skills.reduce(
+    (acc, skill) => {
+      const category = skill.category || 'Uncategorized'
+      if (!acc[category]) {
+        acc[category] = []
+      }
+      acc[category].push(skill)
+      return acc
+    },
+    {} as Record<string, NewSkill[]>
+  )
+
+  // Get existing categories for the dropdown
+  const existingCategories = Array.from(new Set(skills.map((s) => s.category).filter(Boolean)))
+
+  const saveSkills = (updatedSkills: NewSkill[]) => {
+    // Only send the essential fields, let the database handle timestamps
+    const skillsToSave = updatedSkills.map((skill) => ({
+      id: skill.id,
+      name: skill.name,
+      category: skill.category,
+      level: skill.level,
+      portfolioId: skill.portfolioId,
+    }))
+
+    const formData = new FormData()
+    formData.append('skillsData', JSON.stringify(skillsToSave))
+
+    fetcher.submit(formData, {
+      method: 'POST',
+      action: '/editor/skills',
+    })
+  }
+
+  // Handle fetcher errors
+  useEffect(() => {
+    if (fetcher.state === 'idle' && fetcher.data) {
+      const result = fetcher.data as { success: boolean; error?: string }
+      if (!result.success) {
+        addToast(`Failed to save skills: ${result.error || 'Unknown error'}`, 'error')
+      }
+    }
+  }, [fetcher.state, fetcher.data, addToast])
+
+  const handleRemoveSkill = (skillToRemove: NewSkill) => {
+    const updatedSkills = skills.filter((skill) =>
+      skill.id ? skill.id !== skillToRemove.id : skill !== skillToRemove
+    )
+    setSkills(updatedSkills)
+    saveSkills(updatedSkills)
+  }
+
+  const handleAddSkill = (data: NewSkillForm) => {
+    const newSkill: NewSkill = {
+      name: data.name.trim(),
+      category: data.category.trim() || null,
+      level: data.level,
+      portfolioId,
+    }
+
+    const updatedSkills = [...skills, newSkill]
+    setSkills(updatedSkills)
+    saveSkills(updatedSkills)
+    resetNewSkillForm()
+    setIsAddingSkill(false)
+  }
+
+  const getSkillLevelColor = (level: number) => {
+    if (level >= 80) return 'bg-green-100 text-green-800 border-green-200'
+    if (level >= 60) return 'bg-blue-100 text-blue-800 border-blue-200'
+    if (level >= 40) return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+    return 'bg-gray-100 text-gray-800 border-gray-200'
+  }
+
+  const isSaving = fetcher.state === 'submitting'
+
+  return (
+    <section className="p-6 bg-white shadow-md rounded-lg mt-8">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-semibold text-gray-800">Skills</h2>
+        <div>
+          {isSaving && (
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <div className="flex items-center justify-center text-sm text-gray-600">
+                <LoaderPinwheel className="size-4 animate-spin" />
+                Saving changes...
+              </div>
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => setIsAddingSkill(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 border border-dashed border-gray-400 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <PlusIcon className="size-4" />
+            <span className="hidden sm:block">Add New Skill</span>
+          </button>
+        </div>
+      </div>
+      {/* Add new skill section */}
+      {isAddingSkill ? (
+        <div className="my-8 border border-dashed border-gray-400 py-2 px-4">
+          <form onSubmit={handleNewSkillSubmit(handleAddSkill)} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                  Skill Name *
+                </label>
+                <input
+                  id="name"
+                  {...registerNewSkill('name', { required: 'Skill name is required' })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                  placeholder="e.g., React"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+                  Category
+                </label>
+                <input
+                  id="category"
+                  {...registerNewSkill('category')}
+                  list="existing-categories"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                  placeholder="e.g., Frontend"
+                />
+                <datalist id="existing-categories">
+                  {existingCategories.map((category) => (
+                    <option key={category} value={category || ''} />
+                  ))}
+                </datalist>
+              </div>
+
+              <div>
+                <label htmlFor="level" className="block text-sm font-medium text-gray-700 mb-1">
+                  Level (1-100)
+                </label>
+                <input
+                  id="level"
+                  type="number"
+                  min="1"
+                  max="100"
+                  {...registerNewSkill('level', {
+                    valueAsNumber: true,
+                    min: { value: 1, message: 'Level must be at least 1' },
+                    max: { value: 100, message: 'Level cannot exceed 100' },
+                  })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                  placeholder="50"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAddingSkill(false)
+                  resetNewSkillForm()
+                }}
+                className="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+              >
+                Add Skill
+              </button>
+            </div>
+          </form>
+        </div>
+      ) : null}
+      {/* Skills grouped by category */}
+      <div className="space-y-6">
+        {Object.entries(skillsByCategory).map(([category, categorySkills]) => (
+          <div key={category} className="space-y-3">
+            <h3 className="text-lg font-medium text-gray-700 border-b border-gray-200 pb-2">
+              {category}
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {categorySkills.map((skill, index) => (
+                <div
+                  key={skill.id || `${category}-${index}`}
+                  className={`inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-colors ${getSkillLevelColor(skill.level || 50)}`}
+                >
+                  <span className="border-b border-gray-200">{skill.name}</span>
+                  <span className="text-xs opacity-75">({skill.level || 50}%)</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveSkill(skill)}
+                    className="ml-1 hover:bg-black hover:bg-opacity-10 rounded-full p-0.5 transition-colors"
+                    title="Remove skill"
+                    aria-label="Remove skill"
+                  >
+                    <XIcon className="size-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
 }
 
 export default function EditorSkills() {
@@ -22,7 +268,7 @@ export default function EditorSkills() {
   const portfolio = useOutletContext<FullPortfolio>()
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto">
       <SkillsEditorSection skills={portfolio.skills} portfolioId={portfolio.id} />
     </div>
   )

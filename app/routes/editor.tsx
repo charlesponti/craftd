@@ -1,10 +1,19 @@
-import { Outlet, useLocation, Link, useLoaderData } from 'react-router'
-import { User, Briefcase, Code, Eye, Save } from 'lucide-react'
-import type { MetaFunction, LoaderFunctionArgs } from 'react-router'
-import { withAuthLoader } from '../lib/route-utils'
-import { getFullUserPortfolio } from '../lib/portfolio.server'
+import {
+  BarChart3,
+  Briefcase,
+  Code,
+  Eye,
+  FolderOpen,
+  Link2,
+  MessageSquare,
+  Save,
+  User,
+} from 'lucide-react'
+import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
+import { Link, Outlet, redirect, useLoaderData, useLocation } from 'react-router'
 import type { FullPortfolio } from '../lib/portfolio.server'
-import { redirect } from 'react-router'
+import { getFullUserPortfolio } from '../lib/portfolio.server'
+import { withAuthLoader } from '../lib/route-utils'
 
 export const meta: MetaFunction = () => {
   return [
@@ -20,9 +29,7 @@ export const meta: MetaFunction = () => {
  * Loader for wizard editor: ensure the user has a portfolio or redirect to onboarding
  */
 export async function loader(args: LoaderFunctionArgs) {
-  console.log('editor loader')
   return withAuthLoader(args, async ({ user }) => {
-    console.log('editor loader', user)
     const portfolio = await getFullUserPortfolio(user.id)
     if (!portfolio) {
       throw redirect('/onboarding')
@@ -33,22 +40,46 @@ export async function loader(args: LoaderFunctionArgs) {
 
 const editorSteps = [
   {
-    path: '/editor/basic',
+    path: '/editor',
+    value: 'basic',
     label: 'Basic Info',
     icon: User,
-    description: 'Personal information and contact details',
   },
   {
     path: '/editor/work',
+    value: 'work',
     label: 'Work Experience',
     icon: Briefcase,
-    description: 'Professional experience and achievements',
   },
   {
     path: '/editor/skills',
+    value: 'skills',
     label: 'Skills',
     icon: Code,
-    description: 'Technical skills and expertise',
+  },
+  {
+    path: '/editor/social',
+    value: 'social',
+    label: 'Social Links',
+    icon: Link2,
+  },
+  {
+    path: '/editor/stats',
+    value: 'stats',
+    label: 'Portfolio Stats',
+    icon: BarChart3,
+  },
+  {
+    path: '/editor/projects',
+    value: 'projects',
+    label: 'Projects',
+    icon: FolderOpen,
+  },
+  {
+    path: '/editor/testimonials',
+    value: 'testimonials',
+    label: 'Testimonials',
+    icon: MessageSquare,
   },
 ]
 
@@ -101,7 +132,7 @@ export default function EditorLayout() {
 
               <nav className="space-y-2">
                 {editorSteps.map((step, index) => {
-                  const isActive = location.pathname.startsWith(step.path)
+                  const isActive = step.value === location.pathname.split('/').pop()
                   const isCompleted = index < currentStepIndex
                   const Icon = step.icon
 
@@ -116,7 +147,7 @@ export default function EditorLayout() {
                       }`}
                     >
                       <div
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                           isActive ? 'bg-blue-100' : isCompleted ? 'bg-green-100' : 'bg-gray-100'
                         }`}
                       >
@@ -135,9 +166,6 @@ export default function EditorLayout() {
                           className={`font-medium ${isActive ? 'text-blue-900' : 'text-gray-900'}`}
                         >
                           {step.label}
-                        </div>
-                        <div className={`text-sm ${isActive ? 'text-blue-700' : 'text-gray-600'}`}>
-                          {step.description}
                         </div>
                       </div>
                     </Link>

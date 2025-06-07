@@ -1,14 +1,20 @@
+import { and, eq, ne } from 'drizzle-orm'
+import { Edit, ExternalLink, LogOut, Trash2, Upload } from 'lucide-react'
 import { useState } from 'react'
-import { useNavigate, useSubmit, useLoaderData, useActionData } from 'react-router'
-import { useAuth } from '../hooks/useAuth'
-import { Edit, ExternalLink, Trash2, LogOut, User as UserIcon } from 'lucide-react'
 import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
+import { useActionData, useLoaderData, useNavigate, useSubmit } from 'react-router'
+import { ProfileImageUpload } from '../components/ProfileImageUpload'
+import { SlugEditor } from '../components/SlugEditor'
+import { useAuth } from '../hooks/useAuth'
+import { db } from '../lib/db'
+import { portfolios } from '../lib/db/schema'
+import { getFullUserPortfolio } from '../lib/portfolio.server'
 import {
-  withAuthLoader,
-  withAuthAction,
   createErrorResponse,
   createSuccessResponse,
   tryAsync,
+  withAuthAction,
+  withAuthLoader,
   withMockDataFallback,
 } from '../lib/route-utils'
 import { getMockPortfolioForForms } from '../lib/utils/mock-data'
@@ -31,6 +37,7 @@ export async function loader(args: LoaderFunctionArgs) {
           isPublic: true,
           isActive: true,
           updatedAt: new Date(),
+          profileImageUrl: undefined,
         }
         return {
           user,
@@ -39,9 +46,23 @@ export async function loader(args: LoaderFunctionArgs) {
         }
       },
       async () => {
-        // TODO: Regular users: fetch from database
-        // const portfolios = await PortfolioRepository.getPortfolioSummaries(user.id);
-        const portfolios: Portfolio[] = []
+        const fullPortfolio = await getFullUserPortfolio(user.id)
+        const portfolios: Portfolio[] = fullPortfolio
+          ? [
+              {
+                id: fullPortfolio.id,
+                title: fullPortfolio.title,
+                slug: fullPortfolio.slug,
+                isPublic: fullPortfolio.isPublic,
+                isActive: fullPortfolio.isActive,
+                updatedAt: fullPortfolio.updatedAt,
+                name: fullPortfolio.name,
+                jobTitle: fullPortfolio.jobTitle,
+                bio: fullPortfolio.bio,
+                profileImageUrl: fullPortfolio.profileImageUrl || undefined,
+              },
+            ]
+          : []
         return {
           user,
           portfolios,
@@ -54,7 +75,7 @@ export async function loader(args: LoaderFunctionArgs) {
 
 // Server action for portfolio operations
 export async function action(args: ActionFunctionArgs) {
-  return withAuthAction(args, async ({ supabase }) => {
+  return withAuthAction(args, async ({ supabase, user }) => {
     const formData = await args.request.formData()
     const action = formData.get('action')
     const portfolioId = formData.get('portfolioId')
@@ -71,6 +92,114 @@ export async function action(args: ActionFunctionArgs) {
       }, 'Failed to delete portfolio')
     }
 
+    if (action === 'upload-profile-image') {
+      return tryAsync(async () => {
+        const imageFile = formData.get('image') as File | null
+
+        if (!imageFile) {
+          return createErrorResponse('No image file provided')
+        }
+
+        // Validate image file
+        if (!imageFile.type.startsWith('image/')) {
+          return createErrorResponse('File must be an image')
+        }
+
+        if (imageFile.size > 5 * 1024 * 1024) {
+          // 5MB limit
+          return createErrorResponse('Image must be less than 5MB')
+        }
+
+        // Generate unique filename - use Supabase auth user ID for RLS policy
+        const supabaseUserId = user.supabaseUser?.id
+        if (!supabaseUserId) {
+          return createErrorResponse('User authentication required')
+        }
+
+        const fileExtension = imageFile.type.split('/')[1] || 'jpg'
+        const fileName = `profile-${Date.now()}.${fileExtension}`
+        const filePath = `public/${supabaseUserId}/profile-images/${fileName}`
+
+        // Upload to Supabase Storage (using public folder for profile images)
+        const { error: uploadError } = await supabase.storage
+          .from('craftd')
+          .upload(filePath, imageFile, {
+            cacheControl: '3600',
+            upsert: true,
+          })
+
+        if (uploadError) {
+          console.error('Supabase upload error:', uploadError)
+          return createErrorResponse('Failed to upload image')
+        }
+
+        // Get public URL (since it's in the public folder)
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from('craftd').getPublicUrl(filePath)
+
+        // Update portfolio with new profile image URL using Drizzle
+        try {
+          await db
+            .update(portfolios)
+            .set({ profileImageUrl: publicUrl })
+            .where(eq(portfolios.userId, user.id))
+        } catch (updateError) {
+          console.error('Database update error:', updateError)
+          // Clean up uploaded file on database error
+          await supabase.storage.from('craftd').remove([filePath])
+          return createErrorResponse('Failed to update portfolio')
+        }
+
+        return createSuccessResponse({ imageUrl: publicUrl }, 'Profile image updated successfully')
+      }, 'Failed to upload profile image')
+    }
+
+    if (action === 'update-slug') {
+      return tryAsync(async () => {
+        const newSlug = formData.get('slug') as string
+        const portfolioId = formData.get('portfolioId') as string
+
+        if (!newSlug || !portfolioId) {
+          return createErrorResponse('Slug and portfolio ID are required')
+        }
+
+        // Basic slug validation
+        if (!/^[a-z0-9-]+$/.test(newSlug)) {
+          return createErrorResponse(
+            'Slug can only contain lowercase letters, numbers, and hyphens'
+          )
+        }
+
+        if (newSlug.length < 3) {
+          return createErrorResponse('Slug must be at least 3 characters long')
+        }
+
+        if (newSlug.length > 50) {
+          return createErrorResponse('Slug must be less than 50 characters long')
+        }
+
+        // Check if slug already exists (excluding current portfolio)
+        const existingPortfolio = await db
+          .select({ id: portfolios.id })
+          .from(portfolios)
+          .where(and(eq(portfolios.slug, newSlug), ne(portfolios.id, portfolioId)))
+          .limit(1)
+
+        if (existingPortfolio.length > 0) {
+          return createErrorResponse('Slug is already taken')
+        }
+
+        // Update portfolio slug
+        await db
+          .update(portfolios)
+          .set({ slug: newSlug })
+          .where(and(eq(portfolios.id, portfolioId), eq(portfolios.userId, user.id)))
+
+        return createSuccessResponse({ slug: newSlug }, 'Portfolio URL updated successfully')
+      }, 'Failed to update portfolio URL')
+    }
+
     return createErrorResponse('Invalid action')
   })
 }
@@ -85,6 +214,7 @@ interface Portfolio {
   name?: string
   jobTitle?: string
   bio?: string
+  profileImageUrl?: string
 }
 
 export function meta() {
@@ -102,8 +232,11 @@ export default function Account() {
   const actionData = useActionData<typeof action>()
   const [isSigningOut, setIsSigningOut] = useState(false)
 
-  // Use data from loader instead of client-side queries
   const { user, portfolios, hasPortfolio } = loaderData
+
+  const portfolio = portfolios[0]
+  const [profileImageUrl, setProfileImageUrl] = useState(portfolio?.profileImageUrl || undefined)
+  const [uploadError, setUploadError] = useState<string | null>(null)
 
   const handleSignOut = async () => {
     try {
@@ -127,13 +260,21 @@ export default function Account() {
     }
   }
 
+  const handleImageUpload = (imageUrl: string) => {
+    setProfileImageUrl(imageUrl)
+    setUploadError(null)
+  }
+
+  const handleImageError = (error: string) => {
+    setUploadError(error)
+  }
+
   // User should be available from loader (requireAuth ensures this)
   if (!user) {
     navigate('/login')
     return null
   }
 
-  const portfolio = portfolios[0] // Primary portfolio
   const userDisplayName = user.supabaseUser?.user_metadata?.full_name || user.name || user.email
   const userAvatar = user.supabaseUser?.user_metadata?.avatar_url
 
@@ -150,19 +291,8 @@ export default function Account() {
             <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
               Profile Information
             </h3>
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between mb-6">
               <div className="flex items-center space-x-4">
-                <div className="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                  {userAvatar ? (
-                    <img
-                      src={userAvatar}
-                      alt={userDisplayName}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <UserIcon className="h-8 w-8 text-gray-400" />
-                  )}
-                </div>
                 <div>
                   <h3 className="text-lg font-medium">{userDisplayName}</h3>
                   <p className="text-gray-600">{user.email}</p>
@@ -179,6 +309,18 @@ export default function Account() {
                 {isSigningOut ? 'Signing Out...' : 'Sign Out'}
               </button>
             </div>
+
+            <ProfileImageUpload
+              currentImageUrl={portfolio.profileImageUrl}
+              onImageUploaded={handleImageUpload}
+              onError={handleImageError}
+            />
+
+            {uploadError && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-600">{uploadError}</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -218,13 +360,6 @@ export default function Account() {
                       </span>
                     </div>
                   </div>
-
-                  <div className="text-sm text-gray-600">
-                    <span className="font-medium">URL:</span>
-                    <span className="font-mono text-blue-600 ml-1">
-                      craftd.dev/p/{portfolio.slug}
-                    </span>
-                  </div>
                 </div>
 
                 {/* Desktop: Horizontal layout */}
@@ -259,53 +394,43 @@ export default function Account() {
                 </div>
 
                 <div className="mt-4 space-y-4">
-                  <div className="text-sm text-gray-600">
-                    <span className="font-medium">URL:</span>
-                    <span className="font-mono text-blue-600 ml-1">
-                      craftd.dev/p/{portfolio.slug}
-                    </span>
+                  {/* Editable Portfolio URL */}
+                  <SlugEditor portfolioId={portfolio.id} initialSlug={portfolio.slug} />
+
+                  <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+                    <p className="text-sm text-blue-800">
+                      Want to update your portfolio with a new resume? Use "Upload New Resume" to
+                      replace your current portfolio data with fresh information from your updated
+                      resume.
+                    </p>
                   </div>
 
-                  {/* Mobile: Stack buttons vertically */}
-                  <div className="flex flex-col space-y-2 sm:hidden">
+                  {/* Responsive button layout */}
+                  <div className="flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-2">
                     <button
                       type="button"
                       onClick={() => navigate('/editor')}
-                      className="inline-flex items-center justify-center w-full px-3 py-1 bg-black text-white rounded-md text-sm font-medium hover:bg-gray-800"
+                      className="inline-flex items-center justify-center w-full sm:w-auto px-3 py-1 bg-black text-white rounded-md text-sm font-medium hover:bg-gray-800"
                     >
                       <Edit className="w-4 h-4 mr-2" />
                       Edit Portfolio
                     </button>
                     <button
                       type="button"
+                      onClick={() => navigate('/onboarding')}
+                      className="inline-flex items-center justify-center w-full sm:w-auto px-3 py-1 text-sm border border-blue-200 rounded-md text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-medium"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Upload New Resume
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => handleDeletePortfolio(portfolio.id)}
-                      className="inline-flex items-center justify-center w-full px-3 py-1 text-sm border border-red-200 rounded-md text-red-600 hover:text-red-700 hover:bg-red-50 font-medium"
+                      className="inline-flex items-center justify-center w-full sm:w-auto px-3 py-1 text-sm border border-red-200 rounded-md text-red-600 hover:text-red-700 hover:bg-red-50 font-medium"
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Delete Portfolio
                     </button>
-                  </div>
-
-                  {/* Desktop: Horizontal layout */}
-                  <div className="hidden sm:flex sm:items-center sm:justify-end">
-                    <div className="flex items-center space-x-2">
-                      <button
-                        type="button"
-                        onClick={() => navigate('/editor')}
-                        className="inline-flex items-center px-3 py-1 bg-black text-white rounded-md text-sm font-medium hover:bg-gray-800"
-                      >
-                        <Edit className="w-4 h-4 mr-2" />
-                        Edit Portfolio
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeletePortfolio(portfolio.id)}
-                        className="inline-flex items-center px-3 py-1 text-sm border border-red-200 rounded-md text-red-600 hover:text-red-700 hover:bg-red-50 font-medium"
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Delete
-                      </button>
-                    </div>
                   </div>
 
                   <p className="text-xs text-gray-500">

@@ -9,6 +9,7 @@ export default [
   index("routes/home.tsx"),
   route("/login", "routes/login.tsx"),
   route("/account", "routes/account.tsx"),
+  route("/health", "routes/health.ts"),
   route("/api/portfolio/:userId", "routes/api.portfolio.$userId.ts"),
   route("/api/resume/convert", "routes/api.resume.convert.ts"),
   route("/api/validate-slug", "routes/api.validate-slug.ts"),

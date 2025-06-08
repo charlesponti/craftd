@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "./db";
 import {
   portfolios,
@@ -61,7 +61,8 @@ export async function getFullUserPortfolio(
     db
       .select()
       .from(workExperiences)
-      .where(eq(workExperiences.portfolioId, portfolio.id)),
+      .where(eq(workExperiences.portfolioId, portfolio.id))
+      .orderBy(sql`${workExperiences.endDate} DESC NULLS FIRST`),
     db.select().from(skills).where(eq(skills.portfolioId, portfolio.id)),
     db.select().from(projects).where(eq(projects.portfolioId, portfolio.id)),
     db
@@ -121,7 +122,8 @@ export async function getFullPortfolioBySlug(
     db
       .select()
       .from(workExperiences)
-      .where(eq(workExperiences.portfolioId, portfolio.id)),
+      .where(eq(workExperiences.portfolioId, portfolio.id))
+      .orderBy(sql`${workExperiences.endDate} DESC NULLS FIRST`),
     db.select().from(skills).where(eq(skills.portfolioId, portfolio.id)),
     db.select().from(projects).where(eq(projects.portfolioId, portfolio.id)),
     db

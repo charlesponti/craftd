@@ -1,7 +1,7 @@
-import { and, eq, inArray } from 'drizzle-orm'
-import { useEffect } from 'react'
+import { and, eq } from 'drizzle-orm'
+import { useEffect, useState } from 'react'
 import type { SubmitHandler } from 'react-hook-form'
-import { useFieldArray, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import type { ActionFunctionArgs, MetaFunction } from 'react-router'
 import { useFetcher, useOutletContext } from 'react-router'
 import { db } from '~/lib/db'
@@ -16,14 +16,28 @@ import {
   tryAsync,
   withAuthAction,
 } from '../lib/route-utils'
+import {
+  formatDateForInput,
+  nullArrayToUndefined,
+  nullObjectToUndefined,
+  nullToUndefined,
+  stringToDate,
+} from '../lib/utils'
 
 interface WorkExperienceFormValues {
-  workExperiences: Partial<
-    Omit<WorkExperience, 'startDate' | 'endDate'> & {
-      startDate?: string
-      endDate?: string
-    }
-  >[]
+  id?: string
+  role: string
+  company: string
+  startDate?: string
+  endDate?: string
+  description: string
+  metrics?: string
+  action?: string
+  tags?: string[]
+  metadata?: Record<string, unknown>
+  sortOrder?: number
+  isVisible?: boolean
+  portfolioId: string
 }
 
 interface WorkExperienceEditorSectionProps {
@@ -31,250 +45,290 @@ interface WorkExperienceEditorSectionProps {
   portfolioId: string
 }
 
-// Helper function to format dates for HTML date inputs
-const formatDateForInput = (date: string | Date | null | undefined): string | undefined => {
-  if (!date) return undefined
-  try {
-    const dateObj = typeof date === 'string' ? new Date(date) : date
-    if (Number.isNaN(dateObj.getTime())) return undefined
-    return dateObj.toISOString().split('T')[0] // Returns YYYY-MM-DD format
-  } catch {
-    return undefined
+function WorkExperienceForm({
+  experience,
+  portfolioId,
+  onDelete,
+}: {
+  experience?: WorkExperience
+  portfolioId: string
+  onDelete?: () => void
+}) {
+  const fetcher = useFetcher()
+  const { addToast } = useToast()
+  const isNew = !experience?.id
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { isDirty, isValid },
+  } = useForm<WorkExperienceFormValues>({
+    defaultValues: {
+      id: experience?.id,
+      role: experience?.role || '',
+      company: experience?.company || '',
+      startDate: formatDateForInput(experience?.startDate),
+      endDate: formatDateForInput(experience?.endDate),
+      description: experience?.description || '',
+      metrics: nullToUndefined(experience?.metrics),
+      action: nullToUndefined(experience?.action),
+      tags: nullArrayToUndefined(experience?.tags) || [],
+      metadata: nullObjectToUndefined(experience?.metadata) || {},
+      sortOrder: experience?.sortOrder || 0,
+      isVisible: experience?.isVisible !== false,
+      portfolioId,
+    },
+    mode: 'onChange',
+  })
+
+  // Handle fetcher responses
+  useEffect(() => {
+    if (fetcher.state === 'idle' && fetcher.data) {
+      const result = fetcher.data as {
+        success: boolean
+        error?: string
+        message?: string
+        data?: WorkExperience
+      }
+      if (result.success) {
+        addToast(result.message || 'Work experience saved successfully!', 'success')
+        if (result.data && isNew) {
+          // Reset form with the returned data (including new ID)
+          reset({
+            ...result.data,
+            startDate: formatDateForInput(result.data.startDate),
+            endDate: formatDateForInput(result.data.endDate),
+            metrics: nullToUndefined(result.data.metrics),
+            action: nullToUndefined(result.data.action),
+            tags: nullArrayToUndefined(result.data.tags) || [],
+            metadata: nullObjectToUndefined(result.data.metadata) || {},
+          })
+        }
+      } else {
+        addToast(`Failed to save work experience: ${result.error || 'Unknown error'}`, 'error')
+      }
+    }
+  }, [fetcher.state, fetcher.data, reset, addToast, isNew])
+
+  const onSubmit: SubmitHandler<WorkExperienceFormValues> = (formData) => {
+    if (!isDirty && !isNew) {
+      addToast('No changes to save.', 'info')
+      return
+    }
+
+    if (!formData.role || !formData.company || !formData.startDate || !formData.description) {
+      addToast('Please fill in all required fields.', 'error')
+      return
+    }
+
+    const formDataToSubmit = new FormData()
+    formDataToSubmit.append('operation', isNew ? 'create' : 'update')
+    formDataToSubmit.append('workExperienceData', JSON.stringify(formData))
+
+    fetcher.submit(formDataToSubmit, {
+      method: 'POST',
+      action: '/editor/work',
+    })
   }
+
+  const handleDelete = () => {
+    if (!experience?.id) return
+
+    if (confirm('Are you sure you want to delete this work experience?')) {
+      const formData = new FormData()
+      formData.append('operation', 'delete')
+      formData.append('id', experience.id)
+      formData.append('portfolioId', portfolioId)
+
+      fetcher.submit(formData, {
+        method: 'POST',
+        action: '/editor/work',
+      })
+
+      onDelete?.()
+    }
+  }
+
+  const isSaving = fetcher.state === 'submitting'
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="card bg-muted/50 space-y-lg">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-medium text-foreground">
+          {isNew ? 'New Experience' : 'Work Experience'}
+        </h3>
+        <div className="flex gap-sm">
+          <button
+            type="submit"
+            disabled={isSaving || (!isDirty && !isNew) || !isValid}
+            className="btn btn-primary btn-sm"
+          >
+            {isSaving ? 'Saving...' : isNew ? 'Add Experience' : 'Save Changes'}
+          </button>
+          {!isNew && (
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={isSaving}
+              className="btn btn-error btn-sm text-destructive hover:bg-destructive/10"
+            >
+              Delete
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
+        <div className="form-group">
+          <label htmlFor={`role-${experience?.id || 'new'}`} className="label">
+            Job Title *
+          </label>
+          <input
+            id={`role-${experience?.id || 'new'}`}
+            type="text"
+            {...register('role', { required: true })}
+            className="input"
+            placeholder="e.g., Senior Software Engineer"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor={`company-${experience?.id || 'new'}`} className="label">
+            Company *
+          </label>
+          <input
+            id={`company-${experience?.id || 'new'}`}
+            type="text"
+            {...register('company', { required: true })}
+            className="input"
+            placeholder="e.g., Google"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
+        <div className="form-group">
+          <label htmlFor={`startDate-${experience?.id || 'new'}`} className="label">
+            Start Date *
+          </label>
+          <input
+            id={`startDate-${experience?.id || 'new'}`}
+            type="date"
+            {...register('startDate', { required: true })}
+            className="input"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor={`endDate-${experience?.id || 'new'}`} className="label">
+            End Date
+          </label>
+          <input
+            id={`endDate-${experience?.id || 'new'}`}
+            type="date"
+            {...register('endDate')}
+            className="input"
+            placeholder="Leave empty if current position"
+          />
+          <p className="text-xs text-muted-foreground mt-xs">
+            Leave empty if this is your current position
+          </p>
+        </div>
+      </div>
+
+      <div className="form-group">
+        <label htmlFor={`description-${experience?.id || 'new'}`} className="label">
+          Job Description *
+        </label>
+        <textarea
+          id={`description-${experience?.id || 'new'}`}
+          {...register('description', { required: true })}
+          className="textarea"
+          rows={4}
+          placeholder="Describe your role, responsibilities, and key achievements..."
+        />
+      </div>
+
+      <div className="form-group">
+        <label htmlFor={`metrics-${experience?.id || 'new'}`} className="label">
+          Key Metrics & Achievements
+        </label>
+        <input
+          id={`metrics-${experience?.id || 'new'}`}
+          type="text"
+          {...register('metrics')}
+          className="input"
+          placeholder="e.g., Increased team productivity by 40%, Led team of 8 engineers"
+        />
+        <p className="text-xs text-muted-foreground mt-xs">
+          Quantifiable achievements and metrics from this role
+        </p>
+      </div>
+    </form>
+  )
 }
 
 function WorkExperienceEditorSection({
   workExperiences: initialWorkExperiences,
   portfolioId,
 }: WorkExperienceEditorSectionProps) {
-  const fetcher = useFetcher()
-  const { addToast } = useToast()
+  const [showNewForm, setShowNewForm] = useState(false)
+  const [experiences, setExperiences] = useState(initialWorkExperiences || [])
 
-  // Format work experiences with proper date formatting
-  const formattedWorkExperiences =
-    initialWorkExperiences?.map((exp) => ({
-      ...exp,
-      startDate: formatDateForInput(exp.startDate),
-      endDate: formatDateForInput(exp.endDate),
-    })) || []
-
-  const {
-    register,
-    control,
-    handleSubmit,
-    reset,
-    formState: { isDirty },
-  } = useForm<WorkExperienceFormValues>({
-    defaultValues: {
-      workExperiences: formattedWorkExperiences,
-    },
-    mode: 'onChange',
-  })
-
+  // Update experiences when initialWorkExperiences changes
   useEffect(() => {
-    const formattedData =
-      initialWorkExperiences?.map((exp) => ({
-        ...exp,
-        startDate: formatDateForInput(exp.startDate),
-        endDate: formatDateForInput(exp.endDate),
-      })) || []
-    reset({ workExperiences: formattedData })
-  }, [initialWorkExperiences, reset])
+    setExperiences(initialWorkExperiences || [])
+  }, [initialWorkExperiences])
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'workExperiences',
-  })
-
-  // Handle fetcher errors and success
-  useEffect(() => {
-    if (fetcher.state === 'idle' && fetcher.data) {
-      const result = fetcher.data as { success: boolean; error?: string; message?: string }
-      if (result.success) {
-        addToast(result.message || 'Work experiences saved successfully!', 'success')
-        reset({ workExperiences: fields })
-      } else {
-        addToast(`Failed to save work experiences: ${result.error || 'Unknown error'}`, 'error')
-      }
-    }
-  }, [fetcher.state, fetcher.data, reset, fields, addToast])
-
-  const handleAddNewExperience = () => {
-    append({
-      role: '',
-      company: '',
-      startDate: undefined,
-      endDate: undefined,
-      description: '',
-      portfolioId,
-      metrics: '',
-      action: '',
-      tags: [],
-      metadata: {},
-      sortOrder: 0,
-      isVisible: true,
-    })
+  const handleAddNew = () => {
+    setShowNewForm(true)
   }
 
-  const handleRemoveExperience = (index: number) => {
-    remove(index)
+  const handleNewExperienceCreated = () => {
+    setShowNewForm(false)
+    // The parent component should re-fetch data or we could optimistically update
   }
 
-  const onSubmit: SubmitHandler<WorkExperienceFormValues> = (formData) => {
-    if (!isDirty) {
-      addToast('No changes to save in work experiences.', 'info')
-      return
-    }
-
-    // Clean up the data - only send essential fields
-    const experiencesToSave = formData.workExperiences.map((exp) => ({
-      id: exp.id,
-      role: exp.role,
-      company: exp.company,
-      startDate: exp.startDate,
-      endDate: exp.endDate,
-      description: exp.description,
-      metrics: exp.metrics,
-      action: exp.action,
-      tags: exp.tags || [],
-      metadata: exp.metadata || {},
-      sortOrder: exp.sortOrder || 0,
-      isVisible: exp.isVisible !== false,
-      portfolioId,
-    }))
-
-    const formData2 = new FormData()
-    formData2.append('workExperiencesData', JSON.stringify(experiencesToSave))
-
-    fetcher.submit(formData2, {
-      method: 'POST',
-      action: '/editor/work',
-    })
+  const handleDelete = (experienceId: string) => {
+    setExperiences((prev) => prev.filter((exp) => exp.id !== experienceId))
   }
-
-  const isSaving = fetcher.state === 'submitting'
 
   return (
     <div className="container flex flex-col gap-2xl mx-auto px-lg">
       <div className="mb-xl">
         <h2 className="text-2xl font-semibold text-foreground mb-sm">Work Experience</h2>
-        <p className="text-muted text-muted-foreground">
+        <p className="text-muted text-muted-foreground mb-lg">
           Add your professional work experience and achievements.
         </p>
-        <div className="flex flex-col sm:flex-row gap-md">
-          <button type="button" onClick={handleAddNewExperience} className="btn btn-outline flex-1">
+
+        {!showNewForm && (
+          <button type="button" onClick={handleAddNew} className="btn btn-outline">
             Add New Experience
           </button>
-
-          <button type="submit" disabled={isSaving || !isDirty} className="btn btn-primary flex-1">
-            {isSaving ? 'Saving...' : 'Save All Changes'}
-          </button>
-        </div>
+        )}
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2xl">
-        {fields.map((field, index) => (
-          <div key={field.id} className="card bg-muted/50 space-y-lg">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-foreground">Experience #{index + 1}</h3>
-              {fields.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => remove(index)}
-                  className="btn btn-error btn-sm text-destructive hover:bg-destructive/10"
-                >
-                  Remove
-                </button>
-              )}
-            </div>
+      <div className="flex flex-col gap-2xl">
+        {/* Show new experience form if requested */}
+        {showNewForm && (
+          <WorkExperienceForm portfolioId={portfolioId} onDelete={() => setShowNewForm(false)} />
+        )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
-              <div className="form-group">
-                <label htmlFor={`workExperiences.${index}.role`} className="label">
-                  Job Title *
-                </label>
-                <input
-                  id={`workExperiences.${index}.role`}
-                  type="text"
-                  {...register(`workExperiences.${index}.role` as const)}
-                  className="input"
-                  placeholder="e.g., Senior Software Engineer"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor={`workExperiences.${index}.company`} className="label">
-                  Company *
-                </label>
-                <input
-                  id={`workExperiences.${index}.company`}
-                  type="text"
-                  {...register(`workExperiences.${index}.company` as const)}
-                  className="input"
-                  placeholder="e.g., Google"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
-              <div className="form-group">
-                <label htmlFor={`workExperiences.${index}.startDate`} className="label">
-                  Start Date *
-                </label>
-                <input
-                  id={`workExperiences.${index}.startDate`}
-                  type="date"
-                  {...register(`workExperiences.${index}.startDate` as const)}
-                  className="input"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor={`workExperiences.${index}.endDate`} className="label">
-                  End Date
-                </label>
-                <input
-                  id={`workExperiences.${index}.endDate`}
-                  type="date"
-                  {...register(`workExperiences.${index}.endDate` as const)}
-                  className="input"
-                  placeholder="Leave empty if current position"
-                />
-                <p className="text-xs text-muted-foreground mt-xs">
-                  Leave empty if this is your current position
-                </p>
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor={`workExperiences.${index}.description`} className="label">
-                Job Description *
-              </label>
-              <textarea
-                id={`workExperiences.${index}.description`}
-                {...register(`workExperiences.${index}.description` as const)}
-                className="textarea"
-                rows={4}
-                placeholder="Describe your role, responsibilities, and key achievements..."
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor={`workExperiences.${index}.metrics`} className="label">
-                Key Metrics & Achievements
-              </label>
-              <input
-                id={`workExperiences.${index}.metrics`}
-                type="text"
-                {...register(`workExperiences.${index}.metrics` as const)}
-                className="input"
-                placeholder="e.g., Increased team productivity by 40%, Led team of 8 engineers"
-              />
-              <p className="text-xs text-muted-foreground mt-xs">
-                Quantifiable achievements and metrics from this role
-              </p>
-            </div>
-          </div>
+        {/* Existing experiences */}
+        {experiences.map((experience) => (
+          <WorkExperienceForm
+            key={experience.id}
+            experience={experience}
+            portfolioId={portfolioId}
+            onDelete={() => handleDelete(experience.id)}
+          />
         ))}
-      </form>
+
+        {experiences.length === 0 && !showNewForm && (
+          <div className="text-center py-2xl text-muted-foreground">
+            No work experiences added yet. Click "Add New Experience" to get started.
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -286,61 +340,91 @@ export const meta: MetaFunction = () => {
 export async function action(args: ActionFunctionArgs) {
   return withAuthAction(args, async ({ user }) => {
     const formData = await args.request.formData()
-    // Expecting a JSON array of new or updated work experiences under 'workExperiencesData'
-    const workExperiencesDataResult = parseFormData<NewWorkExperience[]>(
-      formData,
-      'workExperiencesData'
-    )
-    if ('success' in workExperiencesDataResult && !workExperiencesDataResult.success) {
-      return workExperiencesDataResult
-    }
-    const workExperiencesData = workExperiencesDataResult as NewWorkExperience[]
-    if (!Array.isArray(workExperiencesData)) {
-      return createErrorResponse('Invalid work experiences data')
-    }
-    // Ensure all experiences have portfolioId
-    const portfolioId = workExperiencesData[0]?.portfolioId
-    if (!portfolioId) return createErrorResponse('Missing portfolioId')
-    // Ensure payload items have portfolioId
-    const payload = workExperiencesData.map((e) => ({ ...e, portfolioId }))
-    return tryAsync(async () => {
-      // Fetch existing experiences for this portfolio
-      const existingExperiences = await db
-        .select({ id: workExperiences.id })
-        .from(workExperiences)
-        .where(eq(workExperiences.portfolioId, portfolioId))
-      const existingIds = (existingExperiences || []).map((e) => e.id)
-      const submittedIds = payload
-        .filter((e): e is NewWorkExperience & { id: string } => typeof e.id === 'string')
-        .map((e) => e.id)
-      // Delete removed experiences
-      const idsToDelete = existingIds.filter((id: string) => !submittedIds.includes(id))
-      if (idsToDelete.length > 0) {
-        await db
-          .delete(workExperiences)
-          .where(
-            and(
-              eq(workExperiences.portfolioId, portfolioId),
-              inArray(workExperiences.id, idsToDelete)
-            )
-          )
-      }
-      // Upsert (insert/update) all submitted experiences
-      for (const exp of payload) {
-        if (exp.id) {
+    const operation = formData.get('operation') as string
+
+    switch (operation) {
+      case 'create':
+      case 'update': {
+        const workExperienceDataResult = parseFormData<WorkExperienceFormValues>(
+          formData,
+          'workExperienceData'
+        )
+
+        if ('success' in workExperienceDataResult && !workExperienceDataResult.success) {
+          return workExperienceDataResult
+        }
+
+        const workExperienceData = workExperienceDataResult as WorkExperienceFormValues
+
+        if (!workExperienceData.portfolioId) {
+          return createErrorResponse('Missing portfolioId')
+        }
+
+        return tryAsync(async () => {
+          if (operation === 'create') {
+            // Insert new experience
+            const { id, ...insertData } = workExperienceData
+
+            // Convert date strings to Date objects for database
+            const dbData = {
+              ...insertData,
+              startDate: stringToDate(insertData.startDate),
+              endDate: stringToDate(insertData.endDate),
+            }
+
+            const [newExperience] = await db
+              .insert(workExperiences)
+              .values(dbData as NewWorkExperience)
+              .returning()
+
+            return createSuccessResponse(newExperience, 'Work experience created successfully')
+          }
+
           // Update existing experience
-          const { id, ...updateData } = exp
+          const { id, ...updateData } = workExperienceData
+          if (!id) return createErrorResponse('Missing experience ID for update')
+
+          // Convert date strings to Date objects for database
+          const dbData = {
+            ...updateData,
+            startDate: stringToDate(updateData.startDate),
+            endDate: stringToDate(updateData.endDate),
+          }
+
           await db
             .update(workExperiences)
-            .set(updateData)
-            .where(and(eq(workExperiences.id, id), eq(workExperiences.portfolioId, portfolioId)))
-        } else {
-          // Insert new experience
-          await db.insert(workExperiences).values(exp)
-        }
+            .set(dbData)
+            .where(
+              and(
+                eq(workExperiences.id, id),
+                eq(workExperiences.portfolioId, workExperienceData.portfolioId)
+              )
+            )
+
+          return createSuccessResponse(null, 'Work experience updated successfully')
+        }, `Failed to ${operation} work experience`)
       }
-      return createSuccessResponse(null, 'Work experiences saved successfully')
-    }, 'Failed to save work experiences')
+
+      case 'delete': {
+        const id = formData.get('id') as string
+        const portfolioId = formData.get('portfolioId') as string
+
+        if (!id || !portfolioId) {
+          return createErrorResponse('Missing required fields for deletion')
+        }
+
+        return tryAsync(async () => {
+          await db
+            .delete(workExperiences)
+            .where(and(eq(workExperiences.id, id), eq(workExperiences.portfolioId, portfolioId)))
+
+          return createSuccessResponse(null, 'Work experience deleted successfully')
+        }, 'Failed to delete work experience')
+      }
+
+      default:
+        return createErrorResponse('Invalid operation')
+    }
   })
 }
 

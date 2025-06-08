@@ -78,62 +78,33 @@ function SocialLinksEditorSection({
   const isSaving = fetcher.state === 'submitting'
 
   return (
-    <section className="editor-section">
+    <section className="section">
       <h2>Social Links</h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="editor-form">
-        <div className="editor-form-group">
-          <div className="editor-grid-2">
+      <form onSubmit={handleSubmit(onSubmit)} className="form">
+        <div className="form-row">
+          <div className="grid-2">
             <div>
-              <label htmlFor="github" className="editor-label">
-                GitHub
-              </label>
-              <input
-                id="github"
-                {...register('github')}
-                className="editor-input"
-                placeholder="GitHub profile URL"
-              />
+              <label htmlFor="github">GitHub Username</label>
+              <input id="github" type="text" {...register('github')} />
             </div>
             <div>
-              <label htmlFor="linkedin" className="editor-label">
-                LinkedIn
-              </label>
-              <input
-                id="linkedin"
-                {...register('linkedin')}
-                className="editor-input"
-                placeholder="LinkedIn profile URL"
-              />
+              <label htmlFor="linkedin">LinkedIn Username</label>
+              <input id="linkedin" type="text" {...register('linkedin')} />
             </div>
             <div>
-              <label htmlFor="twitter" className="editor-label">
-                Twitter
-              </label>
-              <input
-                id="twitter"
-                {...register('twitter')}
-                className="editor-input"
-                placeholder="Twitter profile URL"
-              />
+              <label htmlFor="twitter">Twitter Username</label>
+              <input id="twitter" type="text" {...register('twitter')} />
             </div>
             <div>
-              <label htmlFor="website" className="editor-label">
-                Website
-              </label>
-              <input
-                id="website"
-                {...register('website')}
-                className="editor-input"
-                placeholder="Personal website URL"
-              />
+              <label htmlFor="website">Website URL</label>
+              <input id="website" type="url" {...register('website')} />
             </div>
           </div>
         </div>
-        <div>
-          <button type="submit" disabled={isSaving || !isDirty} className="editor-btn-primary">
-            {isSaving ? 'Saving...' : 'Save Social Links'}
-          </button>
-        </div>
+
+        <button type="submit" disabled={isSaving || !isDirty} className="btn btn-primary btn-full">
+          {isSaving ? 'Saving...' : 'Save Social Links'}
+        </button>
       </form>
     </section>
   )

@@ -107,55 +107,44 @@ function PortfolioStatsEditorSection({
   const isSaving = fetcher.state === 'submitting'
 
   return (
-    <section className="editor-section">
+    <section className="section">
       <h2>Portfolio Stats</h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="editor-form">
+      <form onSubmit={handleSubmit(onSubmit)} className="form">
         {fields.map((field, index) => (
-          <div key={field.id} className="editor-form-group">
-            <div className="editor-grid-2">
+          <div key={field.id} className="form-row">
+            <div className="grid-2">
               <div>
-                <label htmlFor={`stats.${index}.label`} className="editor-label">
-                  Label
-                </label>
+                <label htmlFor={`stats.${index}.label`}>Label</label>
                 <input
                   id={`stats.${index}.label`}
-                  {...register(`stats.${index}.label` as const, { required: 'Label is required' })}
-                  className="editor-input"
-                  placeholder="e.g., Projects Completed"
+                  type="text"
+                  {...register(`stats.${index}.label` as const)}
                 />
               </div>
               <div>
-                <label htmlFor={`stats.${index}.value`} className="editor-label">
-                  Value
-                </label>
+                <label htmlFor={`stats.${index}.value`}>Value</label>
                 <input
                   id={`stats.${index}.value`}
-                  {...register(`stats.${index}.value` as const, { required: 'Value is required' })}
-                  className="editor-input"
-                  placeholder="e.g., 50+"
+                  type="text"
+                  {...register(`stats.${index}.value` as const)}
                 />
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => handleRemoveStat(index, fields[index].id)}
-              className="editor-remove-btn"
-              disabled={isSaving}
-            >
-              Remove Stat
-            </button>
+            {fields.length > 1 && (
+              <button type="button" onClick={() => remove(index)} className="btn-link">
+                Remove
+              </button>
+            )}
           </div>
         ))}
 
-        <button type="button" onClick={handleAddNewStat} className="editor-add-btn">
-          + Add New Stat
+        <button type="button" onClick={handleAddNewStat} className="btn-dashed">
+          Add New Stat
         </button>
 
-        <div>
-          <button type="submit" disabled={isSaving || !isDirty} className="editor-btn-primary">
-            Save All Stat Changes
-          </button>
-        </div>
+        <button type="submit" disabled={isSaving || !isDirty} className="btn btn-primary btn-full">
+          Save All Stat Changes
+        </button>
       </form>
     </section>
   )

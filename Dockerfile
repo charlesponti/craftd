@@ -26,6 +26,16 @@ RUN npm ci --include=dev
 # Copy application code
 COPY . .
 
+# Build-time arguments for Vite environment variables
+ARG VITE_PUBLIC_SUPABASE_URL
+ARG VITE_PUBLIC_SUPABASE_ANON_KEY
+ARG VITE_DATABASE_URL
+
+# Set environment variables for the build process
+ENV VITE_PUBLIC_SUPABASE_URL=$VITE_PUBLIC_SUPABASE_URL
+ENV VITE_PUBLIC_SUPABASE_ANON_KEY=$VITE_PUBLIC_SUPABASE_ANON_KEY
+ENV VITE_DATABASE_URL=$VITE_DATABASE_URL
+
 # Build application
 RUN npm run build
 

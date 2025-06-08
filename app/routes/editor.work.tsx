@@ -155,91 +155,71 @@ function WorkExperienceEditorSection({
   const isSaving = fetcher.state === 'submitting'
 
   return (
-    <section className="editor-section">
+    <section className="section">
       <h2>Work Experience</h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="editor-form">
+      <form onSubmit={handleSubmit(onSubmit)} className="form">
         {fields.map((field, index) => (
-          <div key={field.id} className="editor-form-group">
-            <div className="editor-grid-2">
+          <div key={field.id} className="form-row">
+            <div className="grid-2">
               <div>
-                <label htmlFor={`workExperiences.${index}.role`} className="editor-label">
-                  Role
-                </label>
+                <label htmlFor={`workExperiences.${index}.role`}>Job Title</label>
                 <input
-                  {...register(`workExperiences.${index}.role` as const, {
-                    required: 'Role is required',
-                  })}
-                  className="editor-input"
-                  placeholder="e.g., Senior Software Engineer"
+                  id={`workExperiences.${index}.role`}
+                  type="text"
+                  {...register(`workExperiences.${index}.role` as const)}
                 />
               </div>
               <div>
-                <label htmlFor={`workExperiences.${index}.company`} className="editor-label">
-                  Company
-                </label>
+                <label htmlFor={`workExperiences.${index}.company`}>Company</label>
                 <input
-                  {...register(`workExperiences.${index}.company` as const, {
-                    required: 'Company is required',
-                  })}
-                  className="editor-input"
-                  placeholder="e.g., Acme Corp"
+                  id={`workExperiences.${index}.company`}
+                  type="text"
+                  {...register(`workExperiences.${index}.company` as const)}
                 />
               </div>
             </div>
-            <div className="editor-grid-2">
+            <div className="grid-2">
               <div>
-                <label htmlFor={`workExperiences.${index}.startDate`} className="editor-label">
-                  Start Date
-                </label>
+                <label htmlFor={`workExperiences.${index}.startDate`}>Start Date</label>
                 <input
+                  id={`workExperiences.${index}.startDate`}
                   type="date"
-                  {...register(`workExperiences.${index}.startDate` as const, {
-                    required: 'Start date is required',
-                  })}
-                  className="editor-input"
+                  {...register(`workExperiences.${index}.startDate` as const)}
                 />
               </div>
               <div>
-                <label htmlFor={`workExperiences.${index}.endDate`} className="editor-label">
-                  End Date
+                <label htmlFor={`workExperiences.${index}.endDate`}>
+                  End Date (leave empty if current)
                 </label>
                 <input
+                  id={`workExperiences.${index}.endDate`}
                   type="date"
                   {...register(`workExperiences.${index}.endDate` as const)}
-                  className="editor-input"
                 />
               </div>
             </div>
             <div>
-              <label htmlFor={`workExperiences.${index}.description`} className="editor-label">
-                Description
-              </label>
+              <label htmlFor={`workExperiences.${index}.description`}>Description</label>
               <textarea
+                id={`workExperiences.${index}.description`}
                 {...register(`workExperiences.${index}.description` as const)}
-                rows={4}
-                className="editor-textarea"
-                placeholder="Describe your responsibilities and achievements"
               />
             </div>
-            <button
-              type="button"
-              onClick={() => handleRemoveExperience(index)}
-              className="editor-remove-btn"
-            >
-              Remove
-            </button>
+            {fields.length > 1 && (
+              <button type="button" onClick={() => remove(index)} className="btn-link">
+                Remove Experience
+              </button>
+            )}
           </div>
         ))}
 
-        <button type="button" onClick={handleAddNewExperience} className="editor-add-btn">
-          + Add New Work Experience
+        <button type="button" onClick={handleAddNewExperience} className="btn-dashed">
+          Add New Experience
         </button>
 
-        <div>
-          <button type="submit" disabled={isSaving || !isDirty} className="editor-btn-primary">
-            Save All Work Experience Changes
-          </button>
-        </div>
+        <button type="submit" disabled={isSaving || !isDirty} className="btn btn-primary btn-full">
+          Save All Work Experience Changes
+        </button>
       </form>
     </section>
   )

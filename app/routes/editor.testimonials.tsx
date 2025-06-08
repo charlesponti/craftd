@@ -105,120 +105,93 @@ function TestimonialsEditorSection({
   const isSaving = fetcher.state === 'submitting'
 
   return (
-    <section className="editor-section">
-      <h2>Testimonials</h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="editor-form">
+    <section className="section">
+      <h2>Client Testimonials</h2>
+      <form onSubmit={handleSubmit(onSubmit)} className="form">
         {fields.map((field, index) => (
-          <div key={field.id} className="editor-form-group">
-            <input {...register(`testimonials.${index}.id` as const)} type="hidden" />
-            <div className="editor-grid-2">
+          <div key={field.id} className="form-row">
+            <div className="grid-2">
               <div>
-                <label htmlFor={`testimonials.${index}.name`} className="editor-label">
-                  Reviewer's Name
-                </label>
+                <label htmlFor={`testimonials.${index}.name`}>Name</label>
                 <input
                   id={`testimonials.${index}.name`}
-                  {...register(`testimonials.${index}.name` as const, { required: true })}
-                  className="editor-input"
+                  type="text"
+                  {...register(`testimonials.${index}.name` as const)}
                 />
               </div>
               <div>
-                <label htmlFor={`testimonials.${index}.title`} className="editor-label">
-                  Reviewer's Title
-                </label>
+                <label htmlFor={`testimonials.${index}.title`}>Title</label>
                 <input
                   id={`testimonials.${index}.title`}
-                  {...register(`testimonials.${index}.title` as const, { required: true })}
-                  className="editor-input"
+                  type="text"
+                  {...register(`testimonials.${index}.title` as const)}
                 />
               </div>
             </div>
-            <div className="editor-grid-2">
+            <div className="grid-2">
               <div>
-                <label htmlFor={`testimonials.${index}.company`} className="editor-label">
-                  Company (Optional)
-                </label>
+                <label htmlFor={`testimonials.${index}.company`}>Company</label>
                 <input
                   id={`testimonials.${index}.company`}
+                  type="text"
                   {...register(`testimonials.${index}.company` as const)}
-                  className="editor-input"
                 />
               </div>
               <div>
-                <label htmlFor={`testimonials.${index}.rating`} className="editor-label">
-                  Rating (1-5, Optional)
-                </label>
-                <input
+                <label htmlFor={`testimonials.${index}.rating`}>Rating (1-5)</label>
+                <select
                   id={`testimonials.${index}.rating`}
-                  type="number"
-                  min="1"
-                  max="5"
-                  {...register(`testimonials.${index}.rating` as const, {
-                    valueAsNumber: true,
-                    min: 1,
-                    max: 5,
-                  })}
-                  className="editor-input"
-                />
+                  {...register(`testimonials.${index}.rating` as const)}
+                >
+                  <option value="">Select rating</option>
+                  <option value="5">5 - Excellent</option>
+                  <option value="4">4 - Good</option>
+                  <option value="3">3 - Average</option>
+                  <option value="2">2 - Fair</option>
+                  <option value="1">1 - Poor</option>
+                </select>
               </div>
             </div>
             <div>
-              <label htmlFor={`testimonials.${index}.content`} className="editor-label">
-                Content
-              </label>
+              <label htmlFor={`testimonials.${index}.content`}>Testimonial</label>
               <textarea
                 id={`testimonials.${index}.content`}
-                {...register(`testimonials.${index}.content` as const, { required: true })}
-                rows={3}
-                className="editor-textarea"
+                {...register(`testimonials.${index}.content` as const)}
               />
             </div>
-            <div className="editor-grid-2">
+            <div className="grid-2">
               <div>
-                <label htmlFor={`testimonials.${index}.avatarUrl`} className="editor-label">
-                  Avatar URL (Optional)
-                </label>
+                <label htmlFor={`testimonials.${index}.avatarUrl`}>Avatar URL (optional)</label>
                 <input
                   id={`testimonials.${index}.avatarUrl`}
                   type="url"
                   {...register(`testimonials.${index}.avatarUrl` as const)}
-                  className="editor-input"
                 />
               </div>
               <div>
-                <label htmlFor={`testimonials.${index}.linkedinUrl`} className="editor-label">
-                  LinkedIn URL (Optional)
-                </label>
+                <label htmlFor={`testimonials.${index}.linkedinUrl`}>LinkedIn URL (optional)</label>
                 <input
                   id={`testimonials.${index}.linkedinUrl`}
                   type="url"
                   {...register(`testimonials.${index}.linkedinUrl` as const)}
-                  className="editor-input"
                 />
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => handleRemoveTestimonial(index, field.id)}
-              disabled={isSaving}
-              className="editor-remove-btn"
-            >
-              Remove Testimonial
-            </button>
+            {fields.length > 1 && (
+              <button type="button" onClick={() => remove(index)} className="btn-link">
+                Remove Testimonial
+              </button>
+            )}
           </div>
         ))}
-        <button type="button" onClick={handleAddNewTestimonial} className="editor-add-btn">
-          + Add New Testimonial
+
+        <button type="button" onClick={handleAddNewTestimonial} className="btn-dashed">
+          Add New Testimonial
         </button>
-        <div>
-          <button
-            type="submit"
-            disabled={isSaving || !isDirty}
-            className="editor-btn-primary disabled:bg-gray-400"
-          >
-            Save All Testimonial Changes
-          </button>
-        </div>
+
+        <button type="submit" disabled={isSaving || !isDirty} className="btn btn-primary btn-full">
+          Save All Testimonial Changes
+        </button>
       </form>
     </section>
   )

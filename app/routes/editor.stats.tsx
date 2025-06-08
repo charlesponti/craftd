@@ -107,37 +107,31 @@ function PortfolioStatsEditorSection({
   const isSaving = fetcher.state === 'submitting'
 
   return (
-    <section className="p-6 bg-white shadow-md rounded-lg mt-8">
-      <h2 className="text-2xl font-semibold mb-4 text-gray-800">Portfolio Stats</h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <section className="editor-section">
+      <h2>Portfolio Stats</h2>
+      <form onSubmit={handleSubmit(onSubmit)} className="editor-form">
         {fields.map((field, index) => (
-          <div key={field.id} className="p-4 border border-gray-300 rounded-md space-y-3">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div key={field.id} className="editor-form-group">
+            <div className="editor-grid-2">
               <div>
-                <label
-                  htmlFor={`stats.${index}.label`}
-                  className="block text-sm font-medium text-gray-700"
-                >
+                <label htmlFor={`stats.${index}.label`} className="editor-label">
                   Label
                 </label>
                 <input
                   id={`stats.${index}.label`}
                   {...register(`stats.${index}.label` as const, { required: 'Label is required' })}
-                  className="mt-1 block w-full input-class"
+                  className="editor-input"
                   placeholder="e.g., Projects Completed"
                 />
               </div>
               <div>
-                <label
-                  htmlFor={`stats.${index}.value`}
-                  className="block text-sm font-medium text-gray-700"
-                >
+                <label htmlFor={`stats.${index}.value`} className="editor-label">
                   Value
                 </label>
                 <input
                   id={`stats.${index}.value`}
                   {...register(`stats.${index}.value` as const, { required: 'Value is required' })}
-                  className="mt-1 block w-full input-class"
+                  className="editor-input"
                   placeholder="e.g., 50+"
                 />
               </div>
@@ -145,7 +139,7 @@ function PortfolioStatsEditorSection({
             <button
               type="button"
               onClick={() => handleRemoveStat(index, fields[index].id)}
-              className="text-red-500 hover:text-red-700 text-sm font-medium"
+              className="editor-remove-btn"
               disabled={isSaving}
             >
               Remove Stat
@@ -153,44 +147,16 @@ function PortfolioStatsEditorSection({
           </div>
         ))}
 
-        <button
-          type="button"
-          onClick={handleAddNewStat}
-          className="mb-6 py-2 px-4 border border-dashed border-gray-400 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-        >
+        <button type="button" onClick={handleAddNewStat} className="editor-add-btn">
           + Add New Stat
         </button>
 
         <div>
-          <button
-            type="submit"
-            disabled={isSaving || !isDirty}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400"
-          >
+          <button type="submit" disabled={isSaving || !isDirty} className="editor-btn-primary">
             Save All Stat Changes
           </button>
         </div>
       </form>
-      <style>{`
-        .input-class {
-          display: block;
-          width: 100%;
-          padding-left: 0.75rem;
-          padding-right: 0.75rem;
-          padding-top: 0.5rem;
-          padding-bottom: 0.5rem;
-          border-width: 1px;
-          border-color: #D1D5DB; /* gray-300 */
-          border-radius: 0.375rem; /* rounded-md */
-          box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
-        }
-        .input-class:focus {
-          outline: 2px solid transparent;
-          outline-offset: 2px;
-          border-color: #6366F1; /* indigo-500 */
-          box-shadow: 0 0 0 0.2rem rgba(99,102,241,.25); /* focus:ring-indigo-500 with some opacity */
-        }
-      `}</style>
     </section>
   )
 }

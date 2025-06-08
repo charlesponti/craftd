@@ -12,10 +12,10 @@ export default [
   route("/api/portfolio/:userId", "routes/api.portfolio.$userId.ts"),
   route("/api/resume/convert", "routes/api.resume.convert.ts"),
   route("/api/validate-slug", "routes/api.validate-slug.ts"),
+  route("/auth/callback", "routes/auth.callback.ts"),
   route("/onboarding", "routes/onboarding.tsx"),
   route("/onboarding/complete", "routes/onboarding.complete.tsx"),
   route("/demo", "routes/demo.tsx"),
-  route("/upload-resume", "routes/upload-resume.tsx"),
   route("/p/:slug", "routes/p.$slug.tsx"),
   layout("routes/editor.tsx", [
     route("/editor", "routes/editor.basic.tsx"),

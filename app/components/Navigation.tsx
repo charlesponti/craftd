@@ -1,57 +1,8 @@
-import { useState, useEffect } from 'react'
+import { MenuIcon, PencilIcon, XIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router'
-import { useAuth } from '../hooks/useAuth'
-
-// Icon components (simplified SVG icons)
-const MenuIcon = ({ className = 'w-6 h-6' }: { className?: string }) => (
-  <svg
-    className={className}
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth="1.5"
-    stroke="currentColor"
-    role="img"
-    aria-label="Menu"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-    />
-  </svg>
-)
-
-const XIcon = ({ className = 'w-6 h-6' }: { className?: string }) => (
-  <svg
-    className={className}
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth="1.5"
-    stroke="currentColor"
-    role="img"
-    aria-label="Close"
-  >
-    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-  </svg>
-)
-
-const PencilIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
-  <svg
-    className={className}
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth="1.5"
-    stroke="currentColor"
-    role="img"
-    aria-label="Edit"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-    />
-  </svg>
-)
+import { useUser } from '../hooks/useAuth'
+import { createClient } from '../lib/supabase/client'
 
 // User type interface
 interface User {
@@ -60,7 +11,6 @@ interface User {
   avatarUrl?: string
 }
 
-// Avatar component
 const Avatar = ({ user, className = 'w-8 h-8' }: { user: User; className?: string }) => (
   <div
     className={`${className} bg-gray-200 border border-gray-200 rounded-full flex items-center justify-center`}
@@ -85,7 +35,8 @@ const cn = (...classes: (string | boolean | undefined)[]) => {
 }
 
 export default function Navigation() {
-  const { user, signOut } = useAuth()
+  const user = useUser()
+
   const location = useLocation()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
@@ -134,7 +85,8 @@ export default function Navigation() {
 
   const handleSignOut = async () => {
     try {
-      await signOut()
+      const supabase = await createClient()
+      await supabase.auth.signOut()
       closeMenu()
     } catch (error) {
       console.error('Error signing out:', error)

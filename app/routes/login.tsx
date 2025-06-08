@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useAuth } from '../hooks/useAuth'
-import { useNavigate, useSearchParams } from 'react-router'
-import { Link } from 'react-router'
 import type { MetaFunction } from 'react-router'
-import { supabase } from '../lib/supabaseClient'
+import { Link, useNavigate, useSearchParams } from 'react-router'
+import { useUser } from '../hooks/useAuth'
+import { createClient } from '../lib/supabase/client'
 
 export const meta: MetaFunction = () => {
   return [
@@ -17,7 +16,7 @@ export const meta: MetaFunction = () => {
 
 export default function Login() {
   const [searchParams] = useSearchParams()
-  const { user, isLoading: authLoading } = useAuth()
+  const user = useUser()
   const navigate = useNavigate()
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [googleError, setGoogleError] = useState<string | null>(null)
@@ -34,7 +33,14 @@ export default function Login() {
     setIsGoogleLoading(true)
     setGoogleError(null)
     try {
-      const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' })
+      const supabase = await createClient()
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
       if (error) {
         setGoogleError(error.message || 'Google login failed. Please try again.')
       }
@@ -57,8 +63,8 @@ export default function Login() {
     }
   }
 
-  // Redirect if user is already logged in (and not just loading)
-  if (!authLoading && user) {
+  // Redirect if user is already logged in
+  if (user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <p className="text-gray-600">Redirecting...</p>

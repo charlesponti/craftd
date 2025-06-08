@@ -1,18 +1,13 @@
-/**
- * Server-side authentication utilities for React Router V7
- * Migrated from Svelte auth.server.ts
- */
-
+import { eq } from "drizzle-orm";
+import { redirect } from "react-router";
 import { db } from "./db";
 import { users } from "./db/schema";
-import { createServerSupabaseClient } from "./supabase.server";
+import { createClient } from "./supabase/server";
 import {
   createTestUser,
-  defaultTestUser,
   defaultTestPortfolio,
+  defaultTestUser,
 } from "./test/mock-data";
-import { redirect } from "react-router";
-import { eq } from "drizzle-orm";
 
 export interface User {
   id: string;
@@ -52,7 +47,7 @@ export async function getAuthenticatedUser(
       }
     }
 
-    const supabase = createServerSupabaseClient(request);
+    const { supabase } = createClient(request);
     const {
       data: { user },
       error,
@@ -148,7 +143,7 @@ export function getMockPortfolioData(request: Request) {
           ...mockPortfolio,
           id: portfolioId,
           userId,
-          workExperience: mockPortfolio.workExperience.map((we) => ({
+          workExperience: mockPortfolio.workExperiences.map((we) => ({
             ...we,
             portfolioId,
           })),
@@ -157,7 +152,7 @@ export function getMockPortfolioData(request: Request) {
             portfolioId,
           })),
         },
-        workExperience: mockPortfolio.workExperience.map((we) => ({
+        workExperience: mockPortfolio.workExperiences.map((we) => ({
           ...we,
           portfolioId,
         })),

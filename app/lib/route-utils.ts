@@ -5,9 +5,9 @@
 // @ts-nocheck
 /* eslint-disable */
 
-import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { getAuthenticatedUser, requireAuth, type User } from "./auth.server";
-import { createServerSupabaseClient } from "./supabase.server";
+import { createClient } from "./supabase/server";
 import { shouldUseMockData } from "./utils/mock-data";
 
 // Standard API response types
@@ -20,7 +20,7 @@ export interface ApiResponse<T = unknown> {
 export interface AuthenticatedContext {
   user: User;
   request: Request;
-  supabase: ReturnType<typeof createServerSupabaseClient>;
+  supabase: ReturnType<typeof createClient>["supabase"];
 }
 
 /**
@@ -33,7 +33,7 @@ export async function withAuth<T>(
 ): Promise<T> {
   const user = await getAuthenticatedUser(request);
   const authenticatedUser = requireAuth(user);
-  const supabase = createServerSupabaseClient(request);
+  const { supabase } = createClient(request);
 
   return await callback({
     user: authenticatedUser,

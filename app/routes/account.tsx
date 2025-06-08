@@ -5,7 +5,6 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
 import { useActionData, useLoaderData, useNavigate, useSubmit } from 'react-router'
 import { ProfileImageUpload } from '../components/ProfileImageUpload'
 import { SlugEditor } from '../components/SlugEditor'
-import { useAuth } from '../hooks/useAuth'
 import { db } from '../lib/db'
 import { portfolios } from '../lib/db/schema'
 import { getFullUserPortfolio } from '../lib/portfolio.server'
@@ -17,6 +16,13 @@ import {
   withAuthLoader,
   withMockDataFallback,
 } from '../lib/route-utils'
+import {
+  FILE_VALIDATION_PRESETS,
+  deleteFile,
+  uploadFile,
+  validateFile,
+} from '../lib/services/storage.service'
+import { createClient } from '../lib/supabase/client'
 import { getMockPortfolioForForms } from '../lib/utils/mock-data'
 
 // Account loader - migrated from Svelte layout server
@@ -100,14 +106,10 @@ export async function action(args: ActionFunctionArgs) {
           return createErrorResponse('No image file provided')
         }
 
-        // Validate image file
-        if (!imageFile.type.startsWith('image/')) {
-          return createErrorResponse('File must be an image')
-        }
-
-        if (imageFile.size > 5 * 1024 * 1024) {
-          // 5MB limit
-          return createErrorResponse('Image must be less than 5MB')
+        // Use centralized file validation
+        const validation = validateFile(imageFile, FILE_VALIDATION_PRESETS.PROFILE_IMAGE)
+        if (!validation.valid) {
+          return createErrorResponse(validation.error || 'Invalid file')
         }
 
         // Generate unique filename - use Supabase auth user ID for RLS policy
@@ -116,42 +118,38 @@ export async function action(args: ActionFunctionArgs) {
           return createErrorResponse('User authentication required')
         }
 
-        const fileExtension = imageFile.type.split('/')[1] || 'jpg'
-        const fileName = `profile-${Date.now()}.${fileExtension}`
-        const filePath = `public/${supabaseUserId}/profile-images/${fileName}`
+        // Use centralized upload helper
+        const uploadResult = await uploadFile(supabase, {
+          file: imageFile,
+          userId: supabaseUserId,
+          folder: 'profile-images',
+          upsert: true,
+        })
 
-        // Upload to Supabase Storage (using public folder for profile images)
-        const { error: uploadError } = await supabase.storage
-          .from('craftd')
-          .upload(filePath, imageFile, {
-            cacheControl: '3600',
-            upsert: true,
-          })
-
-        if (uploadError) {
-          console.error('Supabase upload error:', uploadError)
-          return createErrorResponse('Failed to upload image')
+        if (!uploadResult.success) {
+          console.error('Supabase upload error:', uploadResult.error)
+          return createErrorResponse(uploadResult.error || 'Failed to upload image')
         }
-
-        // Get public URL (since it's in the public folder)
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from('craftd').getPublicUrl(filePath)
 
         // Update portfolio with new profile image URL using Drizzle
         try {
           await db
             .update(portfolios)
-            .set({ profileImageUrl: publicUrl })
+            .set({ profileImageUrl: uploadResult.publicUrl })
             .where(eq(portfolios.userId, user.id))
         } catch (updateError) {
           console.error('Database update error:', updateError)
           // Clean up uploaded file on database error
-          await supabase.storage.from('craftd').remove([filePath])
+          if (uploadResult.filePath) {
+            await deleteFile(supabase, uploadResult.filePath)
+          }
           return createErrorResponse('Failed to update portfolio')
         }
 
-        return createSuccessResponse({ imageUrl: publicUrl }, 'Profile image updated successfully')
+        return createSuccessResponse(
+          { imageUrl: uploadResult.publicUrl },
+          'Profile image updated successfully'
+        )
       }, 'Failed to upload profile image')
     }
 
@@ -225,7 +223,6 @@ export function meta() {
 }
 
 export default function Account() {
-  const { signOut } = useAuth()
   const navigate = useNavigate()
   const submit = useSubmit()
   const loaderData = useLoaderData<typeof loader>()
@@ -241,7 +238,8 @@ export default function Account() {
   const handleSignOut = async () => {
     try {
       setIsSigningOut(true)
-      await signOut()
+      const supabase = await createClient()
+      await supabase.auth.signOut()
       navigate('/')
     } catch (error) {
       console.error('Error signing out:', error)
@@ -287,11 +285,16 @@ export default function Account() {
 
         {/* Profile Information Card */}
         <div className="bg-white shadow rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-              Profile Information
-            </h3>
-            <div className="flex items-start justify-between mb-6">
+          <div className="px-4 py-5 sm:p-6 space-y-6">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">Profile Information</h3>
+
+            <ProfileImageUpload
+              currentImageUrl={portfolio.profileImageUrl}
+              onImageUploaded={handleImageUpload}
+              onError={handleImageError}
+            />
+
+            <div className="flex items-start justify-between">
               <div className="flex items-center space-x-4">
                 <div>
                   <h3 className="text-lg font-medium">{userDisplayName}</h3>
@@ -310,12 +313,6 @@ export default function Account() {
               </button>
             </div>
 
-            <ProfileImageUpload
-              currentImageUrl={portfolio.profileImageUrl}
-              onImageUploaded={handleImageUpload}
-              onError={handleImageError}
-            />
-
             {uploadError && (
               <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
                 <p className="text-sm text-red-600">{uploadError}</p>
@@ -329,7 +326,6 @@ export default function Account() {
           {portfolio ? (
             <div className="bg-white shadow rounded-lg">
               <div className="px-4 py-5 sm:p-6">
-                {/* Mobile: Stack everything vertically */}
                 <div className="space-y-3 sm:hidden">
                   <div className="flex items-center justify-between">
                     <h2 className="text-lg font-semibold">Portfolio</h2>
@@ -348,7 +344,6 @@ export default function Account() {
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <h3 className="text-base font-medium text-gray-900">{portfolio.title}</h3>
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           portfolio.isPublic
@@ -367,7 +362,6 @@ export default function Account() {
                   <div className="flex items-center space-x-3">
                     <h2 className="text-lg font-semibold">Portfolio</h2>
                     <div className="flex items-center space-x-2">
-                      <h3 className="text-base font-medium text-gray-900">{portfolio.title}</h3>
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           portfolio.isPublic

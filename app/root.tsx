@@ -9,7 +9,7 @@ import {
   Scripts,
   ScrollRestoration,
 } from 'react-router'
-import { AuthProvider } from './hooks/useAuth'
+
 import { ToastProvider } from './hooks/useToast'
 
 import './app.css'
@@ -33,6 +33,11 @@ export const links = () => [
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await getAuthenticatedUser(request)
   return { user }
+}
+
+// Add route handle to enable accessing loader data from child routes
+export const handle = {
+  id: 'root',
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -59,14 +64,12 @@ const queryClient = new QueryClient()
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <ToastProvider>
-          <Navigation />
-          <div className="font-['SF_Pro_Display',sans-serif] pt-16">
-            <Outlet />
-          </div>
-        </ToastProvider>
-      </AuthProvider>
+      <ToastProvider>
+        <Navigation />
+        <div className="font-['SF_Pro_Display',sans-serif] pt-16">
+          <Outlet />
+        </div>
+      </ToastProvider>
     </QueryClientProvider>
   )
 }

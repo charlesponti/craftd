@@ -131,7 +131,7 @@ function SkillsEditorSection({ skills: initialSkills, portfolioId }: SkillsEdito
   const isSaving = fetcher.state === 'submitting'
 
   return (
-    <section className="p-6 bg-white shadow-md rounded-lg mt-8">
+    <section className="p-6 bg-white shadow-md rounded-lg">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold text-gray-800">Skills</h2>
         <div>

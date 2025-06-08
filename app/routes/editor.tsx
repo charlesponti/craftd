@@ -41,7 +41,7 @@ export async function loader(args: LoaderFunctionArgs) {
 const editorSteps = [
   {
     path: '/editor',
-    value: 'basic',
+    value: 'editor',
     label: 'Basic Info',
     icon: User,
   },
@@ -128,8 +128,6 @@ export default function EditorLayout() {
           {/* Sidebar Navigation */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-8">
-              <h2 className="font-medium text-gray-900 mb-6">Edit Sections</h2>
-
               <nav className="space-y-2">
                 {editorSteps.map((step, index) => {
                   const isActive = step.value === location.pathname.split('/').pop()
@@ -140,7 +138,7 @@ export default function EditorLayout() {
                     <Link
                       key={step.path}
                       to={step.path}
-                      className={`flex items-start gap-3 p-3 rounded-lg transition-colors ${
+                      className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
                         isActive
                           ? 'bg-blue-50 border border-blue-200 text-blue-900'
                           : 'hover:bg-gray-50 text-gray-700'
@@ -172,24 +170,6 @@ export default function EditorLayout() {
                   )
                 })}
               </nav>
-
-              {/* Progress */}
-              <div className="mt-8 pt-6 border-t border-gray-200">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">Progress</span>
-                  <span className="text-sm text-gray-600">
-                    {Math.max(0, currentStepIndex)}/{editorSteps.length}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                    style={{
-                      width: `${Math.max(0, (currentStepIndex / editorSteps.length) * 100)}%`,
-                    }}
-                  />
-                </div>
-              </div>
             </div>
           </div>
 

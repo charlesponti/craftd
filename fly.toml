@@ -15,6 +15,14 @@ primary_region = "lax"
   min_machines_running = 0
   processes = ["app"]
 
+[checks]
+  [checks.health]
+    grace_period = "30s"
+    interval = "15s"
+    timeout = "10s"
+    method = "GET"
+    path = "/health"
+
 [[vm]]
   memory = "1gb"
   cpu_kind = "shared"

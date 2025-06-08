@@ -1,5 +1,4 @@
 import type { LoaderFunctionArgs } from "react-router";
-import { json } from "react-router";
 import { getServerEnv } from "~/lib/env";
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -26,7 +25,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     const responseTime = Date.now() - start;
 
-    return json({
+    return Response.json({
       status: "healthy",
       timestamp: new Date().toISOString(),
       responseTime,
@@ -34,7 +33,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       version: process.env.npm_package_version || "unknown",
     });
   } catch (error) {
-    return json(
+    return Response.json(
       {
         status: "unhealthy",
         timestamp: new Date().toISOString(),

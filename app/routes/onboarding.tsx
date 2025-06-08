@@ -1,5 +1,5 @@
 import { CheckCircle2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { AIProcessingAnimation } from '../components/AIProcessingAnimation'
 import { UploadResumeForm } from '../components/UploadResumeForm'
@@ -10,19 +10,8 @@ export default function Onboarding() {
   const [conversion, setConversion] = useState<ConvertedResumeData | null>(null)
   const navigate = useNavigate()
 
-  const steps = [
-    { id: 'upload', title: 'Upload Resume', icon: '📄' },
-    { id: 'processing', title: 'Processing', icon: '⏳' },
-    { id: 'overview', title: 'Overview', icon: '👁️' },
-    { id: 'personal', title: 'Personal', icon: '👤' },
-    { id: 'experience', title: 'Experience', icon: '💼' },
-    { id: 'skills', title: 'Skills', icon: '🛠️' },
-    { id: 'finalize', title: 'Launch', icon: '🚀' },
-  ]
-
   const handleUploadStart = () => setCurrentStep(1)
   const handleUploadComplete = (data: ConvertedResumeData) => {
-    // Data is always saved for authenticated users, so redirect directly to completion
     navigate('/onboarding/complete?completed=true')
   }
   const handleUploadError = (error: string) => {
@@ -30,27 +19,8 @@ export default function Onboarding() {
     setCurrentStep(0)
   }
 
-  // Redirect to review page after showing success animation
-  useEffect(() => {
-    if (currentStep === 2 && conversion) {
-      const timer = setTimeout(() => {
-        navigate('/onboarding/review?new=true', { state: { conversion } })
-      }, 1200)
-      return () => clearTimeout(timer)
-    }
-  }, [currentStep, conversion, navigate])
-
   return (
     <div className="min-h-screen flex flex-col items-center justify-center">
-      {/* Progress */}
-      <div className="flex space-x-2 mb-6">
-        {steps.map((s, i) => (
-          <span key={s.id} className={i === currentStep ? 'text-black' : 'text-gray-400'}>
-            {s.icon}
-          </span>
-        ))}
-      </div>
-
       {/* Step Content */}
       {currentStep === 0 && (
         <UploadResumeForm

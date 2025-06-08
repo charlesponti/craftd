@@ -7,7 +7,7 @@ on:
   workflow_dispatch: # Allow manual deployment
 
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -21,6 +21,42 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run type checking
+        run: npm run typecheck
+
+      - name: Run tests
+        run: npm test
+        continue-on-error: true # Don't fail if no tests exist yet
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate environment configuration
+        env:
+          VITE_PUBLIC_SUPABASE_URL: ${{ secrets.VITE_PUBLIC_SUPABASE_URL }}
+          VITE_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.VITE_PUBLIC_SUPABASE_ANON_KEY }}
+          VITE_DATABASE_URL: ${{ secrets.VITE_DATABASE_URL }}
+        run: |
+          if [ -z "$VITE_PUBLIC_SUPABASE_URL" ]; then echo "Missing VITE_PUBLIC_SUPABASE_URL"; exit 1; fi
+          if [ -z "$VITE_PUBLIC_SUPABASE_ANON_KEY" ]; then echo "Missing VITE_PUBLIC_SUPABASE_ANON_KEY"; exit 1; fi
+          if [ -z "$VITE_DATABASE_URL" ]; then echo "Missing VITE_DATABASE_URL"; exit 1; fi
 
       - name: Run database migrations
         env:
@@ -42,4 +78,9 @@ jobs:
             --build-arg VITE_PUBLIC_SUPABASE_URL="$VITE_PUBLIC_SUPABASE_URL" \
             --build-arg VITE_PUBLIC_SUPABASE_ANON_KEY="$VITE_PUBLIC_SUPABASE_ANON_KEY" \
             --build-arg VITE_DATABASE_URL="$VITE_DATABASE_URL" \
-            --remote-only 
+            --remote-only
+
+      - name: Post-deployment health check
+        run: |
+          sleep 30 # Wait for deployment to stabilize
+          curl --fail https://craftd.fly.dev/health || exit 1 

@@ -155,73 +155,144 @@ function WorkExperienceEditorSection({
   const isSaving = fetcher.state === 'submitting'
 
   return (
-    <section className="section">
-      <h2>Work Experience</h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="form">
-        {fields.map((field, index) => (
-          <div key={field.id} className="form-row">
-            <div className="grid-2">
-              <div>
-                <label htmlFor={`workExperiences.${index}.role`}>Job Title</label>
-                <input
-                  id={`workExperiences.${index}.role`}
-                  type="text"
-                  {...register(`workExperiences.${index}.role` as const)}
+    <div className="container mx-auto p-lg">
+      <div className="card">
+        <div className="mb-xl">
+          <h2 className="text-2xl font-semibold text-foreground mb-sm">Work Experience</h2>
+          <p className="text-muted text-muted-foreground">
+            Add your professional work experience and achievements.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-2xl">
+          {fields.map((field, index) => (
+            <div key={field.id} className="card bg-muted/50 space-y-lg">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium text-foreground">Experience #{index + 1}</h3>
+                {fields.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => remove(index)}
+                    className="btn btn-ghost btn-sm text-destructive hover:bg-destructive/10"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
+                <div className="form-group">
+                  <label htmlFor={`workExperiences.${index}.role`} className="label">
+                    Job Title *
+                  </label>
+                  <input
+                    id={`workExperiences.${index}.role`}
+                    type="text"
+                    {...register(`workExperiences.${index}.role` as const)}
+                    className="input"
+                    placeholder="e.g., Senior Software Engineer"
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor={`workExperiences.${index}.company`} className="label">
+                    Company *
+                  </label>
+                  <input
+                    id={`workExperiences.${index}.company`}
+                    type="text"
+                    {...register(`workExperiences.${index}.company` as const)}
+                    className="input"
+                    placeholder="e.g., Google"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
+                <div className="form-group">
+                  <label htmlFor={`workExperiences.${index}.startDate`} className="label">
+                    Start Date *
+                  </label>
+                  <input
+                    id={`workExperiences.${index}.startDate`}
+                    type="date"
+                    {...register(`workExperiences.${index}.startDate` as const)}
+                    className="input"
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor={`workExperiences.${index}.endDate`} className="label">
+                    End Date
+                  </label>
+                  <input
+                    id={`workExperiences.${index}.endDate`}
+                    type="date"
+                    {...register(`workExperiences.${index}.endDate` as const)}
+                    className="input"
+                    placeholder="Leave empty if current position"
+                  />
+                  <p className="text-xs text-muted-foreground mt-xs">
+                    Leave empty if this is your current position
+                  </p>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor={`workExperiences.${index}.description`} className="label">
+                  Job Description *
+                </label>
+                <textarea
+                  id={`workExperiences.${index}.description`}
+                  {...register(`workExperiences.${index}.description` as const)}
+                  className="textarea"
+                  rows={4}
+                  placeholder="Describe your role, responsibilities, and key achievements..."
                 />
               </div>
-              <div>
-                <label htmlFor={`workExperiences.${index}.company`}>Company</label>
-                <input
-                  id={`workExperiences.${index}.company`}
-                  type="text"
-                  {...register(`workExperiences.${index}.company` as const)}
-                />
-              </div>
-            </div>
-            <div className="grid-2">
-              <div>
-                <label htmlFor={`workExperiences.${index}.startDate`}>Start Date</label>
-                <input
-                  id={`workExperiences.${index}.startDate`}
-                  type="date"
-                  {...register(`workExperiences.${index}.startDate` as const)}
-                />
-              </div>
-              <div>
-                <label htmlFor={`workExperiences.${index}.endDate`}>
-                  End Date (leave empty if current)
+
+              <div className="form-group">
+                <label htmlFor={`workExperiences.${index}.metrics`} className="label">
+                  Key Metrics & Achievements
                 </label>
                 <input
-                  id={`workExperiences.${index}.endDate`}
-                  type="date"
-                  {...register(`workExperiences.${index}.endDate` as const)}
+                  id={`workExperiences.${index}.metrics`}
+                  type="text"
+                  {...register(`workExperiences.${index}.metrics` as const)}
+                  className="input"
+                  placeholder="e.g., Increased team productivity by 40%, Led team of 8 engineers"
                 />
+                <p className="text-xs text-muted-foreground mt-xs">
+                  Quantifiable achievements and metrics from this role
+                </p>
               </div>
             </div>
-            <div>
-              <label htmlFor={`workExperiences.${index}.description`}>Description</label>
-              <textarea
-                id={`workExperiences.${index}.description`}
-                {...register(`workExperiences.${index}.description` as const)}
-              />
-            </div>
-            {fields.length > 1 && (
-              <button type="button" onClick={() => remove(index)} className="btn-link">
-                Remove Experience
-              </button>
-            )}
+          ))}
+
+          <div className="flex flex-col sm:flex-row gap-md">
+            <button
+              type="button"
+              onClick={handleAddNewExperience}
+              className="btn btn-outline flex-1"
+            >
+              Add New Experience
+            </button>
+
+            <button
+              type="submit"
+              disabled={isSaving || !isDirty}
+              className="btn btn-primary flex-1"
+            >
+              {isSaving ? 'Saving...' : 'Save All Changes'}
+            </button>
           </div>
-        ))}
 
-        <button type="button" onClick={handleAddNewExperience} className="btn-dashed">
-          Add New Experience
-        </button>
-
-        <button type="submit" disabled={isSaving || !isDirty} className="btn btn-primary btn-full">
-          Save All Work Experience Changes
-        </button>
-      </form>
-    </section>
+          {!isDirty && (
+            <p className="text-sm text-muted-foreground text-center">
+              Make changes to your work experience to enable saving.
+            </p>
+          )}
+        </form>
+      </div>
+    </div>
   )
 }
 

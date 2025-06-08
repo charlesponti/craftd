@@ -146,7 +146,7 @@ function ProjectsEditorSection({
   }
 
   return (
-    <section className="p-6 bg-white shadow-md rounded-lg mt-8">
+    <section className="p-6 bg-white shadow-md rounded-lg">
       <h2 className="text-2xl font-semibold mb-4">Projects</h2>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {fields.map((field, index) => (

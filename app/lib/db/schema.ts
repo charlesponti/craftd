@@ -408,6 +408,161 @@ export const analytics = pgTable(
   ]
 );
 
+// Companies table - for job application companies
+export const companies = pgTable(
+  "companies",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: varchar("name", { length: 255 }).notNull(),
+    website: varchar("website", { length: 500 }),
+    industry: varchar("industry", { length: 100 }),
+    size: integer("size"),
+    location: varchar("location", { length: 255 }),
+    description: text("description"),
+
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("companies_name_idx").on(table.name),
+    index("companies_industry_idx").on(table.industry),
+    index("companies_size_idx").on(table.size),
+  ]
+);
+
+// Job Applications table - for tracking job applications
+export const jobApplications = pgTable(
+  "job_applications",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    companyId: uuid("company_id")
+      .references(() => companies.id, { onDelete: "cascade" })
+      .notNull(),
+
+    position: varchar("position", { length: 255 }).notNull(),
+    status: varchar("status", { length: 50 }).notNull(),
+    startDate: timestamp("start_date").notNull(),
+    endDate: timestamp("end_date"),
+
+    location: varchar("location", { length: 255 }),
+    jobPosting: text("job_posting"),
+    salaryQuoted: text("salary_quoted"),
+    salaryAccepted: text("salary_accepted"),
+    coverLetter: text("cover_letter"),
+    resume: text("resume"),
+    jobId: varchar("job_id", { length: 100 }),
+    link: varchar("link", { length: 500 }),
+    phoneScreen: text("phone_screen"),
+    reference: boolean("reference").default(false).notNull(),
+
+    // Enhanced fields
+    interviewDates: json("interview_dates")
+      .$type<
+        Array<{
+          type: "phone" | "video" | "onsite" | "technical" | "final";
+          date: string;
+          duration?: number;
+          interviewer?: string;
+          notes?: string;
+        }>
+      >()
+      .default([]),
+
+    companyNotes: text("company_notes"), // Research about the company
+    negotiationNotes: text("negotiation_notes"), // Salary negotiation tracking
+
+    stages: json("stages")
+      .$type<
+        Array<{
+          stage: string;
+          date: string;
+          notes?: string;
+        }>
+      >()
+      .default([]),
+
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("job_applications_user_id_idx").on(table.userId),
+    index("job_applications_company_id_idx").on(table.companyId),
+    index("job_applications_status_idx").on(table.status),
+    index("job_applications_start_date_idx").on(table.startDate),
+    // Composite indexes for common queries
+    index("job_applications_user_status_idx").on(table.userId, table.status),
+    index("job_applications_user_date_idx").on(table.userId, table.startDate),
+    // Check constraints
+    check(
+      "job_applications_status_check",
+      sql`${table.status} IN ('APPLIED', 'PHONE_SCREEN', 'INTERVIEW', 'FINAL_INTERVIEW', 'OFFER', 'ACCEPTED', 'REJECTED', 'WITHDRAWN')`
+    ),
+  ]
+);
+
+// Application Notes table - for detailed notes and feedback
+export const applicationNotes = pgTable(
+  "application_notes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    applicationId: uuid("application_id")
+      .references(() => jobApplications.id, { onDelete: "cascade" })
+      .notNull(),
+
+    type: varchar("type", { length: 50 }).notNull(), // 'general', 'interview', 'feedback', 'research'
+    title: varchar("title", { length: 255 }),
+    content: text("content").notNull(),
+    isPrivate: boolean("is_private").default(true).notNull(),
+
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("application_notes_app_id_idx").on(table.applicationId),
+    index("application_notes_type_idx").on(table.type),
+    index("application_notes_created_at_idx").on(table.createdAt),
+    // Check constraint for note types
+    check(
+      "application_notes_type_check",
+      sql`${table.type} IN ('general', 'interview', 'feedback', 'research', 'follow_up')`
+    ),
+  ]
+);
+
+// Application Files table - for file attachments
+export const applicationFiles = pgTable(
+  "application_files",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    applicationId: uuid("application_id")
+      .references(() => jobApplications.id, { onDelete: "cascade" })
+      .notNull(),
+
+    type: varchar("type", { length: 50 }).notNull(), // 'resume', 'cover_letter', 'portfolio', 'other'
+    fileName: varchar("file_name", { length: 255 }).notNull(),
+    fileUrl: text("file_url"), // For external files
+    fileContent: text("file_content"), // For text content
+    mimeType: varchar("mime_type", { length: 100 }),
+    fileSize: integer("file_size"), // in bytes
+
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("application_files_app_id_idx").on(table.applicationId),
+    index("application_files_type_idx").on(table.type),
+    index("application_files_created_at_idx").on(table.createdAt),
+    // Check constraint for file types
+    check(
+      "application_files_type_check",
+      sql`${table.type} IN ('resume', 'cover_letter', 'portfolio', 'offer_letter', 'other')`
+    ),
+  ]
+);
+
 // Type exports for Drizzle ORM tables
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -435,6 +590,56 @@ export type NewTestimonial = typeof testimonials.$inferInsert;
 
 export type Analytics = typeof analytics.$inferSelect;
 export type NewAnalytics = typeof analytics.$inferInsert;
+
+export type Company = typeof companies.$inferSelect;
+export type NewCompany = typeof companies.$inferInsert;
+
+export type JobApplication = typeof jobApplications.$inferSelect;
+export type NewJobApplication = typeof jobApplications.$inferInsert;
+
+export type ApplicationNote = typeof applicationNotes.$inferSelect;
+export type NewApplicationNote = typeof applicationNotes.$inferInsert;
+
+export type ApplicationFile = typeof applicationFiles.$inferSelect;
+export type NewApplicationFile = typeof applicationFiles.$inferInsert;
+
+// Interview data type (extracted from database schema)
+export interface InterviewEntry {
+  type: "phone" | "video" | "onsite" | "technical" | "final";
+  date: string;
+  duration?: number;
+  interviewer?: string;
+  notes?: string;
+}
+
+// Enhanced application type with company data
+export interface ApplicationWithCompany
+  extends Omit<JobApplication, "companyId"> {
+  company: Company | null;
+  interviewDates: InterviewEntry[] | null;
+  companyNotes: string | null;
+  negotiationNotes: string | null;
+}
+
+// Complete application data with all relations
+export interface ApplicationWithRelations {
+  application: ApplicationWithCompany;
+  notes: ApplicationNote[];
+  files: ApplicationFile[];
+}
+
+// Type for job application updates
+export interface JobApplicationUpdate {
+  position?: string;
+  status?: string;
+  location?: string | null;
+  jobPosting?: string | null;
+  salaryQuoted?: string | null;
+  salaryAccepted?: string | null;
+  companyNotes?: string | null;
+  negotiationNotes?: string | null;
+  updatedAt?: Date;
+}
 
 // Composite types for portfolio with relations
 export interface PortfolioWithRelations extends Portfolio {

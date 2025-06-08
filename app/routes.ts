@@ -17,6 +17,9 @@ export default [
   route("/onboarding", "routes/onboarding.tsx"),
   route("/onboarding/complete", "routes/onboarding.complete.tsx"),
   route("/demo", "routes/demo.tsx"),
+  route("/job-applications", "routes/job-applications.tsx"),
+  route("/job-applications/create", "routes/job-applications.create.tsx"),
+  route("/job-applications/:id", "routes/job-applications.$id.tsx"),
   route("/p/:slug", "routes/p.$slug.tsx"),
   layout("routes/editor.tsx", [
     route("/editor", "routes/editor.basic.tsx"),

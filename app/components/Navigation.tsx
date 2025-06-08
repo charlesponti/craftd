@@ -157,6 +157,18 @@ export default function Navigation() {
                     Editor
                   </Link>
 
+                  <Link
+                    to="/job-applications"
+                    className={cn(
+                      'btn btn-ghost px-lg py-sm text-sm font-medium rounded-md',
+                      isCurrentPage('/job-applications')
+                        ? 'bg-accent text-accent-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    Job Applications
+                  </Link>
+
                   {/* Account dropdown */}
                   <Link
                     to="/account"
@@ -237,6 +249,13 @@ export default function Navigation() {
                       className="block px-md py-sm text-base font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-fast"
                     >
                       Portfolio Editor
+                    </Link>
+                    <Link
+                      to="/job-applications"
+                      onClick={closeMenu}
+                      className="block px-md py-sm text-base font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-fast"
+                    >
+                      Job Applications
                     </Link>
                     <button
                       type="button"

@@ -13,7 +13,7 @@
     "test": "vitest run --passWithNoTests",
     "test:ui": "vitest run --ui",
     "test:coverage": "vitest run --coverage",
-    "typecheck": "npm run cf-typegen && react-router typegen && tsc -b",
+    "typecheck": "react-router typegen && tsc -b",
     "db:up": "docker-compose up -d",
     "db:down": "docker-compose down",
     "db:generate": "npx drizzle-kit generate",
@@ -67,7 +67,6 @@
     "typescript": "^5.8.3",
     "vite": "^6.3.3",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.2.2",
-    "wrangler": "^4.13.2"
+    "vitest": "^3.2.2"
   }
 }

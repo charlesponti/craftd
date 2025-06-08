@@ -52,10 +52,6 @@ logs/
 .pnp
 .pnp.js
 
-# Cloudflare
-.wrangler/
-wrangler.toml
-
 # Database
 *.db
 *.sqlite

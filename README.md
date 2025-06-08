@@ -50,25 +50,7 @@ npm run build
 
 ## Deployment
 
-Deployment is done using the Wrangler CLI.
-
-To build and deploy directly to production:
-
-```sh
-npm run deploy
-```
-
-To deploy a preview URL:
-
-```sh
-npx wrangler versions upload
-```
-
-You can then promote a version to production after verification or roll it out progressively.
-
-```sh
-npx wrangler versions deploy
-```
+Deployments are performed by the Github Action at: [Deploy](./.github/workflows/fly-deploy.yml)
 
 ## Styling
 

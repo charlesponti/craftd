@@ -22,6 +22,8 @@ primary_region = "lax"
     timeout = "10s"
     method = "GET"
     path = "/health"
+    port = 8080
+    type = "http"
 
 [[vm]]
   memory = "1gb"

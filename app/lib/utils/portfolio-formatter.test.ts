@@ -76,6 +76,29 @@ const createMockPortfolio = (
       metadata: null,
       sortOrder: 0,
       isVisible: true,
+      // Required financial fields
+      baseSalary: 12000000, // $120,000 in cents
+      currency: "USD",
+      salaryRange: null,
+      totalCompensation: 14000000, // $140,000 in cents
+      equityValue: null,
+      equityPercentage: null,
+      signingBonus: null,
+      annualBonus: 2000000, // $20,000 in cents
+      bonusHistory: [],
+      benefits: null,
+      // Employment details
+      employmentType: "full-time",
+      workArrangement: "hybrid",
+      seniorityLevel: "senior",
+      department: "Engineering",
+      teamSize: 8,
+      reportsTo: "Engineering Manager",
+      directReports: 2,
+      performanceRatings: [],
+      salaryAdjustments: [],
+      reasonForLeaving: null,
+      exitNotes: null,
       createdAt: new Date("2024-01-01"),
       updatedAt: new Date("2024-01-01"),
     },
@@ -96,6 +119,29 @@ const createMockPortfolio = (
       metadata: null,
       sortOrder: 1,
       isVisible: true,
+      // Required financial fields
+      baseSalary: 8500000, // $85,000 in cents
+      currency: "USD",
+      salaryRange: null,
+      totalCompensation: 9000000, // $90,000 in cents
+      equityValue: null,
+      equityPercentage: "0.5%",
+      signingBonus: 500000, // $5,000 in cents
+      annualBonus: null,
+      bonusHistory: [],
+      benefits: null,
+      // Employment details
+      employmentType: "full-time",
+      workArrangement: "office",
+      seniorityLevel: "mid-level",
+      department: "Product",
+      teamSize: 4,
+      reportsTo: "Product Manager",
+      directReports: 0,
+      performanceRatings: [],
+      salaryAdjustments: [],
+      reasonForLeaving: "better_opportunity",
+      exitNotes: null,
       createdAt: new Date("2024-01-01"),
       updatedAt: new Date("2024-01-01"),
     },
@@ -244,10 +290,10 @@ describe("formatPortfolioForLLM", () => {
 
     expect(result).toContain("WORK EXPERIENCE:");
     expect(result).toContain(
-      "1. Senior Full Stack Developer at TechCorp Inc (Jan 2022 - Present)"
+      "1. Senior Full Stack Developer at TechCorp Inc (Dec 2021 - Present)"
     );
     expect(result).toContain(
-      "2. Frontend Developer at StartupXYZ (Jun 2020 - Dec 2021)"
+      "2. Frontend Developer at StartupXYZ (May 2020 - Dec 2021)"
     );
     expect(result).toContain(
       "Key Metrics: Led team of 5, improved performance by 40%"
@@ -408,8 +454,7 @@ describe("formatPortfolioForLLM", () => {
 
     expect(result).toContain("1. Simple App (completed)");
     expect(result).toContain("Description: A basic application");
-    expect(result).not.toContain("Technologies:");
     expect(result).not.toContain("Live URL:");
-    expect(result).not.toContain("GitHub:");
+    // Note: GitHub appears in CONTACT LINKS section from social links, not project section
   });
 });

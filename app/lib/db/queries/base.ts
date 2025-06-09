@@ -169,3 +169,45 @@ export function extractJobApplications(
     company: result.company,
   }));
 }
+
+// Get a specific work experience by ID for a user
+export async function getWorkExperienceById(
+  userId: string,
+  experienceId: string
+) {
+  const result = await db
+    .select()
+    .from(workExperiences)
+    .innerJoin(portfolios, eq(workExperiences.portfolioId, portfolios.id))
+    .where(
+      and(eq(portfolios.userId, userId), eq(workExperiences.id, experienceId))
+    )
+    .limit(1);
+
+  return result[0]?.work_experiences || null;
+}
+
+// Update a work experience
+export async function updateWorkExperience(
+  userId: string,
+  experienceId: string,
+  updates: Partial<WorkExperience>
+) {
+  // First verify the user owns this work experience
+  const existing = await getWorkExperienceById(userId, experienceId);
+  if (!existing) {
+    throw new Error("Work experience not found or access denied");
+  }
+
+  // Update the work experience
+  const result = await db
+    .update(workExperiences)
+    .set({
+      ...updates,
+      updatedAt: new Date(),
+    })
+    .where(eq(workExperiences.id, experienceId))
+    .returning();
+
+  return result[0];
+}

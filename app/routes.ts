@@ -2,6 +2,7 @@ import {
   type RouteConfig,
   index,
   layout,
+  prefix,
   route,
 } from "@react-router/dev/routes";
 
@@ -14,7 +15,11 @@ export default [
   route("/api/resume/convert", "routes/api.resume.convert.ts"),
   route("/api/validate-slug", "routes/api.validate-slug.ts"),
   route("/auth/callback", "routes/auth.callback.ts"),
-  route("/career/applications", "routes/career.applications.tsx"),
+  ...prefix("/career", [
+    index("routes/career.tsx"),
+    route("/applications", "routes/career.applications.tsx"),
+    route("/experience/:id", "routes/career.experience.$id.tsx"),
+  ]),
   route("/onboarding", "routes/onboarding.tsx"),
   route("/onboarding/complete", "routes/onboarding.complete.tsx"),
   route("/demo", "routes/demo.tsx"),

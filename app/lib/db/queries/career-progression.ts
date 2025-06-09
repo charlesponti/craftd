@@ -5,8 +5,8 @@ import type {
 } from "../schema";
 import {
   extractWorkExperiences,
-  getUserCareerEvents,
-  getUserWorkExperiences,
+  type getUserCareerEvents,
+  type getUserWorkExperiences,
 } from "./base";
 import {
   calculatePercentageChange,
@@ -19,15 +19,10 @@ import {
  * Career progression and experience tracking queries
  */
 
-export async function getCareerProgressionSummary(
-  userId: string
-): Promise<CareerProgressionSummary> {
-  // Get work experiences and career events
-  const [experiencesResult, eventsResult] = await Promise.all([
-    getUserWorkExperiences(userId),
-    getUserCareerEvents(userId),
-  ]);
-
+export function getCareerProgressionSummary(
+  experiencesResult: Awaited<ReturnType<typeof getUserWorkExperiences>>,
+  eventsResult: Awaited<ReturnType<typeof getUserCareerEvents>>
+): CareerProgressionSummary {
   if (experiencesResult.length === 0) {
     return {
       totalExperience: 0,
@@ -160,16 +155,33 @@ function buildSalaryByYear(
   for (const exp of workExps) {
     if (!exp.startDate || !exp.baseSalary) continue;
 
-    const startYear = new Date(exp.startDate).getFullYear();
-    const endYear = exp.endDate
-      ? new Date(exp.endDate).getFullYear()
-      : new Date().getFullYear();
+    const startDate = new Date(exp.startDate);
+    const endDate = exp.endDate ? new Date(exp.endDate) : new Date();
+
+    const startYear = startDate.getFullYear();
+    const endYear = endDate.getFullYear();
 
     for (let year = startYear; year <= endYear; year++) {
+      // Calculate the actual months worked in this year
+      const yearStart = new Date(year, 0, 1); // January 1st of the year
+      const yearEnd = new Date(year, 11, 31); // December 31st of the year
+
+      // Find the overlap between the employment period and this year
+      const periodStart = startDate > yearStart ? startDate : yearStart;
+      const periodEnd = endDate < yearEnd ? endDate : yearEnd;
+
+      // Calculate months worked in this year
+      const monthsWorked = calculateMonthsWorked(periodStart, periodEnd);
+      const monthlyFraction = monthsWorked / 12;
+
+      // Prorate the salary and total compensation
+      const annualSalary = getCurrentSalary(exp);
+      const annualTotalComp = exp.totalCompensation || annualSalary;
+
       salaryByYear.push({
         year,
-        salary: getCurrentSalary(exp),
-        totalComp: exp.totalCompensation || getCurrentSalary(exp),
+        salary: Math.round(annualSalary * monthlyFraction),
+        totalComp: Math.round(annualTotalComp * monthlyFraction),
         company: exp.company,
         title: exp.role,
       });
@@ -177,6 +189,41 @@ function buildSalaryByYear(
   }
 
   return salaryByYear;
+}
+
+function calculateMonthsWorked(startDate: Date, endDate: Date): number {
+  const startYear = startDate.getFullYear();
+  const startMonth = startDate.getMonth();
+  const startDay = startDate.getDate();
+
+  const endYear = endDate.getFullYear();
+  const endMonth = endDate.getMonth();
+  const endDay = endDate.getDate();
+
+  // Calculate total months between the dates
+  let months = (endYear - startYear) * 12 + (endMonth - startMonth);
+
+  // Add partial months based on days
+  // If the end day is greater than or equal to start day, we have a full month
+  // Otherwise, we need to subtract a fraction
+  if (endDay >= startDay) {
+    months += 1; // Include the final month
+  } else {
+    // Calculate the fraction of the final month
+    const daysInEndMonth = new Date(endYear, endMonth + 1, 0).getDate();
+    const fractionOfMonth = endDay / daysInEndMonth;
+    months += fractionOfMonth;
+  }
+
+  // Handle the starting month fraction
+  if (startDay > 1) {
+    const daysInStartMonth = new Date(startYear, startMonth + 1, 0).getDate();
+    const daysWorkedInStartMonth = daysInStartMonth - startDay + 1;
+    const startMonthFraction = daysWorkedInStartMonth / daysInStartMonth;
+    months = months - 1 + startMonthFraction;
+  }
+
+  return Math.max(0, months);
 }
 
 function buildLevelProgression(
@@ -207,10 +254,9 @@ function buildLevelProgression(
   return levelProgression;
 }
 
-export async function getWorkExperiencesWithFinancials(
-  userId: string
-): Promise<WorkExperienceWithFinancials[]> {
-  const experiencesResult = await getUserWorkExperiences(userId);
+export function getWorkExperiencesWithFinancials(
+  experiencesResult: Awaited<ReturnType<typeof getUserWorkExperiences>>
+): WorkExperienceWithFinancials[] {
   const workExps = extractWorkExperiences(experiencesResult);
 
   return workExps.map((exp) => {
@@ -293,12 +339,10 @@ export async function getWorkExperiencesWithFinancials(
   });
 }
 
-export async function getCareerTimeline(userId: string) {
-  const [experiencesResult, eventsResult] = await Promise.all([
-    getUserWorkExperiences(userId),
-    getUserCareerEvents(userId),
-  ]);
-
+export function getCareerTimeline(
+  experiencesResult: Awaited<ReturnType<typeof getUserWorkExperiences>>,
+  eventsResult: Awaited<ReturnType<typeof getUserCareerEvents>>
+) {
   const workExps = extractWorkExperiences(experiencesResult);
   const events = eventsResult;
 

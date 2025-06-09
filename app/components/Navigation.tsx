@@ -1,4 +1,4 @@
-import { MenuIcon, PencilIcon, XIcon } from 'lucide-react'
+import { BriefcaseIcon, MenuIcon, PencilIcon, XIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router'
 import { useUser } from '../hooks/useAuth'
@@ -158,15 +158,16 @@ export default function Navigation() {
                   </Link>
 
                   <Link
-                    to="/job-applications"
+                    to="/career"
                     className={cn(
-                      'btn btn-ghost px-lg py-sm text-sm font-medium rounded-md',
-                      isCurrentPage('/job-applications')
+                      'btn btn-ghost inline-flex gap-sm items-center justify-center px-lg py-sm text-sm font-medium rounded-md',
+                      isCurrentPage('/career')
                         ? 'bg-accent text-accent-foreground'
                         : 'text-muted-foreground hover:text-foreground'
                     )}
                   >
-                    Applications
+                    <BriefcaseIcon className="w-4 h-4" />
+                    Career
                   </Link>
 
                   {/* Account dropdown */}
@@ -251,11 +252,12 @@ export default function Navigation() {
                       Portfolio Editor
                     </Link>
                     <Link
-                      to="/job-applications"
+                      to="/career"
                       onClick={closeMenu}
                       className="block px-md py-sm text-base font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-fast"
                     >
-                      Job Applications
+                      <BriefcaseIcon className="w-4 h-4" />
+                      Career
                     </Link>
                     <button
                       type="button"

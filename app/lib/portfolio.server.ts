@@ -1,5 +1,5 @@
-import { eq, sql } from "drizzle-orm";
-import { db } from "./db";
+import { eq, sql } from 'drizzle-orm'
+import { db } from './db'
 import {
   portfolios,
   portfolioStats,
@@ -15,30 +15,28 @@ import {
   type SocialLinks,
   type Testimonial,
   type WorkExperience,
-} from "./db/schema";
+} from './db/schema'
 
 export interface FullPortfolio extends Portfolio {
-  socialLinks: SocialLinks | null;
-  portfolioStats: PortfolioStats[];
-  workExperiences: WorkExperience[];
-  skills: Skill[];
-  projects: Project[];
-  testimonials: Testimonial[];
+  socialLinks: SocialLinks | null
+  portfolioStats: PortfolioStats[]
+  workExperiences: WorkExperience[]
+  skills: Skill[]
+  projects: Project[]
+  testimonials: Testimonial[]
 }
 
-export async function getFullUserPortfolio(
-  userId: string
-): Promise<FullPortfolio | null> {
+export async function getFullUserPortfolio(userId: string): Promise<FullPortfolio | null> {
   // Get the main portfolio
   const portfolio = await db
     .select()
     .from(portfolios)
     .where(eq(portfolios.userId, userId))
     .limit(1)
-    .then((rows) => rows[0] || null);
+    .then((rows) => rows[0] || null)
 
   if (!portfolio) {
-    return null;
+    return null
   }
 
   // Get all related data in parallel
@@ -50,14 +48,8 @@ export async function getFullUserPortfolio(
     projectsData,
     testimonialsData,
   ] = await Promise.all([
-    db
-      .select()
-      .from(socialLinks)
-      .where(eq(socialLinks.portfolioId, portfolio.id)),
-    db
-      .select()
-      .from(portfolioStats)
-      .where(eq(portfolioStats.portfolioId, portfolio.id)),
+    db.select().from(socialLinks).where(eq(socialLinks.portfolioId, portfolio.id)),
+    db.select().from(portfolioStats).where(eq(portfolioStats.portfolioId, portfolio.id)),
     db
       .select()
       .from(workExperiences)
@@ -65,11 +57,8 @@ export async function getFullUserPortfolio(
       .orderBy(sql`${workExperiences.endDate} DESC NULLS FIRST`),
     db.select().from(skills).where(eq(skills.portfolioId, portfolio.id)),
     db.select().from(projects).where(eq(projects.portfolioId, portfolio.id)),
-    db
-      .select()
-      .from(testimonials)
-      .where(eq(testimonials.portfolioId, portfolio.id)),
-  ]);
+    db.select().from(testimonials).where(eq(testimonials.portfolioId, portfolio.id)),
+  ])
 
   return {
     ...portfolio,
@@ -79,27 +68,25 @@ export async function getFullUserPortfolio(
     skills: skillsData,
     projects: projectsData,
     testimonials: testimonialsData,
-  };
+  }
 }
 
-export async function getFullPortfolioBySlug(
-  slug: string
-): Promise<FullPortfolio | null> {
+export async function getFullPortfolioBySlug(slug: string): Promise<FullPortfolio | null> {
   // Get the main portfolio by slug
   const portfolio = await db
     .select()
     .from(portfolios)
     .where(eq(portfolios.slug, slug))
     .limit(1)
-    .then((rows) => rows[0] || null);
+    .then((rows) => rows[0] || null)
 
   if (!portfolio) {
-    return null;
+    return null
   }
 
   // Only return public and active portfolios
   if (!portfolio.isPublic || !portfolio.isActive) {
-    return null;
+    return null
   }
 
   // Get all related data in parallel
@@ -111,14 +98,8 @@ export async function getFullPortfolioBySlug(
     projectsData,
     testimonialsData,
   ] = await Promise.all([
-    db
-      .select()
-      .from(socialLinks)
-      .where(eq(socialLinks.portfolioId, portfolio.id)),
-    db
-      .select()
-      .from(portfolioStats)
-      .where(eq(portfolioStats.portfolioId, portfolio.id)),
+    db.select().from(socialLinks).where(eq(socialLinks.portfolioId, portfolio.id)),
+    db.select().from(portfolioStats).where(eq(portfolioStats.portfolioId, portfolio.id)),
     db
       .select()
       .from(workExperiences)
@@ -126,11 +107,8 @@ export async function getFullPortfolioBySlug(
       .orderBy(sql`${workExperiences.endDate} DESC NULLS FIRST`),
     db.select().from(skills).where(eq(skills.portfolioId, portfolio.id)),
     db.select().from(projects).where(eq(projects.portfolioId, portfolio.id)),
-    db
-      .select()
-      .from(testimonials)
-      .where(eq(testimonials.portfolioId, portfolio.id)),
-  ]);
+    db.select().from(testimonials).where(eq(testimonials.portfolioId, portfolio.id)),
+  ])
 
   return {
     ...portfolio,
@@ -140,7 +118,7 @@ export async function getFullPortfolioBySlug(
     skills: skillsData,
     projects: projectsData,
     testimonials: testimonialsData,
-  };
+  }
 }
 
 /**
@@ -155,5 +133,5 @@ export async function getFullPortfolioBySlug(
  * - analytics
  */
 export async function deleteUserPortfolio(userId: string): Promise<void> {
-  await db.delete(portfolios).where(eq(portfolios.userId, userId));
+  await db.delete(portfolios).where(eq(portfolios.userId, userId))
 }

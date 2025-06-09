@@ -183,12 +183,8 @@
           "name": "analytics_portfolio_id_portfolios_id_fk",
           "tableFrom": "analytics",
           "tableTo": "portfolios",
-          "columnsFrom": [
-            "portfolio_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["portfolio_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -324,12 +320,8 @@
           "name": "application_files_application_id_job_applications_id_fk",
           "tableFrom": "application_files",
           "tableTo": "job_applications",
-          "columnsFrom": [
-            "application_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["application_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -454,12 +446,8 @@
           "name": "application_notes_application_id_job_applications_id_fk",
           "tableFrom": "application_notes",
           "tableTo": "job_applications",
-          "columnsFrom": [
-            "application_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["application_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -849,12 +837,8 @@
           "name": "job_applications_user_id_users_id_fk",
           "tableFrom": "job_applications",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -862,12 +846,8 @@
           "name": "job_applications_company_id_companies_id_fk",
           "tableFrom": "job_applications",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -992,12 +972,8 @@
           "name": "portfolio_stats_portfolio_id_portfolios_id_fk",
           "tableFrom": "portfolio_stats",
           "tableTo": "portfolios",
-          "columnsFrom": [
-            "portfolio_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["portfolio_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1275,12 +1251,8 @@
           "name": "portfolios_user_id_users_id_fk",
           "tableFrom": "portfolios",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1290,16 +1262,12 @@
         "portfolios_user_id_unique": {
           "name": "portfolios_user_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "user_id"
-          ]
+          "columns": ["user_id"]
         },
         "portfolios_slug_unique": {
           "name": "portfolios_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       },
       "policies": {},
@@ -1542,12 +1510,8 @@
           "name": "projects_portfolio_id_portfolios_id_fk",
           "tableFrom": "projects",
           "tableTo": "portfolios",
-          "columnsFrom": [
-            "portfolio_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["portfolio_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1797,12 +1761,8 @@
           "name": "skills_portfolio_id_portfolios_id_fk",
           "tableFrom": "skills",
           "tableTo": "portfolios",
-          "columnsFrom": [
-            "portfolio_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["portfolio_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1896,12 +1856,8 @@
           "name": "social_links_portfolio_id_portfolios_id_fk",
           "tableFrom": "social_links",
           "tableTo": "portfolios",
-          "columnsFrom": [
-            "portfolio_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["portfolio_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1911,9 +1867,7 @@
         "social_links_portfolio_id_unique": {
           "name": "social_links_portfolio_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "portfolio_id"
-          ]
+          "columns": ["portfolio_id"]
         }
       },
       "policies": {},
@@ -2115,12 +2069,8 @@
           "name": "testimonials_portfolio_id_portfolios_id_fk",
           "tableFrom": "testimonials",
           "tableTo": "portfolios",
-          "columnsFrom": [
-            "portfolio_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["portfolio_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2218,16 +2168,12 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         },
         "users_supabase_user_id_unique": {
           "name": "users_supabase_user_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "supabase_user_id"
-          ]
+          "columns": ["supabase_user_id"]
         }
       },
       "policies": {},
@@ -2456,12 +2402,8 @@
           "name": "work_experiences_portfolio_id_portfolios_id_fk",
           "tableFrom": "work_experiences",
           "tableTo": "portfolios",
-          "columnsFrom": [
-            "portfolio_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["portfolio_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }

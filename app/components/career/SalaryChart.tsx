@@ -81,6 +81,7 @@ export function SalaryChart({ data }: SalaryChartProps) {
         viewBox={`0 0 ${width} ${height}`}
         className="overflow-visible"
       >
+        <title>Salary Chart</title>
         {/* Gradient definition */}
         <defs>
           <linearGradient id="salaryGradient" x1="0%" y1="0%" x2="0%" y2="100%">

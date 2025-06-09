@@ -1,71 +1,65 @@
-import { eq } from "drizzle-orm";
-import { redirect } from "react-router";
-import { db } from "./db";
-import { users } from "./db/schema";
-import { createClient } from "./supabase/server";
-import {
-  createTestUser,
-  defaultTestPortfolio,
-  defaultTestUser,
-} from "./test/mock-data";
+import { eq } from 'drizzle-orm'
+import { redirect } from 'react-router'
+import { db } from './db'
+import { users } from './db/schema'
+import { createClient } from './supabase/server'
+import { createTestUser, defaultTestPortfolio, defaultTestUser } from './test/mock-data'
 
 export interface User {
-  id: string;
-  email: string;
-  name: string;
+  id: string
+  email: string
+  name: string
   supabaseUser?: {
-    id: string;
-    email?: string;
-    user_metadata?: Record<string, unknown>;
-    app_metadata?: Record<string, unknown>;
-  };
+    id: string
+    email?: string
+    user_metadata?: Record<string, unknown>
+    app_metadata?: Record<string, unknown>
+  }
 }
 
 /**
  * Get the authenticated user from request
  */
-export async function getAuthenticatedUser(
-  request: Request
-): Promise<User | null> {
+export async function getAuthenticatedUser(request: Request): Promise<User | null> {
   try {
     // Check for test auth cookie first (e2e testing)
-    const cookieHeader = request.headers.get("Cookie");
+    const cookieHeader = request.headers.get('Cookie')
     const testAuthCookie = cookieHeader
-      ?.split(";")
-      .find((c) => c.trim().startsWith("test-auth-user="))
-      ?.split("=")[1];
+      ?.split(';')
+      .find((c) => c.trim().startsWith('test-auth-user='))
+      ?.split('=')[1]
 
     if (testAuthCookie) {
       try {
-        const testUserData = JSON.parse(decodeURIComponent(testAuthCookie));
+        const testUserData = JSON.parse(decodeURIComponent(testAuthCookie))
         // Create test user with any overrides from cookie
-        const testUser = createTestUser(testUserData);
-        return testUser;
+        const testUser = createTestUser(testUserData)
+        return testUser
       } catch (e) {
-        console.error("Error parsing test auth cookie:", e);
-        return defaultTestUser;
+        console.error('Error parsing test auth cookie:', e)
+        return defaultTestUser
       }
     }
 
-    const { supabase } = createClient(request);
+    const { supabase } = createClient(request)
     const {
       data: { user },
       error,
-    } = await supabase.auth.getUser();
+    } = await supabase.auth.getUser()
 
     if (error || !user) {
-      return null;
+      return null
     }
 
     // Get or create user in our database
-    const email = user.email;
-    if (!email) return null;
+    const email = user.email
+    if (!email) return null
 
     let dbUser = await db
       .select({ id: users.id, email: users.email, name: users.name })
       .from(users)
       .where(eq(users.email, email))
-      .limit(1);
+      .limit(1)
 
     // Create user if doesn't exist
     if (dbUser.length === 0) {
@@ -73,12 +67,12 @@ export async function getAuthenticatedUser(
         .insert(users)
         .values({
           email,
-          name: user.user_metadata?.full_name || "User",
+          name: user.user_metadata?.full_name || 'User',
           supabaseUserId: user.id,
         })
-        .returning({ id: users.id, email: users.email, name: users.name });
+        .returning({ id: users.id, email: users.email, name: users.name })
 
-      dbUser = newUser;
+      dbUser = newUser
     }
 
     return {
@@ -86,10 +80,10 @@ export async function getAuthenticatedUser(
       email: dbUser[0].email,
       name: dbUser[0].name,
       supabaseUser: user,
-    };
+    }
   } catch (error) {
-    console.error("Auth error:", error);
-    return null;
+    console.error('Auth error:', error)
+    return null
   }
 }
 
@@ -98,20 +92,17 @@ export async function getAuthenticatedUser(
  */
 export function requireAuth(user: User | null): User {
   if (!user) {
-    throw redirect("/");
+    throw redirect('/')
   }
-  return user;
+  return user
 }
 
 /**
  * Redirect if already authenticated
  */
-export function redirectIfAuthenticated(
-  user: User | null,
-  redirectTo = "/account"
-) {
+export function redirectIfAuthenticated(user: User | null, redirectTo = '/account') {
   if (user) {
-    throw redirect(redirectTo);
+    throw redirect(redirectTo)
   }
 }
 
@@ -119,19 +110,19 @@ export function redirectIfAuthenticated(
  * Get mock portfolio data for test users
  */
 export function getMockPortfolioData(request: Request) {
-  const cookieHeader = request.headers.get("Cookie");
+  const cookieHeader = request.headers.get('Cookie')
   const testAuthCookie = cookieHeader
-    ?.split(";")
-    .find((c) => c.trim().startsWith("test-auth-user="))
-    ?.split("=")[1];
+    ?.split(';')
+    .find((c) => c.trim().startsWith('test-auth-user='))
+    ?.split('=')[1]
 
   if (testAuthCookie) {
     try {
-      const testUserData = JSON.parse(decodeURIComponent(testAuthCookie));
-      const userId = testUserData.id || "00000000-0000-0000-0000-000000000000";
+      const testUserData = JSON.parse(decodeURIComponent(testAuthCookie))
+      const userId = testUserData.id || '00000000-0000-0000-0000-000000000000'
 
-      const mockPortfolio = defaultTestPortfolio;
-      const portfolioId = "test-portfolio-id";
+      const mockPortfolio = defaultTestPortfolio
+      const portfolioId = 'test-portfolio-id'
 
       return {
         portfolio: {
@@ -160,11 +151,11 @@ export function getMockPortfolioData(request: Request) {
           ...skill,
           portfolioId,
         })),
-      };
+      }
     } catch (e) {
-      console.error("Error parsing test auth cookie for portfolio data:", e);
+      console.error('Error parsing test auth cookie for portfolio data:', e)
     }
   }
 
-  return null;
+  return null
 }

@@ -1,93 +1,84 @@
-import { openai } from "@ai-sdk/openai";
-import { generateObject, generateText } from "ai";
-import type { ActionFunction } from "react-router";
-import { z } from "zod";
-import { getAuthenticatedUser, requireAuth } from "../lib/auth.server";
-import { getFullUserPortfolio } from "../lib/portfolio.server";
-import { formatPortfolioForLLM } from "../lib/utils/portfolio-formatter";
+import { openai } from '@ai-sdk/openai'
+import { generateObject, generateText } from 'ai'
+import type { ActionFunction } from 'react-router'
+import { z } from 'zod'
+import { getAuthenticatedUser, requireAuth } from '../lib/auth.server'
+import { getFullUserPortfolio } from '../lib/portfolio.server'
+import { formatPortfolioForLLM } from '../lib/utils/portfolio-formatter'
 
-const model = openai("gpt-4o");
+const model = openai('gpt-4o')
 
 // Input validation schema
 const customizeResumeSchema = z.object({
-  jobPosting: z
-    .string()
-    .min(100, "Job posting must be at least 100 characters"),
+  jobPosting: z.string().min(100, 'Job posting must be at least 100 characters'),
   resumeFormat: z
-    .enum(["professional", "modern", "technical", "executive"])
-    .default("professional"),
+    .enum(['professional', 'modern', 'technical', 'executive'])
+    .default('professional'),
   focusAreas: z.array(z.string()).optional().default([]),
-  targetLength: z.enum(["concise", "standard", "detailed"]).default("standard"),
-});
+  targetLength: z.enum(['concise', 'standard', 'detailed']).default('standard'),
+})
 
 // Job analysis schema
 const jobAnalysisSchema = z.object({
-  requiredSkills: z
-    .array(z.string())
-    .describe("Top 5 required skills from the job posting"),
-  qualifications: z
-    .array(z.string())
-    .describe("Top 3 most important qualifications"),
-  cultureKeywords: z
-    .array(z.string())
-    .describe("Company culture keywords from the posting"),
+  requiredSkills: z.array(z.string()).describe('Top 5 required skills from the job posting'),
+  qualifications: z.array(z.string()).describe('Top 3 most important qualifications'),
+  cultureKeywords: z.array(z.string()).describe('Company culture keywords from the posting'),
   recommendedKeywords: z
     .array(z.string())
-    .describe("Keywords to include in the resume for ATS optimization"),
-});
+    .describe('Keywords to include in the resume for ATS optimization'),
+})
 
-export type JobAnalysis = z.infer<typeof jobAnalysisSchema>;
+export type JobAnalysis = z.infer<typeof jobAnalysisSchema>
 
 export const action: ActionFunction = async ({ request }) => {
   try {
-    const sessionUser = await getAuthenticatedUser(request);
-    const user = requireAuth(sessionUser);
+    const sessionUser = await getAuthenticatedUser(request)
+    const user = requireAuth(sessionUser)
 
     // Validate request method
-    if (request.method !== "POST") {
-      return new Response(JSON.stringify({ error: "Method not allowed" }), {
+    if (request.method !== 'POST') {
+      return new Response(JSON.stringify({ error: 'Method not allowed' }), {
         status: 405,
-        headers: { "Content-Type": "application/json" },
-      });
+        headers: { 'Content-Type': 'application/json' },
+      })
     }
 
     // Parse and validate input
-    const body = await request.json();
-    const validation = customizeResumeSchema.safeParse(body);
+    const body = await request.json()
+    const validation = customizeResumeSchema.safeParse(body)
 
     if (!validation.success) {
       return new Response(
         JSON.stringify({
-          error: "Invalid input",
+          error: 'Invalid input',
           details: validation.error.errors,
         }),
         {
           status: 400,
-          headers: { "Content-Type": "application/json" },
+          headers: { 'Content-Type': 'application/json' },
         }
-      );
+      )
     }
 
-    const { jobPosting, resumeFormat, focusAreas, targetLength } =
-      validation.data;
+    const { jobPosting, resumeFormat, focusAreas, targetLength } = validation.data
 
     // Fetch user's portfolio data
-    const portfolio = await getFullUserPortfolio(user.id);
+    const portfolio = await getFullUserPortfolio(user.id)
 
     if (!portfolio) {
       return new Response(
         JSON.stringify({
-          error: "No portfolio found. Please create your portfolio first.",
+          error: 'No portfolio found. Please create your portfolio first.',
         }),
         {
           status: 404,
-          headers: { "Content-Type": "application/json" },
+          headers: { 'Content-Type': 'application/json' },
         }
-      );
+      )
     }
 
     // Format portfolio data for better LLM consumption using utility function
-    const portfolioContext = formatPortfolioForLLM(portfolio);
+    const portfolioContext = formatPortfolioForLLM(portfolio)
 
     // Create AI prompt for resume customization
     const systemPrompt = `You are an expert resume writer and career advisor. Your task is to create a customized resume based on the user's portfolio data and a specific job posting.
@@ -103,9 +94,9 @@ Guidelines:
 
 Resume Format: ${resumeFormat}
 Target Length: ${targetLength}
-${focusAreas.length > 0 ? `Focus Areas: ${focusAreas.join(", ")}` : ""}
+${focusAreas.length > 0 ? `Focus Areas: ${focusAreas.join(', ')}` : ''}
 
-Return a complete, professional resume in markdown format that is specifically tailored to this job opportunity.`;
+Return a complete, professional resume in markdown format that is specifically tailored to this job opportunity.`
 
     const userPrompt = `JOB POSTING:
 ${jobPosting}
@@ -113,7 +104,7 @@ ${jobPosting}
 USER PORTFOLIO DATA:
 ${portfolioContext}
 
-Please create a customized resume that highlights the most relevant experience and skills for this specific job opportunity.`;
+Please create a customized resume that highlights the most relevant experience and skills for this specific job opportunity.`
 
     // Generate customized resume using AI
     const result = await generateText({
@@ -122,25 +113,26 @@ Please create a customized resume that highlights the most relevant experience a
       prompt: userPrompt,
       maxTokens: 4000,
       temperature: 0.3, // Lower temperature for more consistent, professional output
-    });
+    })
 
     // Extract key insights from the job posting for additional context
     const analysisResult = await generateObject({
       model,
       schema: jobAnalysisSchema,
       system:
-        "You are an expert job posting analyzer. Analyze the job posting to extract key information that will help optimize a resume for this position.",
+        'You are an expert job posting analyzer. Analyze the job posting to extract key information that will help optimize a resume for this position.',
       prompt: `Analyze this job posting and extract the most important information:
 
 ${jobPosting}`,
       temperature: 0.1,
-    });
+    })
 
-    const { success: analysisSuccess, data: jobAnalysis } =
-      jobAnalysisSchema.safeParse(analysisResult.object);
+    const { success: analysisSuccess, data: jobAnalysis } = jobAnalysisSchema.safeParse(
+      analysisResult.object
+    )
 
     if (!analysisSuccess) {
-      console.warn("Failed to parse job analysis with schema");
+      console.warn('Failed to parse job analysis with schema')
     }
 
     // Return the customized resume
@@ -155,24 +147,24 @@ ${jobPosting}`,
         generatedAt: new Date().toISOString(),
         portfolioId: portfolio.id,
       },
-    };
+    }
 
     return new Response(JSON.stringify(responseData), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+      headers: { 'Content-Type': 'application/json' },
+    })
   } catch (error) {
-    console.error("Resume customization error:", error);
+    console.error('Resume customization error:', error)
 
     return new Response(
       JSON.stringify({
-        error: error instanceof Error ? error.message : "Internal server error",
+        error: error instanceof Error ? error.message : 'Internal server error',
         success: false,
       }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json" },
+        headers: { 'Content-Type': 'application/json' },
       }
-    );
+    )
   }
-};
+}

@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
-import type { ConvertedResumeData } from "../../types/resume";
-import { db } from "../db";
+import { eq } from 'drizzle-orm'
+import type { ConvertedResumeData } from '../../types/resume'
+import { db } from '../db'
 import {
   portfolios,
   portfolioStats,
@@ -8,10 +8,10 @@ import {
   skills as skillsTable,
   socialLinks,
   workExperiences,
-} from "../db/schema";
+} from '../db/schema'
 
 export interface SaveResumeResult {
-  portfolioId: string;
+  portfolioId: string
 }
 
 export async function saveResumeToDatabase(
@@ -21,9 +21,9 @@ export async function saveResumeToDatabase(
   // Use a transaction to ensure data integrity during overwrite
   return await db.transaction(async (tx) => {
     // First, delete any existing portfolio for this user
-    await tx.delete(portfolios).where(eq(portfolios.userId, userId));
+    await tx.delete(portfolios).where(eq(portfolios.userId, userId))
 
-    const slug = await generateUniqueSlug(data.portfolio.slug);
+    const slug = await generateUniqueSlug(data.portfolio.slug)
 
     const [createdPortfolio] = await tx
       .insert(portfolios)
@@ -45,9 +45,9 @@ export async function saveResumeToDatabase(
         email: data.portfolio.email,
         phone: data.portfolio.phone ?? undefined,
       })
-      .returning();
+      .returning()
 
-    const portfolioId = createdPortfolio.id;
+    const portfolioId = createdPortfolio.id
 
     // Insert social links if provided
     if (data.socialLinks) {
@@ -57,7 +57,7 @@ export async function saveResumeToDatabase(
         linkedin: data.socialLinks.linkedin ?? undefined,
         twitter: data.socialLinks.twitter ?? undefined,
         website: data.socialLinks.website ?? undefined,
-      });
+      })
     }
 
     // Insert statistics
@@ -69,7 +69,7 @@ export async function saveResumeToDatabase(
           value: stat.value,
         })
       )
-    );
+    )
 
     // Insert work experiences
     await Promise.all(
@@ -83,7 +83,7 @@ export async function saveResumeToDatabase(
           endDate: we.endDate ? new Date(we.endDate) : undefined,
         })
       )
-    );
+    )
 
     // Insert skills
     await Promise.all(
@@ -98,7 +98,7 @@ export async function saveResumeToDatabase(
           certifications: skill.certifications,
         })
       )
-    );
+    )
 
     // Insert projects
     await Promise.all(
@@ -116,15 +116,15 @@ export async function saveResumeToDatabase(
           status: proj.status,
         })
       )
-    );
+    )
 
-    return { portfolioId };
-  });
+    return { portfolioId }
+  })
 }
 
 export async function generateUniqueSlug(base: string): Promise<string> {
   return base
     .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "");
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
 }

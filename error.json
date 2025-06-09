@@ -8,517 +8,329 @@
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            0,
-            "certifications"
-          ],
+          "path": ["skills", 0, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            1,
-            "certifications"
-          ],
+          "path": ["skills", 1, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            2,
-            "certifications"
-          ],
+          "path": ["skills", 2, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            3,
-            "certifications"
-          ],
+          "path": ["skills", 3, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            4,
-            "certifications"
-          ],
+          "path": ["skills", 4, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            5,
-            "certifications"
-          ],
+          "path": ["skills", 5, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            6,
-            "certifications"
-          ],
+          "path": ["skills", 6, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            7,
-            "certifications"
-          ],
+          "path": ["skills", 7, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            8,
-            "certifications"
-          ],
+          "path": ["skills", 8, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            9,
-            "certifications"
-          ],
+          "path": ["skills", 9, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            10,
-            "certifications"
-          ],
+          "path": ["skills", 10, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            11,
-            "certifications"
-          ],
+          "path": ["skills", 11, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            12,
-            "certifications"
-          ],
+          "path": ["skills", 12, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            13,
-            "certifications"
-          ],
+          "path": ["skills", 13, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            14,
-            "certifications"
-          ],
+          "path": ["skills", 14, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            15,
-            "certifications"
-          ],
+          "path": ["skills", 15, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            16,
-            "certifications"
-          ],
+          "path": ["skills", 16, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            17,
-            "certifications"
-          ],
+          "path": ["skills", 17, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            18,
-            "certifications"
-          ],
+          "path": ["skills", 18, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            19,
-            "certifications"
-          ],
+          "path": ["skills", 19, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            20,
-            "certifications"
-          ],
+          "path": ["skills", 20, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            21,
-            "certifications"
-          ],
+          "path": ["skills", 21, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            22,
-            "certifications"
-          ],
+          "path": ["skills", 22, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            23,
-            "certifications"
-          ],
+          "path": ["skills", 23, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            24,
-            "certifications"
-          ],
+          "path": ["skills", 24, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            25,
-            "certifications"
-          ],
+          "path": ["skills", 25, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            26,
-            "certifications"
-          ],
+          "path": ["skills", 26, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            27,
-            "certifications"
-          ],
+          "path": ["skills", 27, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            28,
-            "certifications"
-          ],
+          "path": ["skills", 28, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            29,
-            "certifications"
-          ],
+          "path": ["skills", 29, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            30,
-            "certifications"
-          ],
+          "path": ["skills", 30, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            31,
-            "certifications"
-          ],
+          "path": ["skills", 31, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            32,
-            "certifications"
-          ],
+          "path": ["skills", 32, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            33,
-            "certifications"
-          ],
+          "path": ["skills", 33, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            34,
-            "certifications"
-          ],
+          "path": ["skills", 34, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            35,
-            "certifications"
-          ],
+          "path": ["skills", 35, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            36,
-            "certifications"
-          ],
+          "path": ["skills", 36, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            37,
-            "certifications"
-          ],
+          "path": ["skills", 37, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            38,
-            "certifications"
-          ],
+          "path": ["skills", 38, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            39,
-            "certifications"
-          ],
+          "path": ["skills", 39, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            40,
-            "certifications"
-          ],
+          "path": ["skills", 40, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            41,
-            "certifications"
-          ],
+          "path": ["skills", 41, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            42,
-            "certifications"
-          ],
+          "path": ["skills", 42, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            43,
-            "certifications"
-          ],
+          "path": ["skills", 43, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            44,
-            "certifications"
-          ],
+          "path": ["skills", 44, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            45,
-            "certifications"
-          ],
+          "path": ["skills", 45, "certifications"],
           "message": "Required"
         },
         {
           "code": "invalid_type",
           "expected": "array",
           "received": "undefined",
-          "path": [
-            "skills",
-            46,
-            "certifications"
-          ],
+          "path": ["skills", 46, "certifications"],
           "message": "Required"
         }
       ],
@@ -791,36 +603,19 @@
         {
           "title": "Revrock",
           "description": "Built an end-to-end platform for independent musicians to optimize tours and finances. Key features: intelligent route planning (reducing tour costs), comprehensive financial dashboards, automated venue discovery, and Spotify integration for audience insights. Technologies: Next.js, PostgreSQL, MongoDB, Redis, and deployed on Vercel.",
-          "technologies": [
-            "Next.js",
-            "PostgreSQL",
-            "MongoDB",
-            "Redis"
-          ],
+          "technologies": ["Next.js", "PostgreSQL", "MongoDB", "Redis"],
           "status": "completed"
         },
         {
           "title": "Prolog",
           "description": "Led engineering of a web application enabling producers to efficiently triage writer submissions, including an LLM-powered email parser for automated data extraction and vector-based similarity search for rapid candidate evaluation. Technologies: Python, Django, React, React Native, OpenAI, AWS.",
-          "technologies": [
-            "Python",
-            "Django",
-            "React",
-            "React Native",
-            "OpenAI",
-            "AWS"
-          ],
+          "technologies": ["Python", "Django", "React", "React Native", "OpenAI", "AWS"],
           "status": "completed"
         },
         {
           "title": "Whistle",
           "description": "Managed product, design, and engineering for a privacy-focused video conferencing platform tailored for movement-based education. Used by a prestigious NYC ballet school to maintain operations during COVID-19. Technologies: React, React Native, Electron, Jitsi.",
-          "technologies": [
-            "React",
-            "React Native",
-            "Electron",
-            "Jitsi"
-          ],
+          "technologies": ["React", "React Native", "Electron", "Jitsi"],
           "status": "completed"
         }
       ],

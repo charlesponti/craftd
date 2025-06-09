@@ -12,11 +12,12 @@
   position: absolute;
   inset: 0;
   opacity: 0.3;
-  background: linear-gradient(45deg, 
-    rgba(59, 130, 246, 0.8) 0%, 
-    rgba(147, 51, 234, 0.8) 25%, 
-    rgba(236, 72, 153, 0.8) 50%, 
-    rgba(59, 130, 246, 0.8) 75%, 
+  background: linear-gradient(
+    45deg,
+    rgba(59, 130, 246, 0.8) 0%,
+    rgba(147, 51, 234, 0.8) 25%,
+    rgba(236, 72, 153, 0.8) 50%,
+    rgba(59, 130, 246, 0.8) 75%,
     rgba(147, 51, 234, 0.8) 100%
   );
   background-size: 400% 400%;
@@ -122,31 +123,68 @@
 
 /* Animations */
 @keyframes gradientShift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 @keyframes matrixFlow {
-  0% { transform: translate3d(0, -200px, 0); opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { transform: translate3d(0, 500px, 0); opacity: 0; }
+  0% {
+    transform: translate3d(0, -200px, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(0, 500px, 0);
+    opacity: 0;
+  }
 }
 
 @keyframes matrixFlowReverse {
-  0% { transform: translate3d(0, 500px, 0); opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { transform: translate3d(0, -200px, 0); opacity: 0; }
+  0% {
+    transform: translate3d(0, 500px, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(0, -200px, 0);
+    opacity: 0;
+  }
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes scanLine {
-  0% { top: 0%; opacity: 0; }
-  50% { opacity: 1; }
-  100% { top: 100%; opacity: 0; }
-} 
+  0% {
+    top: 0%;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}

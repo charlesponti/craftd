@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 export const resumeSchema = z.object({
   portfolio: z.object({
@@ -54,7 +54,7 @@ export const resumeSchema = z.object({
       technologies: z.array(z.string()),
       liveUrl: z.string().optional().nullable(),
       githubUrl: z.string().optional().nullable(),
-      status: z.enum(["in-progress", "completed", "archived"]),
+      status: z.enum(['in-progress', 'completed', 'archived']),
     })
   ),
   stats: z.array(
@@ -63,17 +63,17 @@ export const resumeSchema = z.object({
       value: z.string(),
     })
   ),
-});
+})
 
-export type ConvertedResumeData = z.infer<typeof resumeSchema>;
+export type ConvertedResumeData = z.infer<typeof resumeSchema>
 
 export type UploadResumeResponse =
   | {
-      success: true;
-      message: string;
-      data: ConvertedResumeData;
-      saved: true;
-      portfolioId: string;
-      fileUrl: string;
+      success: true
+      message: string
+      data: ConvertedResumeData
+      saved: true
+      portfolioId: string
+      fileUrl: string
     }
-  | { success: false; error: string };
+  | { success: false; error: string }

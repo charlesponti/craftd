@@ -3,24 +3,24 @@
  */
 
 // Utility functions
-export * from "./utils";
+export * from './utils'
 
 // Base query functions
-export * from "./base";
+export * from './base'
 
 // Financial metrics
 export {
   getCompensationBreakdown,
   getFinancialMetrics,
   getSalaryProgressionData,
-} from "./financial";
+} from './financial'
 
 // Career progression
 export {
   getCareerProgressionSummary,
   getCareerTimeline,
   getWorkExperiencesWithFinancials,
-} from "./career-progression";
+} from './career-progression'
 
 // Job applications
 export {
@@ -30,10 +30,10 @@ export {
   getJobApplicationFunnel,
   getJobApplicationMetrics,
   getTopCompaniesAppliedTo,
-} from "./job-applications";
+} from './job-applications'
 
 // Legacy function for backward compatibility
 export async function getRecentCareerEvents(userId: string, limit = 10) {
-  const { getUserCareerEvents } = await import("./base");
-  return getUserCareerEvents(userId, limit);
+  const { getUserCareerEvents } = await import('./base')
+  return getUserCareerEvents(userId, limit)
 }

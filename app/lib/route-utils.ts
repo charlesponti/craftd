@@ -5,22 +5,22 @@
 // @ts-nocheck
 /* eslint-disable */
 
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import { getAuthenticatedUser, requireAuth, type User } from "./auth.server";
-import { createClient } from "./supabase/server";
-import { shouldUseMockData } from "./utils/mock-data";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
+import { getAuthenticatedUser, requireAuth, type User } from './auth.server'
+import { createClient } from './supabase/server'
+import { shouldUseMockData } from './utils/mock-data'
 
 // Standard API response types
 export interface ApiResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  error?: string;
+  success: boolean
+  data?: T
+  error?: string
 }
 
 export interface AuthenticatedContext {
-  user: User;
-  request: Request;
-  supabase: ReturnType<typeof createClient>["supabase"];
+  user: User
+  request: Request
+  supabase: ReturnType<typeof createClient>['supabase']
 }
 
 /**
@@ -31,15 +31,15 @@ export async function withAuth<T>(
   request: Request,
   callback: (context: AuthenticatedContext) => Promise<T>
 ): Promise<T> {
-  const user = await getAuthenticatedUser(request);
-  const authenticatedUser = requireAuth(user);
-  const { supabase } = createClient(request);
+  const user = await getAuthenticatedUser(request)
+  const authenticatedUser = requireAuth(user)
+  const { supabase } = createClient(request)
 
   return await callback({
     user: authenticatedUser,
     request,
     supabase,
-  });
+  })
 }
 
 /**
@@ -50,7 +50,7 @@ export async function withAuthAction<T>(
   { request }: ActionFunctionArgs,
   callback: (context: AuthenticatedContext) => Promise<T>
 ): Promise<T> {
-  return withAuth(request, callback);
+  return withAuth(request, callback)
 }
 
 /**
@@ -61,28 +61,25 @@ export async function withAuthLoader<T>(
   { request }: LoaderFunctionArgs,
   callback: (context: AuthenticatedContext) => Promise<T>
 ): Promise<T> {
-  return withAuth(request, callback);
+  return withAuth(request, callback)
 }
 
 /**
  * Standard error response creator
  */
 export function createErrorResponse<T>(error: string): ApiResponse<T> {
-  return { success: false, error };
+  return { success: false, error }
 }
 
 /**
  * Standard success response creator
  */
-export function createSuccessResponse<T>(
-  data?: T,
-  message?: string
-): ApiResponse<T> {
+export function createSuccessResponse<T>(data?: T, message?: string): ApiResponse<T> {
   return {
     success: true,
     data,
     ...(message && { message }),
-  };
+  }
 }
 
 /**
@@ -94,9 +91,9 @@ export async function withMockDataFallback<T>(
   getRealData: () => Promise<T>
 ): Promise<T> {
   if (shouldUseMockData(request)) {
-    return await getMockData(request);
+    return await getMockData(request)
   }
-  return await getRealData();
+  return await getRealData()
 }
 
 /**
@@ -104,30 +101,27 @@ export async function withMockDataFallback<T>(
  */
 export async function tryAsync<T>(
   operation: () => Promise<T>,
-  errorMessage = "Operation failed"
+  errorMessage = 'Operation failed'
 ): Promise<T | ApiResponse> {
   try {
-    return await operation();
+    return await operation()
   } catch (error) {
-    console.error(errorMessage, error);
-    return createErrorResponse(errorMessage);
+    console.error(errorMessage, error)
+    return createErrorResponse(errorMessage)
   }
 }
 
 /**
  * Parse form data with error handling
  */
-export function parseFormData<T>(
-  formData: FormData,
-  key: string
-): T | ApiResponse {
+export function parseFormData<T>(formData: FormData, key: string): T | ApiResponse {
   try {
-    const data = formData.get(key) as string;
+    const data = formData.get(key) as string
     if (!data) {
-      return createErrorResponse(`Missing ${key} in form data`);
+      return createErrorResponse(`Missing ${key} in form data`)
     }
-    return JSON.parse(data) as T;
+    return JSON.parse(data) as T
   } catch (error) {
-    return createErrorResponse(`Invalid ${key} format`);
+    return createErrorResponse(`Invalid ${key} format`)
   }
 }

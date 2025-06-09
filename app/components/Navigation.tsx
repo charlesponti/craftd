@@ -112,8 +112,12 @@ export default function Navigation() {
               to="/"
               className="flex items-center gap-sm group transition-fast hover:opacity-80"
             >
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white text-sm font-semibold shadow-sm">
-                C
+              <div className="size-8 rounded-lg bg-primary flex items-center justify-center text-white text-sm font-semibold shadow-sm">
+                <img
+                  src="/public/icons/icon-192x192.png"
+                  alt="Craftd Logo"
+                  className="hidden md:block h-6 w-auto transition-fast group-hover:opacity-80"
+                />
               </div>
               <span className="font-sans text-xl font-semibold tracking-tight text-foreground">
                 Craftd

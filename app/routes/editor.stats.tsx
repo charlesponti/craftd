@@ -107,44 +107,61 @@ function PortfolioStatsEditorSection({
   const isSaving = fetcher.state === 'submitting'
 
   return (
-    <section className="section">
-      <h2>Portfolio Stats</h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="form">
+    <section className="card">
+      <div className="flex items-center justify-between mb-2xl">
+        <h2 className="text-2xl font-semibold text-foreground">Portfolio Stats</h2>
+        <div className="flex gap-sm">
+          <button type="button" onClick={handleAddNewStat} className="btn btn-outline btn-sm">
+            Add New Stat
+          </button>
+          <button
+            type="submit"
+            form="stats-form"
+            disabled={isSaving || !isDirty}
+            className="btn btn-primary btn-sm"
+          >
+            {isSaving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+      </div>
+      <form id="stats-form" onSubmit={handleSubmit(onSubmit)} className="space-y-lg">
         {fields.map((field, index) => (
-          <div key={field.id} className="form-row">
+          <div key={field.id} className="card-sm bg-muted/50">
             <div className="grid-2">
-              <div>
-                <label htmlFor={`stats.${index}.label`}>Label</label>
+              <div className="form-group">
+                <label htmlFor={`stats.${index}.label`} className="label">
+                  Label
+                </label>
                 <input
                   id={`stats.${index}.label`}
                   type="text"
+                  className="input"
                   {...register(`stats.${index}.label` as const)}
                 />
               </div>
-              <div>
-                <label htmlFor={`stats.${index}.value`}>Value</label>
+              <div className="form-group">
+                <label htmlFor={`stats.${index}.value`} className="label">
+                  Value
+                </label>
                 <input
                   id={`stats.${index}.value`}
                   type="text"
+                  className="input"
                   {...register(`stats.${index}.value` as const)}
                 />
               </div>
             </div>
             {fields.length > 1 && (
-              <button type="button" onClick={() => remove(index)} className="btn-link">
+              <button
+                type="button"
+                onClick={() => remove(index)}
+                className="btn btn-destructive btn-sm"
+              >
                 Remove
               </button>
             )}
           </div>
         ))}
-
-        <button type="button" onClick={handleAddNewStat} className="btn-dashed">
-          Add New Stat
-        </button>
-
-        <button type="submit" disabled={isSaving || !isDirty} className="btn btn-primary btn-full">
-          Save All Stat Changes
-        </button>
       </form>
     </section>
   )

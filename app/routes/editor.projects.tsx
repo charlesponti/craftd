@@ -146,114 +146,125 @@ function ProjectsEditorSection({
   }
 
   return (
-    <section className="p-6 bg-white shadow-md rounded-lg">
-      <h2 className="text-2xl font-semibold mb-4">Projects</h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <section className="card">
+      <div className="flex items-center justify-between mb-2xl">
+        <h2 className="text-2xl font-semibold text-foreground">Projects</h2>
+        <div className="flex gap-sm">
+          <button type="button" onClick={handleAddNewProject} className="btn btn-outline btn-sm">
+            Add New Project
+          </button>
+          <button
+            type="submit"
+            form="projects-form"
+            disabled={isSaving || !isDirty}
+            className="btn btn-primary btn-sm"
+          >
+            {isSaving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+      </div>
+      <form id="projects-form" onSubmit={handleSubmit(onSubmit)} className="space-y-lg">
         {fields.map((field, index) => (
-          <div key={field.id} className="p-4 border rounded-md space-y-3">
+          <div key={field.id} className="card-sm bg-muted/50 space-y-lg">
             <input {...register(`projects.${index}.id` as const)} type="hidden" />
-            <div>
-              <label htmlFor={`project-${index}-title`}>Title</label>
+            <div className="form-group">
+              <label htmlFor={`project-${index}-title`} className="label">
+                Title
+              </label>
               <input
                 id={`project-${index}-title`}
                 {...register(`projects.${index}.title` as const, { required: true })}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="input"
               />
             </div>
-            <div>
-              <label htmlFor={`project-${index}-shortDescription`}>Short Description</label>
+            <div className="form-group">
+              <label htmlFor={`project-${index}-shortDescription`} className="label">
+                Short Description
+              </label>
               <input
                 id={`project-${index}-shortDescription`}
                 {...register(`projects.${index}.shortDescription` as const)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="input"
               />
             </div>
-            <div>
-              <label htmlFor={`project-${index}-description`}>Full Description</label>
+            <div className="form-group">
+              <label htmlFor={`project-${index}-description`} className="label">
+                Full Description
+              </label>
               <textarea
                 id={`project-${index}-description`}
                 {...register(`projects.${index}.description` as const, { required: true })}
                 rows={3}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="textarea"
               />
             </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor={`project-${index}-liveUrl`}>Live URL</label>
+            <div className="grid-2">
+              <div className="form-group">
+                <label htmlFor={`project-${index}-liveUrl`} className="label">
+                  Live URL
+                </label>
                 <input
                   id={`project-${index}-liveUrl`}
                   type="url"
                   {...register(`projects.${index}.liveUrl` as const)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                  className="input"
                 />
               </div>
-              <div>
-                <label htmlFor={`project-${index}-githubUrl`}>GitHub URL</label>
+              <div className="form-group">
+                <label htmlFor={`project-${index}-githubUrl`} className="label">
+                  GitHub URL
+                </label>
                 <input
                   id={`project-${index}-githubUrl`}
                   type="url"
                   {...register(`projects.${index}.githubUrl` as const)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                  className="input"
                 />
               </div>
             </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor={`project-${index}-imageUrl`}>Image URL</label>
+            <div className="grid-2">
+              <div className="form-group">
+                <label htmlFor={`project-${index}-imageUrl`} className="label">
+                  Image URL
+                </label>
                 <input
                   id={`project-${index}-imageUrl`}
                   type="url"
                   {...register(`projects.${index}.imageUrl` as const)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                  className="input"
                 />
               </div>
-              <div>
-                <label htmlFor={`project-${index}-videoUrl`}>Video URL</label>
+              <div className="form-group">
+                <label htmlFor={`project-${index}-videoUrl`} className="label">
+                  Video URL
+                </label>
                 <input
                   id={`project-${index}-videoUrl`}
                   type="url"
                   {...register(`projects.${index}.videoUrl` as const)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                  className="input"
                 />
               </div>
             </div>
-            <div>
-              <label htmlFor={`project-${index}-technologies`}>
+            <div className="form-group">
+              <label htmlFor={`project-${index}-technologies`} className="label">
                 Technologies (comma-separated)
               </label>
               <input
                 id={`project-${index}-technologies`}
                 {...register(`projects.${index}.technologies` as const)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="input"
               />
             </div>
             <button
               type="button"
               onClick={() => handleRemoveProject(index)}
-              className="ml-2 text-red-600 hover:text-red-700 text-xs font-medium"
+              className="btn btn-destructive btn-sm"
             >
               Remove
             </button>
           </div>
         ))}
-
-        <button
-          type="button"
-          onClick={handleAddNewProject}
-          className="mb-6 py-2 px-4 border border-dashed border-gray-400 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-        >
-          + Add New Project
-        </button>
-
-        <div>
-          <button
-            type="submit"
-            disabled={isSaving || !isDirty}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400"
-          >
-            {isSaving ? 'Saving...' : 'Save All Project Changes'}
-          </button>
-        </div>
       </form>
     </section>
   )

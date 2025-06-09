@@ -78,41 +78,47 @@ function SocialLinksEditorSection({
   const isSaving = fetcher.state === 'submitting'
 
   return (
-    <section className="card flex flex-col gap-8">
-      <h2 className="card-title font-serif text-2xl font-light text-gray-900">Social Links</h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-lg">
-        <div className="form-row">
-          <div className="grid-2 gap-8">
-            <div className="form-group">
-              <label htmlFor="github" className="label">
-                GitHub Username
-              </label>
-              <input id="github" type="text" className="input" {...register('github')} />
-            </div>
-            <div className="form-group">
-              <label htmlFor="linkedin" className="label">
-                LinkedIn Username
-              </label>
-              <input id="linkedin" type="text" className="input" {...register('linkedin')} />
-            </div>
-            <div className="form-group">
-              <label htmlFor="twitter" className="label">
-                Twitter Username
-              </label>
-              <input id="twitter" type="text" className="input" {...register('twitter')} />
-            </div>
-            <div className="form-group">
-              <label htmlFor="website" className="label">
-                Website URL
-              </label>
-              <input id="website" type="url" className="input" {...register('website')} />
-            </div>
+    <section className="card">
+      <div className="flex items-center justify-between mb-2xl">
+        <h2 className="text-2xl font-semibold text-foreground">Social Links</h2>
+        <div className="flex gap-sm">
+          <button
+            type="submit"
+            form="social-form"
+            disabled={isSaving || !isDirty}
+            className="btn btn-primary btn-sm"
+          >
+            {isSaving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+      </div>
+      <form id="social-form" onSubmit={handleSubmit(onSubmit)} className="space-y-lg">
+        <div className="grid-2">
+          <div className="form-group">
+            <label htmlFor="github" className="label">
+              GitHub Username
+            </label>
+            <input id="github" type="text" className="input" {...register('github')} />
+          </div>
+          <div className="form-group">
+            <label htmlFor="linkedin" className="label">
+              LinkedIn Username
+            </label>
+            <input id="linkedin" type="text" className="input" {...register('linkedin')} />
+          </div>
+          <div className="form-group">
+            <label htmlFor="twitter" className="label">
+              Twitter Username
+            </label>
+            <input id="twitter" type="text" className="input" {...register('twitter')} />
+          </div>
+          <div className="form-group">
+            <label htmlFor="website" className="label">
+              Website URL
+            </label>
+            <input id="website" type="url" className="input" {...register('website')} />
           </div>
         </div>
-
-        <button type="submit" disabled={isSaving || !isDirty} className="btn btn-primary">
-          {isSaving ? 'Saving...' : 'Save Social Links'}
-        </button>
       </form>
     </section>
   )

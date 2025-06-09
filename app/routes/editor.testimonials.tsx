@@ -105,42 +105,73 @@ function TestimonialsEditorSection({
   const isSaving = fetcher.state === 'submitting'
 
   return (
-    <section className="section">
-      <h2>Client Testimonials</h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="form">
+    <section className="card">
+      <div className="flex items-center justify-between mb-2xl">
+        <h2 className="text-2xl font-semibold text-foreground">Client Testimonials</h2>
+        <div className="flex gap-sm">
+          <button
+            type="button"
+            onClick={handleAddNewTestimonial}
+            className="btn btn-outline btn-sm"
+          >
+            Add New Testimonial
+          </button>
+          <button
+            type="submit"
+            form="testimonials-form"
+            disabled={isSaving || !isDirty}
+            className="btn btn-primary btn-sm"
+          >
+            {isSaving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+      </div>
+      <form id="testimonials-form" onSubmit={handleSubmit(onSubmit)} className="space-y-lg">
         {fields.map((field, index) => (
-          <div key={field.id} className="form-row">
+          <div key={field.id} className="card-sm bg-muted/50 space-y-lg">
             <div className="grid-2">
-              <div>
-                <label htmlFor={`testimonials.${index}.name`}>Name</label>
+              <div className="form-group">
+                <label htmlFor={`testimonials.${index}.name`} className="label">
+                  Name
+                </label>
                 <input
                   id={`testimonials.${index}.name`}
                   type="text"
+                  className="input"
                   {...register(`testimonials.${index}.name` as const)}
                 />
               </div>
-              <div>
-                <label htmlFor={`testimonials.${index}.title`}>Title</label>
+              <div className="form-group">
+                <label htmlFor={`testimonials.${index}.title`} className="label">
+                  Title
+                </label>
                 <input
                   id={`testimonials.${index}.title`}
                   type="text"
+                  className="input"
                   {...register(`testimonials.${index}.title` as const)}
                 />
               </div>
             </div>
             <div className="grid-2">
-              <div>
-                <label htmlFor={`testimonials.${index}.company`}>Company</label>
+              <div className="form-group">
+                <label htmlFor={`testimonials.${index}.company`} className="label">
+                  Company
+                </label>
                 <input
                   id={`testimonials.${index}.company`}
                   type="text"
+                  className="input"
                   {...register(`testimonials.${index}.company` as const)}
                 />
               </div>
-              <div>
-                <label htmlFor={`testimonials.${index}.rating`}>Rating (1-5)</label>
+              <div className="form-group">
+                <label htmlFor={`testimonials.${index}.rating`} className="label">
+                  Rating (1-5)
+                </label>
                 <select
                   id={`testimonials.${index}.rating`}
+                  className="select"
                   {...register(`testimonials.${index}.rating` as const)}
                 >
                   <option value="">Select rating</option>
@@ -152,46 +183,52 @@ function TestimonialsEditorSection({
                 </select>
               </div>
             </div>
-            <div>
-              <label htmlFor={`testimonials.${index}.content`}>Testimonial</label>
+            <div className="form-group">
+              <label htmlFor={`testimonials.${index}.content`} className="label">
+                Testimonial
+              </label>
               <textarea
                 id={`testimonials.${index}.content`}
+                rows={4}
+                className="textarea"
                 {...register(`testimonials.${index}.content` as const)}
               />
             </div>
             <div className="grid-2">
-              <div>
-                <label htmlFor={`testimonials.${index}.avatarUrl`}>Avatar URL (optional)</label>
+              <div className="form-group">
+                <label htmlFor={`testimonials.${index}.avatarUrl`} className="label">
+                  Avatar URL (optional)
+                </label>
                 <input
                   id={`testimonials.${index}.avatarUrl`}
                   type="url"
+                  className="input"
                   {...register(`testimonials.${index}.avatarUrl` as const)}
                 />
               </div>
-              <div>
-                <label htmlFor={`testimonials.${index}.linkedinUrl`}>LinkedIn URL (optional)</label>
+              <div className="form-group">
+                <label htmlFor={`testimonials.${index}.linkedinUrl`} className="label">
+                  LinkedIn URL (optional)
+                </label>
                 <input
                   id={`testimonials.${index}.linkedinUrl`}
                   type="url"
+                  className="input"
                   {...register(`testimonials.${index}.linkedinUrl` as const)}
                 />
               </div>
             </div>
             {fields.length > 1 && (
-              <button type="button" onClick={() => remove(index)} className="btn-link">
+              <button
+                type="button"
+                onClick={() => remove(index)}
+                className="btn btn-destructive btn-sm"
+              >
                 Remove Testimonial
               </button>
             )}
           </div>
         ))}
-
-        <button type="button" onClick={handleAddNewTestimonial} className="btn-dashed">
-          Add New Testimonial
-        </button>
-
-        <button type="submit" disabled={isSaving || !isDirty} className="btn btn-primary btn-full">
-          Save All Testimonial Changes
-        </button>
       </form>
     </section>
   )

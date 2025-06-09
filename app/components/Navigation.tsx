@@ -112,7 +112,7 @@ export default function Navigation() {
               to="/"
               className="flex items-center gap-sm group transition-fast hover:opacity-80"
             >
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground text-sm font-semibold shadow-sm">
+              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white text-sm font-semibold shadow-sm">
                 C
               </div>
               <span className="font-sans text-xl font-semibold tracking-tight text-foreground">

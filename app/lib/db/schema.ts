@@ -163,13 +163,106 @@ export const workExperiences = pgTable(
     startDate: timestamp("start_date"),
     endDate: timestamp("end_date"),
 
-    // Display information
+    // Financial/Compensation Information
+    baseSalary: integer("base_salary"), // Annual base salary in cents
+    currency: varchar("currency", { length: 10 }).default("USD").notNull(),
+    salaryRange: json("salary_range").$type<{
+      min: number;
+      max: number;
+      currency: string;
+    }>(),
+    totalCompensation: integer("total_compensation"), // Including equity, bonuses in cents
+    equityValue: integer("equity_value"), // Estimated equity value in cents
+    equityPercentage: varchar("equity_percentage", { length: 20 }),
+    signingBonus: integer("signing_bonus"), // One-time signing bonus in cents
+    annualBonus: integer("annual_bonus"), // Expected/average annual bonus in cents
+    bonusHistory: json("bonus_history")
+      .$type<
+        Array<{
+          type: "annual" | "signing" | "performance" | "retention" | "spot";
+          amount: number; // in cents
+          date: string;
+          description?: string;
+        }>
+      >()
+      .default([]),
+
+    // Benefits and Perks
+    benefits: json("benefits").$type<{
+      healthInsurance?: boolean;
+      dental?: boolean;
+      vision?: boolean;
+      retirement401k?: number; // percentage match
+      retirementVesting?: string; // vesting schedule
+      paidTimeOff?: number; // days per year
+      sickLeave?: number; // days per year
+      parentalLeave?: number; // weeks
+      stockOptions?: boolean;
+      stockPurchasePlan?: boolean;
+      flexibleSchedule?: boolean;
+      remoteWork?: boolean;
+      gymMembership?: boolean;
+      tuitionReimbursement?: number; // annual amount in cents
+      professionalDevelopment?: number; // annual budget in cents
+      commuter?: number; // monthly allowance in cents
+      meals?: string; // "free", "subsidized", "none"
+      other?: string[];
+    }>(),
+
+    // Employment Details
+    employmentType: varchar("employment_type", { length: 50 })
+      .default("full-time")
+      .notNull(),
+    workArrangement: varchar("work_arrangement", { length: 50 })
+      .default("office")
+      .notNull(),
+    seniorityLevel: varchar("seniority_level", { length: 50 }),
+    department: varchar("department", { length: 100 }),
+    teamSize: integer("team_size"),
+    reportsTo: varchar("reports_to", { length: 255 }),
+    directReports: integer("direct_reports").default(0),
+
+    // Performance and Growth
+    performanceRatings: json("performance_ratings")
+      .$type<
+        Array<{
+          period: string; // "2023-Q4", "2023-Annual"
+          rating: string; // "exceeds", "meets", "below"
+          score?: number; // if numeric scale
+          feedback?: string;
+          goals?: string[];
+        }>
+      >()
+      .default([]),
+
+    // Promotion/Raise History within this role
+    salaryAdjustments: json("salary_adjustments")
+      .$type<
+        Array<{
+          effectiveDate: string;
+          previousSalary: number;
+          newSalary: number;
+          increaseAmount: number;
+          increasePercentage: number;
+          reason:
+            | "promotion"
+            | "merit_increase"
+            | "market_adjustment"
+            | "cost_of_living"
+            | "role_change";
+          newTitle?: string;
+          notes?: string;
+        }>
+      >()
+      .default([]),
+
+    // Display information (existing)
     image: varchar("image", { length: 500 }),
     gradient: varchar("gradient", { length: 100 }),
     metrics: varchar("metrics", { length: 100 }),
     action: varchar("action", { length: 100 }),
 
-    // Tags and metadata
+    // Tags and metadata (enhanced)
     tags: json("tags").$type<string[]>().default([]),
     metadata: json("metadata").$type<{
       company_size?: string;
@@ -177,11 +270,18 @@ export const workExperiences = pgTable(
       location?: string;
       website?: string;
       achievements?: string[];
+      technologies?: string[];
+      projects?: string[];
+      certifications_earned?: string[];
     }>(),
 
     // Ordering and display
     sortOrder: integer("sort_order").default(0).notNull(),
     isVisible: boolean("is_visible").default(true).notNull(),
+
+    // Reason for leaving
+    reasonForLeaving: varchar("reason_for_leaving", { length: 100 }),
+    exitNotes: text("exit_notes"),
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -191,12 +291,37 @@ export const workExperiences = pgTable(
     index("work_exp_sort_order_idx").on(table.sortOrder),
     index("work_exp_visible_idx").on(table.isVisible),
     index("work_exp_created_at_idx").on(table.createdAt),
+    index("work_exp_start_date_idx").on(table.startDate),
+    index("work_exp_base_salary_idx").on(table.baseSalary),
+    index("work_exp_employment_type_idx").on(table.employmentType),
+    index("work_exp_seniority_level_idx").on(table.seniorityLevel),
     // Composite indexes for common queries
     index("work_exp_portfolio_visible_idx").on(
       table.portfolioId,
       table.isVisible
     ),
     index("work_exp_portfolio_sort_idx").on(table.portfolioId, table.sortOrder),
+    index("work_exp_portfolio_salary_idx").on(
+      table.portfolioId,
+      table.baseSalary
+    ),
+    // Check constraints
+    check(
+      "work_exp_employment_type_check",
+      sql`${table.employmentType} IN ('full-time', 'part-time', 'contract', 'freelance', 'internship', 'temporary')`
+    ),
+    check(
+      "work_exp_work_arrangement_check",
+      sql`${table.workArrangement} IN ('office', 'remote', 'hybrid', 'travel')`
+    ),
+    check(
+      "work_exp_seniority_level_check",
+      sql`${table.seniorityLevel} IN ('intern', 'entry-level', 'mid-level', 'senior', 'lead', 'principal', 'staff', 'director', 'vp', 'c-level')`
+    ),
+    check(
+      "work_exp_reason_leaving_check",
+      sql`${table.reasonForLeaving} IN ('promotion', 'better_opportunity', 'relocation', 'layoff', 'termination', 'contract_end', 'career_change', 'salary', 'culture', 'management', 'growth', 'personal')`
+    ),
   ]
 );
 
@@ -449,8 +574,42 @@ export const jobApplications = pgTable(
 
     location: varchar("location", { length: 255 }),
     jobPosting: text("job_posting"),
-    salaryQuoted: text("salary_quoted"),
-    salaryAccepted: text("salary_accepted"),
+
+    // Enhanced Salary Tracking
+    salaryQuoted: text("salary_quoted"), // Keep for backward compatibility
+    salaryAccepted: text("salary_accepted"), // Keep for backward compatibility
+
+    // Structured Salary Data
+    salaryExpected: integer("salary_expected"), // What you hoped for, in cents
+    salaryRequested: integer("salary_requested"), // What you asked for, in cents
+    salaryOffered: integer("salary_offered"), // Initial offer, in cents
+    salaryNegotiated: integer("salary_negotiated"), // After negotiation, in cents
+    salaryFinal: integer("salary_final"), // Final accepted amount, in cents
+    totalCompOffered: integer("total_comp_offered"), // Including equity/bonuses, in cents
+    totalCompFinal: integer("total_comp_final"), // Final total comp, in cents
+
+    equityOffered: varchar("equity_offered", { length: 100 }), // "0.5%", "1000 shares"
+    equityFinal: varchar("equity_final", { length: 100 }),
+    bonusOffered: integer("bonus_offered"), // in cents
+    bonusFinal: integer("bonus_final"), // in cents
+
+    // Application Tracking
+    source: varchar("source", { length: 100 }), // "linkedin", "indeed", "referral", "company_website"
+    applicationDate: timestamp("application_date"),
+    responseDate: timestamp("response_date"),
+    firstInterviewDate: timestamp("first_interview_date"),
+    offerDate: timestamp("offer_date"),
+    decisionDate: timestamp("decision_date"),
+
+    // Outcome Details
+    rejectionReason: varchar("rejection_reason", { length: 255 }),
+    withdrawalReason: varchar("withdrawal_reason", { length: 255 }),
+
+    // Time Metrics (auto-calculated or manually entered)
+    timeToResponse: integer("time_to_response"), // days from application to first response
+    timeToFirstInterview: integer("time_to_first_interview"), // days
+    timeToOffer: integer("time_to_offer"), // days from application to offer
+    timeToDecision: integer("time_to_decision"), // days to make final decision
     coverLetter: text("cover_letter"),
     resume: text("resume"),
     jobId: varchar("job_id", { length: 100 }),
@@ -492,9 +651,25 @@ export const jobApplications = pgTable(
     index("job_applications_company_id_idx").on(table.companyId),
     index("job_applications_status_idx").on(table.status),
     index("job_applications_start_date_idx").on(table.startDate),
+    index("job_applications_application_date_idx").on(table.applicationDate),
+    index("job_applications_salary_final_idx").on(table.salaryFinal),
+    index("job_applications_source_idx").on(table.source),
+    index("job_applications_offer_date_idx").on(table.offerDate),
     // Composite indexes for common queries
     index("job_applications_user_status_idx").on(table.userId, table.status),
     index("job_applications_user_date_idx").on(table.userId, table.startDate),
+    index("job_applications_user_app_date_idx").on(
+      table.userId,
+      table.applicationDate
+    ),
+    index("job_applications_user_salary_idx").on(
+      table.userId,
+      table.salaryFinal
+    ),
+    index("job_applications_status_salary_idx").on(
+      table.status,
+      table.salaryFinal
+    ),
     // Check constraints
     check(
       "job_applications_status_check",
@@ -603,6 +778,9 @@ export type NewApplicationNote = typeof applicationNotes.$inferInsert;
 export type ApplicationFile = typeof applicationFiles.$inferSelect;
 export type NewApplicationFile = typeof applicationFiles.$inferInsert;
 
+export type CareerEvent = typeof careerEvents.$inferSelect;
+export type NewCareerEvent = typeof careerEvents.$inferInsert;
+
 // Interview data type (extracted from database schema)
 export interface InterviewEntry {
   type: "phone" | "video" | "onsite" | "technical" | "final";
@@ -628,6 +806,105 @@ export interface ApplicationWithRelations {
   files: ApplicationFile[];
 }
 
+// Enhanced work experience with financial data
+export interface WorkExperienceWithFinancials extends WorkExperience {
+  // Calculated fields for dashboard
+  totalTenure?: number; // days
+  currentAnnualizedSalary?: number; // in cents, accounting for raises
+  totalCompensationReceived?: number; // in cents, including all bonuses
+  averageAnnualRaise?: number; // percentage
+  promotionCount?: number;
+  skillsAcquired?: string[];
+}
+
+// Career event with related data
+export interface CareerEventWithContext extends CareerEvent {
+  workExperience?: WorkExperience;
+  relatedEvents?: CareerEvent[]; // other events from same time period
+  marketContext?: {
+    industryGrowth?: number;
+    roleMarketMedian?: number;
+    locationCostOfLiving?: number;
+  };
+}
+
+// Career progression summary for dashboard
+export interface CareerProgressionSummary {
+  totalExperience: number; // years
+  currentSalary: number; // in cents
+  firstSalary: number; // in cents
+  totalSalaryGrowth: number; // in cents
+  salaryGrowthPercentage: number;
+  averageAnnualGrowth: number; // percentage
+
+  promotionCount: number;
+  jobChangeCount: number;
+  averageTenurePerJob: number; // years
+
+  highestSalaryIncrease: {
+    amount: number;
+    percentage: number;
+    reason: string;
+    date: string;
+  };
+
+  salaryByYear: Array<{
+    year: number;
+    salary: number;
+    totalComp: number;
+    company: string;
+    title: string;
+  }>;
+
+  currentLevel: string;
+  levelProgression: Array<{
+    level: string;
+    startDate: string;
+    endDate?: string;
+    duration: number; // months
+  }>;
+}
+
+// Financial metrics for dashboard
+export interface FinancialMetrics {
+  // Current state
+  currentSalary: number;
+  currentTotalComp: number;
+
+  // Growth metrics
+  totalCareerGrowth: number; // percentage from first to current salary
+  compoundAnnualGrowthRate: number; // CAGR percentage
+
+  // Yearly breakdown
+  salaryHistory: Array<{
+    year: number;
+    baseSalary: number;
+    totalComp: number;
+    bonuses: number;
+    equityValue: number;
+    company: string;
+    role: string;
+  }>;
+
+  // Job change analysis
+  jobChangeImpact: Array<{
+    changeDate: string;
+    fromCompany: string;
+    toCompany: string;
+    salaryIncrease: number;
+    percentageIncrease: number;
+    totalCompIncrease: number;
+  }>;
+
+  // Market positioning
+  marketComparison: {
+    percentileRank?: number; // where you stand vs market
+    marketMedian?: number;
+    marketRange?: { min: number; max: number };
+    lastUpdated?: string;
+  };
+}
+
 // Type for job application updates
 export interface JobApplicationUpdate {
   position?: string;
@@ -639,6 +916,91 @@ export interface JobApplicationUpdate {
   companyNotes?: string | null;
   negotiationNotes?: string | null;
   updatedAt?: Date;
+}
+
+// Job application metrics for dashboard
+export interface JobApplicationMetrics {
+  totalApplications: number;
+  responseRate: number; // percentage
+  interviewRate: number; // percentage
+  offerRate: number; // percentage
+  acceptanceRate: number; // percentage
+
+  averageTimeToResponse: number; // days
+  averageTimeToOffer: number; // days
+  averageTimeToDecision: number; // days
+
+  salaryMetrics: {
+    averageOffered: number;
+    averageAccepted: number;
+    negotiationSuccessRate: number; // percentage
+    averageNegotiationIncrease: number; // percentage
+  };
+
+  sourceMetrics: Array<{
+    source: string;
+    count: number;
+    responseRate: number;
+    offerRate: number;
+  }>;
+
+  statusBreakdown: Array<{
+    status: string;
+    count: number;
+    percentage: number;
+  }>;
+}
+
+// Bonus/equity tracking
+export interface BonusEntry {
+  type: "annual" | "signing" | "performance" | "retention" | "spot";
+  amount: number; // in cents
+  date: string;
+  description?: string;
+  company?: string;
+  workExperienceId?: string;
+}
+
+export interface EquityEntry {
+  grantDate: string;
+  shares?: number;
+  percentage?: string;
+  strikePrice?: number;
+  currentValue?: number; // estimated in cents
+  vestingSchedule?: string;
+  company: string;
+  workExperienceId?: string;
+}
+
+// Performance tracking
+export interface PerformanceEntry {
+  period: string; // "2023-Q4", "2023-Annual"
+  rating: string; // "exceeds", "meets", "below"
+  score?: number;
+  feedback?: string;
+  goals?: string[];
+  company: string;
+  role: string;
+  workExperienceId: string;
+}
+
+// Salary adjustment tracking
+export interface SalaryAdjustment {
+  effectiveDate: string;
+  previousSalary: number;
+  newSalary: number;
+  increaseAmount: number;
+  increasePercentage: number;
+  reason:
+    | "promotion"
+    | "merit_increase"
+    | "market_adjustment"
+    | "cost_of_living"
+    | "role_change";
+  newTitle?: string;
+  notes?: string;
+  company: string;
+  workExperienceId: string;
 }
 
 // Composite types for portfolio with relations
@@ -688,3 +1050,100 @@ export interface PersonalInfo {
     fontFamily?: string;
   };
 }
+
+// Career Events table - tracks major career milestones and transitions
+export const careerEvents = pgTable(
+  "career_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    workExperienceId: uuid("work_experience_id").references(
+      () => workExperiences.id,
+      { onDelete: "cascade" }
+    ),
+
+    // Event Classification
+    eventType: varchar("event_type", { length: 50 }).notNull(),
+    eventDate: timestamp("event_date").notNull(),
+
+    // Title/Role Changes
+    previousTitle: varchar("previous_title", { length: 255 }),
+    newTitle: varchar("new_title", { length: 255 }),
+    previousLevel: varchar("previous_level", { length: 50 }),
+    newLevel: varchar("new_level", { length: 50 }),
+
+    // Financial Changes
+    previousSalary: integer("previous_salary"), // in cents
+    newSalary: integer("new_salary"), // in cents
+    salaryIncrease: integer("salary_increase"), // calculated field in cents
+    increasePercentage: varchar("increase_percentage", { length: 10 }),
+
+    previousTotalComp: integer("previous_total_comp"), // in cents
+    newTotalComp: integer("new_total_comp"), // in cents
+    totalCompIncrease: integer("total_comp_increase"), // in cents
+
+    // Bonus/Equity Changes
+    equityGranted: integer("equity_granted"), // shares or dollar value
+    equityVesting: varchar("equity_vesting", { length: 100 }),
+    bonusAmount: integer("bonus_amount"), // in cents
+    bonusType: varchar("bonus_type", { length: 50 }),
+
+    // Additional Context
+    description: text("description"),
+    achievements: json("achievements").$type<string[]>().default([]),
+    skillsGained: json("skills_gained").$type<string[]>().default([]),
+    certifications: json("certifications").$type<string[]>().default([]),
+
+    // Performance Context
+    performanceRating: varchar("performance_rating", { length: 50 }),
+    managerFeedback: text("manager_feedback"),
+    selfAssessment: text("self_assessment"),
+
+    // Market Context
+    marketSalaryRange: json("market_salary_range").$type<{
+      min: number;
+      max: number;
+      median: number;
+      source: string; // "glassdoor", "levels.fyi", "salary.com"
+      date: string;
+    }>(),
+
+    // Goals and Planning
+    careerGoals: json("career_goals").$type<{
+      shortTerm?: string[];
+      longTerm?: string[];
+      skillsToAcquire?: string[];
+      targetRole?: string;
+      targetSalary?: number;
+    }>(),
+
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("career_events_user_id_idx").on(table.userId),
+    index("career_events_work_exp_id_idx").on(table.workExperienceId),
+    index("career_events_event_type_idx").on(table.eventType),
+    index("career_events_event_date_idx").on(table.eventDate),
+    index("career_events_salary_increase_idx").on(table.salaryIncrease),
+    // Composite indexes for common queries
+    index("career_events_user_date_idx").on(table.userId, table.eventDate),
+    index("career_events_user_type_idx").on(table.userId, table.eventType),
+    index("career_events_timeline_idx").on(
+      table.userId,
+      table.eventDate,
+      table.eventType
+    ),
+    // Check constraints
+    check(
+      "career_events_type_check",
+      sql`${table.eventType} IN ('promotion', 'raise', 'bonus', 'equity_grant', 'role_change', 'department_change', 'location_change', 'performance_review', 'goal_achievement', 'certification', 'skill_milestone', 'manager_change', 'team_expansion')`
+    ),
+    check(
+      "career_events_bonus_type_check",
+      sql`${table.bonusType} IN ('annual', 'performance', 'retention', 'signing', 'spot', 'referral', 'project')`
+    ),
+  ]
+);

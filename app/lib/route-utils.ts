@@ -67,7 +67,7 @@ export async function withAuthLoader<T>(
 /**
  * Standard error response creator
  */
-export function createErrorResponse(error: string): ApiResponse {
+export function createErrorResponse<T>(error: string): ApiResponse<T> {
   return { success: false, error };
 }
 

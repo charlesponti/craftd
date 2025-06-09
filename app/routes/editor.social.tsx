@@ -78,31 +78,39 @@ function SocialLinksEditorSection({
   const isSaving = fetcher.state === 'submitting'
 
   return (
-    <section className="section">
-      <h2>Social Links</h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="form">
+    <section className="card flex flex-col gap-8">
+      <h2 className="card-title font-serif text-2xl font-light text-gray-900">Social Links</h2>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-lg">
         <div className="form-row">
-          <div className="grid-2">
-            <div>
-              <label htmlFor="github">GitHub Username</label>
-              <input id="github" type="text" {...register('github')} />
+          <div className="grid-2 gap-8">
+            <div className="form-group">
+              <label htmlFor="github" className="label">
+                GitHub Username
+              </label>
+              <input id="github" type="text" className="input" {...register('github')} />
             </div>
-            <div>
-              <label htmlFor="linkedin">LinkedIn Username</label>
-              <input id="linkedin" type="text" {...register('linkedin')} />
+            <div className="form-group">
+              <label htmlFor="linkedin" className="label">
+                LinkedIn Username
+              </label>
+              <input id="linkedin" type="text" className="input" {...register('linkedin')} />
             </div>
-            <div>
-              <label htmlFor="twitter">Twitter Username</label>
-              <input id="twitter" type="text" {...register('twitter')} />
+            <div className="form-group">
+              <label htmlFor="twitter" className="label">
+                Twitter Username
+              </label>
+              <input id="twitter" type="text" className="input" {...register('twitter')} />
             </div>
-            <div>
-              <label htmlFor="website">Website URL</label>
-              <input id="website" type="url" {...register('website')} />
+            <div className="form-group">
+              <label htmlFor="website" className="label">
+                Website URL
+              </label>
+              <input id="website" type="url" className="input" {...register('website')} />
             </div>
           </div>
         </div>
 
-        <button type="submit" disabled={isSaving || !isDirty} className="btn btn-primary btn-full">
+        <button type="submit" disabled={isSaving || !isDirty} className="btn btn-primary">
           {isSaving ? 'Saving...' : 'Save Social Links'}
         </button>
       </form>

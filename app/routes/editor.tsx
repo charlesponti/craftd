@@ -90,7 +90,7 @@ export default function EditorLayout() {
   const currentStepIndex = editorSteps.findIndex((step) => location.pathname.startsWith(step.path))
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="bg-gray-50 flex flex-col flex-1 overflow-hidden">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-6 py-4">
@@ -123,7 +123,7 @@ export default function EditorLayout() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-6 py-8 flex-1">
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-8">
           {/* Sidebar Navigation */}
           <div className="lg:col-span-1">
@@ -174,7 +174,7 @@ export default function EditorLayout() {
           </div>
 
           {/* Main Content */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 overflow-y-auto">
             <Outlet context={portfolio} />
           </div>
         </div>

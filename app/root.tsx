@@ -65,9 +65,11 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
-        <Navigation />
-        <div className="font-['SF_Pro_Display',sans-serif] pt-16">
-          <Outlet />
+        <div className="flex flex-col min-h-screen overflow-hidden">
+          <Navigation />
+          <div className="font-sans pt-16 flex-1 flex flex-col">
+            <Outlet />
+          </div>
         </div>
       </ToastProvider>
     </QueryClientProvider>

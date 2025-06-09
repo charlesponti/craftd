@@ -1,6 +1,7 @@
 import { and, eq } from 'drizzle-orm'
 import { useState } from 'react'
 import { Form, Link, useActionData, useFetcher, useLoaderData, useParams } from 'react-router'
+import { ResumeCustomizer } from '~/components/ResumeCustomizer'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/Card'
 import { Input } from '~/components/ui/input'
@@ -233,9 +234,9 @@ export default function ApplicationDetail() {
   const params = useParams()
   const fetcher = useFetcher()
   const [isEditing, setIsEditing] = useState(false)
-  const [activeTab, setActiveTab] = useState<'overview' | 'timeline' | 'notes' | 'files'>(
-    'overview'
-  )
+  const [activeTab, setActiveTab] = useState<
+    'overview' | 'timeline' | 'notes' | 'files' | 'resume'
+  >('overview')
 
   if (!loaderData.success || !loaderData.data) {
     return (
@@ -306,11 +307,14 @@ export default function ApplicationDetail() {
             { id: 'timeline', label: 'Timeline' },
             { id: 'notes', label: 'Notes' },
             { id: 'files', label: 'Files' },
+            { id: 'resume', label: 'AI Resume' },
           ].map((tab) => (
             <button
               key={tab.id}
               type="button"
-              onClick={() => setActiveTab(tab.id as 'overview' | 'timeline' | 'notes' | 'files')}
+              onClick={() =>
+                setActiveTab(tab.id as 'overview' | 'timeline' | 'notes' | 'files' | 'resume')
+              }
               className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === tab.id
                   ? 'border-blue-500 text-blue-600'
@@ -333,6 +337,12 @@ export default function ApplicationDetail() {
           {activeTab === 'notes' && <NotesTab notes={notes} applicationId={params.id || ''} />}
           {activeTab === 'files' && (
             <FilesTab application={application} applicationId={params.id || ''} />
+          )}
+          {activeTab === 'resume' && (
+            <ResumeCustomizer
+              applicationId={params.id || ''}
+              initialJobPosting={application.jobPosting || ''}
+            />
           )}
         </div>
       </div>

@@ -166,7 +166,7 @@ export default function Navigation() {
                         : 'text-muted-foreground hover:text-foreground'
                     )}
                   >
-                    Job Applications
+                    Applications
                   </Link>
 
                   {/* Account dropdown */}

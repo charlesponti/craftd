@@ -20,6 +20,8 @@ export default [
   route("/job-applications", "routes/job-applications.tsx"),
   route("/job-applications/create", "routes/job-applications.create.tsx"),
   route("/job-applications/:id", "routes/job-applications.$id.tsx"),
+  route("/api/resume/customize", "routes/api.resume.customize.ts"),
+  route("/resume/custom", "routes/resume-customizer.tsx"),
   route("/p/:slug", "routes/p.$slug.tsx"),
   layout("routes/editor.tsx", [
     route("/editor", "routes/editor.basic.tsx"),

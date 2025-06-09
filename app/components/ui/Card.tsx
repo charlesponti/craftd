@@ -16,37 +16,34 @@ export function Card({ children, className }: CardProps) {
   )
 }
 
-interface CardHeaderProps {
-  title?: string
-  description?: string
-  action?: React.ReactNode
-}
-
-export function CardHeader({
-  title,
-  description,
-  action,
-  children,
-}: CardHeaderProps & { children?: React.ReactNode }) {
-  return (
-    <div className="border-b border-gray-200">
-      <div className="flex items-center justify-between">
-        <div>
-          {title && <h3 className="text-lg leading-6 font-medium text-gray-900">{title}</h3>}
-          {description && <p className="mt-1 text-sm text-gray-500">{description}</p>}
-          {children}
-        </div>
-        {action && <div>{action}</div>}
-      </div>
-    </div>
-  )
-}
-
 export function CardTitle({
   children,
   className = '',
 }: { children: React.ReactNode; className?: string }) {
-  return <h3 className={`text-lg leading-6 font-medium text-gray-900 ${className}`}>{children}</h3>
+  return (
+    <h3 className={cn('text-lg leading-6 font-medium text-gray-900', className)}>{children}</h3>
+  )
+}
+
+export function CardDescription({
+  children,
+  className = '',
+}: { children: React.ReactNode; className?: string }) {
+  return <p className={cn('mt-1 text-sm text-gray-500', className)}>{children}</p>
+}
+
+interface CardHeaderProps {
+  className?: string
+  children?: React.ReactNode
+}
+export function CardHeader({ className = '', children }: CardHeaderProps) {
+  return (
+    <div
+      className={cn('border-b border-gray-200 flex items-center justify-between pb-2', className)}
+    >
+      {children}
+    </div>
+  )
 }
 
 export function CardContent({

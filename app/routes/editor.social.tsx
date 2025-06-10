@@ -1,4 +1,5 @@
 import { and, eq, inArray } from 'drizzle-orm'
+import { Github, Globe, Link2, Linkedin, Twitter } from 'lucide-react'
 import { useEffect } from 'react'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import type { ActionFunctionArgs, MetaFunction } from 'react-router'
@@ -6,6 +7,7 @@ import { useFetcher, useOutletContext } from 'react-router'
 import { db } from '~/lib/db'
 import type { NewSocialLinks, SocialLinks } from '~/lib/db/schema'
 import { socialLinks } from '~/lib/db/schema'
+import { cn } from '~/lib/utils'
 import { useToast } from '../hooks/useToast'
 import type { FullPortfolio } from '../lib/portfolio.server'
 import { createSuccessResponse, parseFormData, withAuthAction } from '../lib/route-utils'
@@ -28,11 +30,14 @@ function SocialLinksEditorSection({
     register,
     handleSubmit,
     reset,
-    formState: { isDirty },
+    watch,
+    formState: { isDirty, errors },
   } = useForm<SocialLinksFormValues>({
     defaultValues: initialSocialLinks || {},
     mode: 'onChange',
   })
+
+  const watchedValues = watch()
 
   useEffect(() => {
     reset(initialSocialLinks || {})
@@ -78,53 +83,181 @@ function SocialLinksEditorSection({
   const isSaving = fetcher.state === 'submitting'
 
   return (
-    <section className="card">
-      <div className="flex items-center justify-between mb-2xl">
-        <h2 className="text-2xl font-semibold text-foreground">Social Links</h2>
-        <div className="flex gap-sm">
+    <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <Link2 className="w-5 h-5 text-blue-600" />
+            </div>
+            <h2 className="text-2xl font-semibold text-gray-900">Social</h2>
+          </div>
+          <p className="text-gray-600">
+            Connect your social profiles to showcase your professional presence
+          </p>
+        </div>
+        <div className="flex gap-3">
           <button
             type="submit"
             form="social-form"
             disabled={isSaving || !isDirty}
-            className="btn btn-primary btn-sm"
+            className="btn btn-primary"
           >
-            {isSaving ? 'Saving...' : 'Save Changes'}
+            {isSaving ? 'Saving...' : 'Save'}
           </button>
         </div>
       </div>
-      <form id="social-form" onSubmit={handleSubmit(onSubmit)} className="space-y-lg">
-        <div className="grid-2">
+
+      {/* Form */}
+      <form id="social-form" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* GitHub */}
           <div className="form-group">
-            <label htmlFor="github" className="label">
+            <label htmlFor="github" className="label flex items-center gap-2">
+              <Github className="w-4 h-4 text-gray-600" />
               GitHub Username
             </label>
-            <input id="github" type="text" className="input" {...register('github')} />
+            <div className="flex">
+              <div className="inline-flex items-center px-3 text-sm text-gray-500 bg-gray-50 border border-r-0 border-gray-300 rounded-l-md">
+                github.com/
+              </div>
+              <input
+                id="github"
+                type="text"
+                placeholder="octocat"
+                className={cn('input rounded-l-none border-l-0', {
+                  'input-error': errors.github,
+                })}
+                {...register('github', {
+                  pattern: {
+                    value: /^[a-zA-Z0-9]([a-zA-Z0-9-])*[a-zA-Z0-9]$/,
+                    message: 'Please enter a valid GitHub username',
+                  },
+                })}
+              />
+            </div>
+            {errors.github && <p className="error-message">{errors.github.message}</p>}
           </div>
+
+          {/* LinkedIn */}
           <div className="form-group">
-            <label htmlFor="linkedin" className="label">
+            <label htmlFor="linkedin" className="label flex items-center gap-2">
+              <Linkedin className="w-4 h-4 text-gray-600" />
               LinkedIn Username
             </label>
-            <input id="linkedin" type="text" className="input" {...register('linkedin')} />
+            <div className="flex">
+              <div className="inline-flex items-center px-3 text-sm text-gray-500 bg-gray-50 border border-r-0 border-gray-300 rounded-l-md">
+                linkedin.com/in/
+              </div>
+              <input
+                id="linkedin"
+                type="text"
+                placeholder="johnsmith"
+                className={cn(
+                  'input rounded-l-none border-l-0',
+                  errors.linkedin ? 'input-error' : ''
+                )}
+                {...register('linkedin', {
+                  pattern: {
+                    value: /^[a-zA-Z0-9-]+$/,
+                    message: 'Please enter a valid LinkedIn username',
+                  },
+                })}
+              />
+            </div>
+            {errors.linkedin && <p className="error-message">{errors.linkedin.message}</p>}
           </div>
+
+          {/* Twitter */}
           <div className="form-group">
-            <label htmlFor="twitter" className="label">
+            <label htmlFor="twitter" className="label flex items-center gap-2">
+              <Twitter className="w-4 h-4 text-gray-600" />
               Twitter Username
             </label>
-            <input id="twitter" type="text" className="input" {...register('twitter')} />
+            <div className="flex">
+              <div className="inline-flex items-center px-3 text-sm text-gray-500 bg-gray-50 border border-r-0 border-gray-300 rounded-l-md">
+                twitter.com/
+              </div>
+              <input
+                id="twitter"
+                type="text"
+                placeholder="username"
+                className={`input rounded-l-none border-l-0 ${errors.twitter ? 'input-error' : ''}`}
+                {...register('twitter', {
+                  pattern: {
+                    value: /^[a-zA-Z0-9_]+$/,
+                    message: 'Please enter a valid Twitter username',
+                  },
+                })}
+              />
+            </div>
+            {errors.twitter && <p className="error-message">{errors.twitter.message}</p>}
           </div>
+
+          {/* Website */}
           <div className="form-group">
-            <label htmlFor="website" className="label">
+            <label htmlFor="website" className="label flex items-center gap-2">
+              <Globe className="w-4 h-4 text-gray-600" />
               Website URL
             </label>
-            <input id="website" type="url" className="input" {...register('website')} />
+            <input
+              id="website"
+              type="url"
+              placeholder="https://yourwebsite.com"
+              className={`input ${errors.website ? 'input-error' : ''}`}
+              {...register('website', {
+                pattern: {
+                  value: /^https?:\/\/.+\..+/,
+                  message: 'Please enter a valid URL (including http:// or https://)',
+                },
+              })}
+            />
+            {errors.website && <p className="error-message">{errors.website.message}</p>}
           </div>
         </div>
+
+        {/* Preview Section */}
+        {(watchedValues.github ||
+          watchedValues.linkedin ||
+          watchedValues.twitter ||
+          watchedValues.website) && (
+          <div className="mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Preview</h3>
+            <div className="flex flex-wrap gap-3">
+              {watchedValues.github && (
+                <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-gray-200">
+                  <Github className="w-4 h-4 text-gray-600" />
+                  <span className="text-sm text-gray-700">{watchedValues.github}</span>
+                </div>
+              )}
+              {watchedValues.linkedin && (
+                <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-gray-200">
+                  <Linkedin className="w-4 h-4 text-gray-600" />
+                  <span className="text-sm text-gray-700">{watchedValues.linkedin}</span>
+                </div>
+              )}
+              {watchedValues.twitter && (
+                <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-gray-200">
+                  <Twitter className="w-4 h-4 text-gray-600" />
+                  <span className="text-sm text-gray-700">{watchedValues.twitter}</span>
+                </div>
+              )}
+              {watchedValues.website && (
+                <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-gray-200">
+                  <Globe className="w-4 h-4 text-gray-600" />
+                  <span className="text-sm text-gray-700">{watchedValues.website}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </form>
     </section>
   )
 }
 
-export const meta: MetaFunction = () => [{ title: 'Social Links - Portfolio Editor | Craftd' }]
+export const meta: MetaFunction = () => [{ title: 'Social - Portfolio Editor | Craftd' }]
 
 type SocialLinkInsert = typeof socialLinks.$inferInsert
 

@@ -3,10 +3,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme {
+/* @theme {
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
     'Segoe UI Symbol', 'Noto Color Emoji';
-}
+} */
 
 html,
 body {
@@ -321,7 +321,6 @@ body {
     --transition-transform: none;
   }
 }
-
 
 @layer utilities {
   /* Background Utilities */
@@ -665,6 +664,22 @@ body {
     transition: var(--transition-slow);
   }
 }
+
+@layer components {
+  .input {
+    display: flex;
+    width: 100%;
+    border-radius: var(--radius-md);
+    border: 1px solid hsl(var(--border));
+    background-color: hsl(var(--background));
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
+    font-weight: var(--font-normal);
+    line-height: 1.25;
+    transition: var(--transition-colors);
+  }
+}
+
 /* ===== ENHANCED COMPONENT CLASSES ===== */
 
 /* Container System */
@@ -885,18 +900,6 @@ body {
 }
 
 /* Enhanced Input Components */
-.input {
-  display: flex;
-  width: 100%;
-  border-radius: var(--radius-md);
-  border: 1px solid hsl(var(--border));
-  background-color: hsl(var(--background));
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--text-sm);
-  font-weight: var(--font-normal);
-  line-height: 1.25;
-  transition: var(--transition-colors);
-}
 
 .input:focus {
   outline: var(--focus-ring);

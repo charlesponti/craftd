@@ -49,7 +49,6 @@ export async function saveResumeToDatabase(
 
     const portfolioId = createdPortfolio.id
 
-    // Insert social links if provided
     if (data.socialLinks) {
       await tx.insert(socialLinks).values({
         portfolioId,

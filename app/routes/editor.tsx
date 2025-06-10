@@ -48,7 +48,7 @@ const editorSteps = [
   {
     path: '/editor/work',
     value: 'work',
-    label: 'Work Experience',
+    label: 'Work',
     icon: Briefcase,
   },
   {
@@ -60,13 +60,13 @@ const editorSteps = [
   {
     path: '/editor/social',
     value: 'social',
-    label: 'Social Links',
+    label: 'Social',
     icon: Link2,
   },
   {
     path: '/editor/stats',
     value: 'stats',
-    label: 'Portfolio Stats',
+    label: 'Stats',
     icon: BarChart3,
   },
   {
@@ -126,7 +126,7 @@ export default function EditorLayout() {
       <div className="max-w-6xl mx-auto px-6 py-8 flex-1">
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-8">
           {/* Sidebar Navigation */}
-          <div className="lg:col-span-1">
+          <div className="md:col-span-2 lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-8">
               <nav className="space-y-2">
                 {editorSteps.map((step, index) => {
@@ -174,7 +174,7 @@ export default function EditorLayout() {
           </div>
 
           {/* Main Content */}
-          <div className="lg:col-span-3 overflow-y-auto">
+          <div className="md:col-span-2 lg:col-span-3 overflow-y-auto">
             <Outlet context={portfolio} />
           </div>
         </div>

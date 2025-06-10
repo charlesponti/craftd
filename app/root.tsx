@@ -63,21 +63,23 @@ export const links = () => [
     href: '/public/icons/android-icon-192x192.png',
   },
 
+  // Web Manifest
+  { rel: 'manifest', href: '/public/manifest.json' },
+
+  // Safari Pinned Tab Icon
+  { rel: 'mask-icon', href: '/public/icons/safari-pinned-tab.svg', color: '#ffffff' },
+]
+
+export const meta = () => [
+  // Theme Color
+  { name: 'theme-color', content: '#ffffff' },
+
   // Microsoft Tile Icons
   { name: 'msapplication-TileColor', content: '#ffffff' },
   { name: 'msapplication-TileImage', content: '/public/icons/ms-icon-144x144.png' },
   { name: 'msapplication-square70x70logo', content: '/public/icons/ms-icon-70x70.png' },
   { name: 'msapplication-square150x150logo', content: '/public/icons/ms-icon-150x150.png' },
   { name: 'msapplication-square310x310logo', content: '/public/icons/ms-icon-310x310.png' },
-
-  // Web Manifest
-  { rel: 'manifest', href: '/public/manifest.json' },
-
-  // Theme Color
-  { name: 'theme-color', content: '#ffffff' },
-
-  // Safari Pinned Tab Icon
-  { rel: 'mask-icon', href: '/public/icons/safari-pinned-tab.svg', color: '#ffffff' },
 
   // Social Media / OpenGraph
   { property: 'og:image', content: '/public/icons/og-image.jpg' },

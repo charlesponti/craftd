@@ -101,7 +101,6 @@ export const portfolios = pgTable(
   ]
 )
 
-// Social Links table - separate table for social media links
 export const socialLinks = pgTable(
   'social_links',
   {

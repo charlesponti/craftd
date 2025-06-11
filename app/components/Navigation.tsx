@@ -1,6 +1,8 @@
 import { BriefcaseIcon, MenuIcon, PencilIcon, XIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router'
+import { Button, getButtonClasses } from '~/components/ui/button'
+import { cn } from '~/lib/utils'
 import { useUser } from '../hooks/useAuth'
 import { createClient } from '../lib/supabase/client'
 
@@ -11,9 +13,12 @@ interface User {
   avatarUrl?: string
 }
 
-const Avatar = ({ user, className = 'w-8 h-8' }: { user: User; className?: string }) => (
+const Avatar = ({ user, className = 'size-8' }: { user: User; className?: string }) => (
   <div
-    className={`${className} bg-muted border border-input rounded-full flex items-center justify-center transition-fast`}
+    className={cn(
+      className,
+      'bg-muted border border-input rounded-full flex items-center justify-center transition-fast'
+    )}
   >
     {user?.avatarUrl ? (
       <img
@@ -28,11 +33,6 @@ const Avatar = ({ user, className = 'w-8 h-8' }: { user: User; className?: strin
     )}
   </div>
 )
-
-// Utility function for conditional classes
-const cn = (...classes: (string | boolean | undefined)[]) => {
-  return classes.filter(Boolean).join(' ')
-}
 
 export default function Navigation() {
   const user = useUser()
@@ -116,7 +116,7 @@ export default function Navigation() {
                 <img
                   src="/public/icons/icon-192x192.png"
                   alt="Craftd Logo"
-                  className="hidden md:block h-6 w-auto transition-fast group-hover:opacity-80"
+                  className="h-6 w-auto transition-fast group-hover:opacity-80"
                 />
               </div>
               <span className="font-sans text-xl font-semibold tracking-tight text-foreground">
@@ -132,7 +132,7 @@ export default function Navigation() {
                     key={link.href}
                     to={link.href}
                     className={cn(
-                      'btn btn-ghost text-sm font-medium rounded-md px-lg py-sm',
+                      getButtonClasses({ variant: 'ghost', size: 'sm' }),
                       isCurrentPage(link.href)
                         ? 'bg-accent text-accent-foreground'
                         : 'text-muted-foreground hover:text-foreground'
@@ -151,7 +151,8 @@ export default function Navigation() {
                   <Link
                     to="/editor"
                     className={cn(
-                      'btn btn-ghost inline-flex gap-sm items-center justify-center px-lg py-sm text-sm font-medium rounded-md',
+                      getButtonClasses({ variant: 'ghost', size: 'sm' }),
+                      'inline-flex gap-sm items-center',
                       isCurrentPage('/editor')
                         ? 'bg-accent text-accent-foreground'
                         : 'text-muted-foreground hover:text-foreground'
@@ -164,7 +165,8 @@ export default function Navigation() {
                   <Link
                     to="/career"
                     className={cn(
-                      'btn btn-ghost inline-flex gap-sm items-center justify-center px-lg py-sm text-sm font-medium rounded-md',
+                      getButtonClasses({ variant: 'ghost', size: 'sm' }),
+                      'inline-flex gap-sm items-center',
                       isCurrentPage('/career')
                         ? 'bg-accent text-accent-foreground'
                         : 'text-muted-foreground hover:text-foreground'
@@ -185,15 +187,12 @@ export default function Navigation() {
                 </div>
               ) : (
                 <div className="hidden md:flex items-center gap-sm">
-                  <Link
-                    to="/login"
-                    className="btn btn-ghost px-lg py-sm text-sm font-medium rounded-md"
-                  >
+                  <Link to="/login" className={getButtonClasses({ variant: 'ghost', size: 'sm' })}>
                     Log In
                   </Link>
                   <Link
                     to="/onboarding"
-                    className="btn btn-primary px-lg py-sm text-sm font-medium rounded-md shadow-sm"
+                    className={getButtonClasses({ variant: 'primary', size: 'sm' })}
                   >
                     Sign Up
                   </Link>
@@ -201,14 +200,16 @@ export default function Navigation() {
               )}
 
               {/* Mobile menu button */}
-              <button
+              <Button
                 type="button"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="btn btn-ghost inline-flex items-center justify-center md:hidden p-sm rounded-md focus:outline-none"
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
                 aria-label="Open navigation menu"
               >
                 {isMenuOpen ? <XIcon className="w-5 h-5" /> : <MenuIcon className="w-5 h-5" />}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -243,33 +244,35 @@ export default function Navigation() {
                     <Link
                       to="/account"
                       onClick={closeMenu}
-                      className="flex items-center px-md py-sm text-base font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-fast"
+                      className="flex items-center gap-sm px-md py-sm text-base font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-fast"
                     >
-                      <Avatar user={user} className="w-8 h-8 mr-3" />
+                      <Avatar user={user} className="size-8" />
                       My Account
                     </Link>
                     <Link
                       to="/editor"
                       onClick={closeMenu}
-                      className="block px-md py-sm text-base font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-fast"
+                      className="flex items-center gap-sm px-md py-sm text-base font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-fast"
                     >
-                      Portfolio Editor
+                      <PencilIcon className="size-4" />
+                      Editor
                     </Link>
                     <Link
                       to="/career"
                       onClick={closeMenu}
-                      className="block px-md py-sm text-base font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-fast"
+                      className="flex items-center gap-sm px-md py-sm text-base font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-fast"
                     >
                       <BriefcaseIcon className="w-4 h-4" />
                       Career
                     </Link>
-                    <button
+                    <Button
                       type="button"
                       onClick={handleSignOut}
-                      className="block w-full text-left px-md py-sm text-base font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-fast"
+                      variant="ghost"
+                      className="block w-full text-left px-md py-sm text-base font-medium justify-start"
                     >
                       Sign Out
-                    </button>
+                    </Button>
                   </>
                 ) : (
                   <>
@@ -283,7 +286,10 @@ export default function Navigation() {
                     <Link
                       to="/onboarding"
                       onClick={closeMenu}
-                      className="block mx-md my-sm px-lg py-md text-base font-medium text-center text-primary-foreground bg-primary hover:bg-primary/90 rounded-md shadow-sm transition-fast"
+                      className={cn(
+                        getButtonClasses({ variant: 'primary', size: 'default' }),
+                        'block mx-md my-sm text-center'
+                      )}
                     >
                       Sign Up
                     </Link>

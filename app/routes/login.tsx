@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { MetaFunction } from 'react-router'
 import { Link, useNavigate, useSearchParams } from 'react-router'
+import { Button } from '~/components/ui/button'
 import { useUser } from '../hooks/useAuth'
 import { createClient } from '../lib/supabase/client'
 
@@ -109,10 +110,11 @@ export default function Login() {
           )}
 
           <div className="space-y-6">
-            <button
+            <Button
               type="button"
               onClick={handleGoogleLogin}
-              className="w-full flex justify-center items-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-60"
+              variant="outline"
+              className="w-full flex justify-center items-center px-4 py-3 text-sm font-medium"
               disabled={isGoogleLoading}
             >
               <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" role="img" aria-label="Google logo">
@@ -134,7 +136,7 @@ export default function Login() {
                 />
               </svg>
               {isGoogleLoading ? 'Redirecting to Google...' : 'Continue with Google'}
-            </button>
+            </Button>
 
             <div className="text-center">
               <Link to="/" className="text-sm text-blue-600 hover:text-blue-500">

@@ -2,6 +2,7 @@ import { Edit, ImageIcon, Upload, User, X } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop'
 import 'react-image-crop/dist/ReactCrop.css'
+import { Button } from '~/components/ui/button'
 
 interface ProfileImageUploadProps {
   currentImageUrl?: string | null | undefined
@@ -190,9 +191,9 @@ export function ProfileImageUpload({
         <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] flex flex-col p-6">
           <div className="flex justify-between items-center mb-4 shrink-0">
             <h3 className="text-lg font-semibold">Crop Profile Image</h3>
-            <button type="button" onClick={handleCancel} className="p-1 hover:bg-gray-100 rounded">
+            <Button type="button" onClick={handleCancel} variant="ghost" size="sm" className="p-1">
               <X className="w-5 h-5" />
-            </button>
+            </Button>
           </div>
 
           <div className="mb-6 flex-1 flex items-center justify-center">
@@ -223,19 +224,15 @@ export function ProfileImageUpload({
           </div>
 
           <div className="flex justify-end space-x-3 shrink-0">
-            <button
-              type="button"
-              onClick={handleCancel}
-              disabled={isUploading}
-              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
-            >
+            <Button type="button" onClick={handleCancel} disabled={isUploading} variant="outline">
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={handleUpload}
               disabled={isUploading || !crop}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+              variant="primary"
+              className="flex items-center gap-2"
             >
               {isUploading ? (
                 <>
@@ -248,7 +245,7 @@ export function ProfileImageUpload({
                   Upload
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -259,10 +256,11 @@ export function ProfileImageUpload({
     <div className="w-full">
       {/* Current Profile Image */}
       <div className="flex items-center mb-4">
-        <button
+        <Button
           type="button"
           onClick={() => setShowUploadZone(!showUploadZone)}
-          className="relative group"
+          variant="ghost"
+          className="relative group p-0"
         >
           <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg mr-4 group-hover:shadow-xl transition-shadow">
             {currentImageUrl &&
@@ -276,7 +274,7 @@ export function ProfileImageUpload({
           <div className="absolute -bottom-1 -right-1 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-1 shadow-lg transition-colors">
             <Edit className="w-3 h-3" />
           </div>
-        </button>
+        </Button>
       </div>
 
       {/* Upload Area - Animated */}
@@ -297,13 +295,14 @@ export function ProfileImageUpload({
             <ImageIcon className="w-8 h-8 text-gray-400 mb-3" />
             <h3 className="font-medium text-gray-900 mb-1">
               Drop your image here, or{' '}
-              <button
+              <Button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="text-blue-600 hover:text-blue-700 underline"
+                variant="ghost"
+                className="text-blue-600 hover:text-blue-700 underline p-0 h-auto"
               >
                 browse
-              </button>
+              </Button>
             </h3>
             <p className="text-sm text-gray-500 mb-4">JPG, PNG, GIF up to 5MB</p>
 
@@ -328,13 +327,14 @@ export function ProfileImageUpload({
             )}
 
             {showUploadZone && (
-              <button
+              <Button
                 type="button"
                 onClick={() => setShowUploadZone(false)}
-                className="mt-4 text-sm text-gray-500 hover:text-gray-700 underline"
+                variant="ghost"
+                className="mt-4 text-sm text-gray-500 hover:text-gray-700 underline p-0 h-auto"
               >
                 Cancel
-              </button>
+              </Button>
             )}
           </div>
         </div>

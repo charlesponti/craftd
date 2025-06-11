@@ -1,8 +1,11 @@
 import { and, eq, inArray } from 'drizzle-orm'
+import { BarChart3, PlusIcon } from 'lucide-react'
 import { useEffect } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import type { ActionFunctionArgs, MetaFunction } from 'react-router'
 import { useFetcher, useOutletContext } from 'react-router'
+import { Button } from '~/components/ui/button'
+import { Input } from '~/components/ui/input'
 import { db } from '~/lib/db'
 import type { NewPortfolioStats } from '~/lib/db/schema'
 import { portfolioStats } from '~/lib/db/schema'
@@ -107,59 +110,78 @@ function PortfolioStatsEditorSection({
   const isSaving = fetcher.state === 'submitting'
 
   return (
-    <section className="card">
+    <section className="flex flex-col gap-4">
       <div className="flex items-center justify-between mb-2xl">
-        <h2 className="text-2xl font-semibold text-foreground">Portfolio Stats</h2>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+            <BarChart3 className="w-5 h-5 text-blue-600" />
+          </div>
+          <h2 className="text-2xl font-semibold text-gray-900">Portfolio Stats</h2>
+        </div>
         <div className="flex gap-sm">
-          <button type="button" onClick={handleAddNewStat} className="btn btn-outline btn-sm">
-            Add New Stat
-          </button>
-          <button
+          <Button
+            type="button"
+            onClick={handleAddNewStat}
+            variant="outline"
+            size="sm"
+            className="inline-flex items-center gap-2 border-dashed"
+          >
+            <PlusIcon className="size-4" />
+            <span className="hidden sm:block">Add New Stat</span>
+          </Button>
+          <Button
             type="submit"
             form="stats-form"
             disabled={isSaving || !isDirty}
-            className="btn btn-primary btn-sm"
+            variant="primary"
+            size="sm"
           >
             {isSaving ? 'Saving...' : 'Save Changes'}
-          </button>
+          </Button>
         </div>
       </div>
-      <form id="stats-form" onSubmit={handleSubmit(onSubmit)} className="space-y-lg">
+      <form id="stats-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         {fields.map((field, index) => (
-          <div key={field.id} className="card-sm bg-muted/50">
-            <div className="grid-2">
-              <div className="form-group">
-                <label htmlFor={`stats.${index}.label`} className="label">
-                  Label
-                </label>
-                <input
-                  id={`stats.${index}.label`}
-                  type="text"
-                  className="input"
-                  {...register(`stats.${index}.label` as const)}
-                />
+          <div key={field.id} className="card">
+            <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+              <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="form-group">
+                  <label htmlFor={`stats.${index}.label`} className="label">
+                    Label
+                  </label>
+                  <Input
+                    id={`stats.${index}.label`}
+                    type="text"
+                    placeholder="Enter label"
+                    {...register(`stats.${index}.label` as const)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor={`stats.${index}.value`} className="label">
+                    Value
+                  </label>
+                  <Input
+                    id={`stats.${index}.value`}
+                    type="text"
+                    placeholder="Enter value"
+                    {...register(`stats.${index}.value` as const)}
+                  />
+                </div>
               </div>
-              <div className="form-group">
-                <label htmlFor={`stats.${index}.value`} className="label">
-                  Value
-                </label>
-                <input
-                  id={`stats.${index}.value`}
-                  type="text"
-                  className="input"
-                  {...register(`stats.${index}.value` as const)}
-                />
+              <div className="flex-shrink-0 self-start sm:self-end">
+                {fields.length > 1 && (
+                  <Button
+                    type="button"
+                    onClick={() => remove(index)}
+                    variant="destructive"
+                    size="sm"
+                    className="w-full sm:w-auto"
+                  >
+                    Remove
+                  </Button>
+                )}
               </div>
             </div>
-            {fields.length > 1 && (
-              <button
-                type="button"
-                onClick={() => remove(index)}
-                className="btn btn-destructive btn-sm"
-              >
-                Remove
-              </button>
-            )}
           </div>
         ))}
       </form>

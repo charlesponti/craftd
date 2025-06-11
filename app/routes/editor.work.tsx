@@ -1,9 +1,11 @@
 import { and, eq } from 'drizzle-orm'
+import { Briefcase, PlusIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { SubmitHandler } from 'react-hook-form'
 import { useForm } from 'react-hook-form'
-import type { ActionFunctionArgs, MetaFunction } from 'react-router'
+import type { ActionFunctionArgs } from 'react-router'
 import { useFetcher, useOutletContext } from 'react-router'
+import { Button } from '~/components/ui/button'
 import { db } from '~/lib/db'
 import type { NewWorkExperience, WorkExperience } from '~/lib/db/schema'
 import { workExperiences } from '~/lib/db/schema'
@@ -159,22 +161,24 @@ function WorkExperienceForm({
           {isNew ? 'New Experience' : 'Work Experience'}
         </h3>
         <div className="flex gap-sm">
-          <button
+          <Button
             type="submit"
             disabled={isSaving || (!isDirty && !isNew) || !isValid}
-            className="btn btn-primary btn-sm"
+            variant="primary"
+            size="sm"
           >
             {isSaving ? 'Saving...' : isNew ? 'Add Experience' : 'Save Changes'}
-          </button>
+          </Button>
           {!isNew && (
-            <button
+            <Button
               type="button"
               onClick={handleDelete}
               disabled={isSaving}
-              className="btn btn-error btn-sm text-destructive hover:bg-destructive/10"
+              variant="destructive"
+              size="sm"
             >
               Delete
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -293,17 +297,24 @@ function WorkExperienceEditorSection({
   }
 
   return (
-    <div className="container flex flex-col gap-2xl mx-auto px-lg">
-      <div className="mb-xl">
-        <h2 className="text-2xl font-semibold text-foreground mb-sm">Work Experience</h2>
-        <p className="text-muted text-muted-foreground mb-lg">
-          Add your professional work experience and achievements.
-        </p>
-
+    <section className="container flex flex-col gap-2xl mx-auto">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+            <Briefcase className="w-5 h-5 text-blue-600" />
+          </div>
+          <h2 className="text-2xl font-semibold text-gray-900">Work Experience</h2>
+        </div>
         {!showNewForm && (
-          <button type="button" onClick={handleAddNew} className="btn btn-outline">
-            Add New Experience
-          </button>
+          <Button
+            type="button"
+            onClick={handleAddNew}
+            variant="outline"
+            className="inline-flex items-center gap-2 border-dashed"
+          >
+            <PlusIcon className="size-4" />
+            <span className="hidden sm:block">Add New Experience</span>
+          </Button>
         )}
       </div>
 
@@ -329,12 +340,8 @@ function WorkExperienceEditorSection({
           </div>
         )}
       </div>
-    </div>
+    </section>
   )
-}
-
-export const meta: MetaFunction = () => {
-  return [{ title: 'Work Experience - Portfolio Editor | Craftd' }]
 }
 
 export async function action(args: ActionFunctionArgs) {

@@ -1,9 +1,10 @@
 import { and, eq, inArray } from 'drizzle-orm'
-import { LoaderPinwheel, PlusIcon, XIcon } from 'lucide-react'
+import { LoaderPinwheel, PlusIcon, XIcon, Zap } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import type { ActionFunctionArgs, MetaFunction } from 'react-router'
 import { useFetcher, useOutletContext } from 'react-router'
+import { Button } from '~/components/ui/button'
 import { db } from '~/lib/db'
 import { skills, type NewSkill } from '~/lib/db/schema'
 import { useToast } from '../hooks/useToast'
@@ -131,9 +132,14 @@ function SkillsEditorSection({ skills: initialSkills, portfolioId }: SkillsEdito
   const isSaving = fetcher.state === 'submitting'
 
   return (
-    <section className="p-6 bg-white shadow-md rounded-lg">
+    <section className="container flex flex-col gap-2xl mx-auto">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold text-gray-800">Skills</h2>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+            <Zap className="w-5 h-5 text-blue-600" />
+          </div>
+          <h2 className="text-2xl font-semibold text-gray-900">Skills</h2>
+        </div>
         <div>
           {isSaving && (
             <div className="mt-6 pt-4 border-t border-gray-200">
@@ -143,19 +149,20 @@ function SkillsEditorSection({ skills: initialSkills, portfolioId }: SkillsEdito
               </div>
             </div>
           )}
-          <button
+          <Button
             type="button"
             onClick={() => setIsAddingSkill(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-dashed border-gray-400 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            variant="outline"
+            className="inline-flex items-center gap-2 border-dashed"
           >
             <PlusIcon className="size-4" />
             <span className="hidden sm:block">Add New Skill</span>
-          </button>
+          </Button>
         </div>
       </div>
       {/* Add new skill section */}
       {isAddingSkill ? (
-        <div className="my-8 border border-dashed border-gray-400 py-2 px-4">
+        <div className="card my-8 border border-dashed border-gray-400 py-2 px-4">
           <form onSubmit={handleNewSkillSubmit(handleAddSkill)} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
@@ -209,28 +216,26 @@ function SkillsEditorSection({ skills: initialSkills, portfolioId }: SkillsEdito
             </div>
 
             <div className="flex gap-3 justify-end">
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   setIsAddingSkill(false)
                   resetNewSkillForm()
                 }}
-                className="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                variant="outline"
               >
                 Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-              >
+              </Button>
+              <Button type="submit" variant="primary">
                 Add Skill
-              </button>
+              </Button>
             </div>
           </form>
         </div>
       ) : null}
+
       {/* Skills grouped by category */}
-      <div className="space-y-6">
+      <div className="card space-y-6">
         {Object.entries(skillsByCategory).map(([category, categorySkills]) => (
           <div key={category} className="space-y-3">
             <h3 className="text-lg font-medium text-gray-700 border-b border-gray-200 pb-2">
@@ -244,15 +249,17 @@ function SkillsEditorSection({ skills: initialSkills, portfolioId }: SkillsEdito
                 >
                   <span className="border-b border-gray-200">{skill.name}</span>
                   <span className="text-xs opacity-75">({skill.level || 50}%)</span>
-                  <button
+                  <Button
                     type="button"
                     onClick={() => handleRemoveSkill(skill)}
-                    className="ml-1 hover:bg-black hover:bg-opacity-10 rounded-full p-0.5 transition-colors"
+                    variant="ghost"
+                    size="icon"
+                    className="ml-1 hover:bg-black hover:bg-opacity-10 rounded-full p-0.5 h-6 w-6"
                     title="Remove skill"
                     aria-label="Remove skill"
                   >
                     <XIcon className="size-3" />
-                  </button>
+                  </Button>
                 </div>
               ))}
             </div>

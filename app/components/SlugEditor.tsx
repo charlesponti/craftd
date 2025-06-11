@@ -1,6 +1,7 @@
 import { Check, Edit, Loader2, X } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useSubmit } from 'react-router'
+import { Button } from '~/components/ui/button'
 
 interface SlugEditorProps {
   portfolioId: string
@@ -229,32 +230,32 @@ export function SlugEditor({ portfolioId, initialSlug, onSave, onCancel }: SlugE
         <div className="flex items-center space-x-1">
           {isEditing ? (
             <>
-              <button
+              <Button
                 type="button"
                 onClick={handleSave}
                 disabled={!canSave}
-                className="inline-flex items-center px-3 py-1 text-xs border border-green-300 rounded text-green-700 hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                variant="outline"
+                size="xs"
+                className="border-green-300 text-green-700 hover:bg-green-50"
               >
                 {isSaving ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : null}
                 Save
-              </button>
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="inline-flex items-center px-3 py-1 text-xs border border-gray-300 rounded text-gray-700 hover:bg-gray-50"
-              >
+              </Button>
+              <Button type="button" onClick={handleCancel} variant="outline" size="xs">
                 Cancel
-              </button>
+              </Button>
             </>
           ) : (
-            <button
+            <Button
               type="button"
               onClick={handleEdit}
-              className="inline-flex items-center px-3 py-1 text-xs border border-gray-300 rounded text-gray-700 hover:bg-gray-50"
+              variant="outline"
+              size="xs"
+              className="inline-flex items-center"
             >
               <Edit className="w-3 h-3 mr-1" />
               Edit
-            </button>
+            </Button>
           )}
         </div>
       </div>

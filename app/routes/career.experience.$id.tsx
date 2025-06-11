@@ -2,6 +2,7 @@ import { ArrowLeftIcon, CheckIcon, PencilIcon, XIcon } from 'lucide-react'
 import { useState } from 'react'
 import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
 import { useLoaderData, useNavigate } from 'react-router'
+import { Button } from '~/components/ui/button'
 import type { WorkExperience } from '~/lib/db/schema'
 import { createSuccessResponse, withAuthLoader } from '~/lib/route-utils'
 
@@ -102,14 +103,16 @@ export default function WorkExperienceDetail() {
       <div className="border-b border-slate-200/50 bg-white/80 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center gap-4">
-            <button
+            <Button
               type="button"
               onClick={() => navigate('/career')}
-              className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+              variant="ghost"
+              size="sm"
+              className="p-2"
               data-testid="back-button"
             >
               <ArrowLeftIcon className="w-5 h-5 text-slate-600" />
-            </button>
+            </Button>
             <div>
               <h1 className="text-3xl font-light text-slate-900 font-serif">
                 {workExperience.role}
@@ -458,20 +461,24 @@ function EditableField({
               placeholder={placeholder}
             />
           )}
-          <button
+          <Button
             type="button"
             onClick={handleSave}
-            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+            variant="ghost"
+            size="sm"
+            className="p-2 text-green-600 hover:bg-green-50"
           >
             <CheckIcon className="w-4 h-4" />
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={handleCancel}
-            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            variant="ghost"
+            size="sm"
+            className="p-2 text-red-600 hover:bg-red-50"
           >
             <XIcon className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
       </div>
     )
@@ -489,13 +496,15 @@ function EditableField({
             {type === 'number' && value ? Number.parseInt(value).toLocaleString() : displayValue}
           </span>
         </div>
-        <button
+        <Button
           type="button"
           onClick={() => setIsEditing(true)}
-          className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-slate-600 transition-all"
+          variant="ghost"
+          size="sm"
+          className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-slate-600"
         >
           <PencilIcon className="w-4 h-4" />
-        </button>
+        </Button>
       </div>
     </div>
   )

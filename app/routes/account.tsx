@@ -1,8 +1,9 @@
 import { and, eq, ne } from 'drizzle-orm'
-import { Edit, ExternalLink, LogOut, Trash2, Upload } from 'lucide-react'
+import { Download, Edit, ExternalLink, LogOut, Trash2, Upload } from 'lucide-react'
 import { useState } from 'react'
 import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
 import { useActionData, useLoaderData, useNavigate, useSubmit } from 'react-router'
+import { Button } from '~/components/ui/button'
 import { ProfileImageUpload } from '../components/ProfileImageUpload'
 import { SlugEditor } from '../components/SlugEditor'
 import { db } from '../lib/db'
@@ -234,6 +235,8 @@ export default function Account() {
   const portfolio = portfolios[0]
   const [profileImageUrl, setProfileImageUrl] = useState(portfolio?.profileImageUrl || undefined)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [pdfGenerating, setPdfGenerating] = useState(false)
+  const [pdfError, setPdfError] = useState<string | null>(null)
 
   const handleSignOut = async () => {
     try {
@@ -265,6 +268,45 @@ export default function Account() {
 
   const handleImageError = (error: string) => {
     setUploadError(error)
+  }
+
+  const handleDownloadPdf = async () => {
+    if (!portfolio?.slug || !portfolio.isPublic) {
+      setPdfError('Portfolio must be public to generate PDF')
+      return
+    }
+
+    try {
+      setPdfGenerating(true)
+      setPdfError(null)
+
+      const portfolioUrl = `${window.location.origin}/p/${portfolio.slug}`
+
+      const response = await fetch('https://craftd-worker.fly.dev/trigger-task', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: portfolioUrl,
+          userId: user.id,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (result.success && result.pdfUrl) {
+        // Open the PDF in a new tab for download
+        window.open(result.pdfUrl, '_blank')
+      } else {
+        setPdfError(result.message || 'Failed to generate PDF')
+      }
+    } catch (error) {
+      console.error('PDF generation error:', error)
+      setPdfError('Failed to generate PDF. Please try again.')
+    } finally {
+      setPdfGenerating(false)
+    }
   }
 
   // User should be available from loader (requireAuth ensures this)
@@ -302,15 +344,17 @@ export default function Account() {
                 </div>
               </div>
 
-              <button
+              <Button
                 type="button"
                 onClick={handleSignOut}
                 disabled={isSigningOut}
-                className="inline-flex items-center px-3 py-1 text-sm border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                variant="outline"
+                size="sm"
+                className="inline-flex items-center"
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 {isSigningOut ? 'Signing Out...' : 'Sign Out'}
-              </button>
+              </Button>
             </div>
 
             {uploadError && (
@@ -401,31 +445,63 @@ export default function Account() {
 
                   {/* Responsive button layout */}
                   <div className="flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-2">
-                    <button
+                    <Button
                       type="button"
                       onClick={() => navigate('/editor')}
-                      className="inline-flex items-center justify-center w-full sm:w-auto px-3 py-1 bg-black text-white rounded-md text-sm font-medium hover:bg-gray-800"
+                      variant="default"
+                      size="sm"
+                      className="w-full sm:w-auto"
                     >
                       <Edit className="w-4 h-4 mr-2" />
                       Edit Portfolio
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleDownloadPdf}
+                      disabled={pdfGenerating || !portfolio.isPublic}
+                      variant="outline"
+                      size="sm"
+                      className="w-full sm:w-auto border-green-200 text-green-600 hover:text-green-700 hover:bg-green-50"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      {pdfGenerating ? 'Generating PDF...' : 'Download PDF'}
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => navigate('/onboarding')}
-                      className="inline-flex items-center justify-center w-full sm:w-auto px-3 py-1 text-sm border border-blue-200 rounded-md text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-medium"
+                      variant="outline"
+                      size="sm"
+                      className="w-full sm:w-auto border-blue-200 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                     >
                       <Upload className="w-4 h-4 mr-2" />
                       Upload New Resume
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => handleDeletePortfolio(portfolio.id)}
-                      className="inline-flex items-center justify-center w-full sm:w-auto px-3 py-1 text-sm border border-red-200 rounded-md text-red-600 hover:text-red-700 hover:bg-red-50 font-medium"
+                      variant="outline"
+                      size="sm"
+                      className="w-full sm:w-auto border-red-200 text-red-600 hover:text-red-700 hover:bg-red-50"
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Delete Portfolio
-                    </button>
+                    </Button>
                   </div>
+
+                  {pdfError && (
+                    <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-md">
+                      <p className="text-sm text-red-600">{pdfError}</p>
+                    </div>
+                  )}
+
+                  {!portfolio.isPublic && (
+                    <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                      <p className="text-sm text-yellow-800">
+                        Your portfolio must be public to generate a PDF. Make it public in the
+                        editor to enable PDF downloads.
+                      </p>
+                    </div>
+                  )}
 
                   <p className="text-xs text-gray-500">
                     Last updated: {new Date(portfolio.updatedAt).toLocaleDateString()}
@@ -440,13 +516,14 @@ export default function Account() {
                 <p className="text-sm text-gray-400 mb-6">
                   Create your professional portfolio to showcase your skills and experience.
                 </p>
-                <button
+                <Button
                   type="button"
                   onClick={() => navigate('/onboarding')}
-                  className="inline-flex items-center justify-center px-4 py-2 bg-black text-white rounded-md text-sm font-medium hover:bg-gray-800"
+                  variant="default"
+                  className="inline-flex items-center justify-center"
                 >
                   Get Started
-                </button>
+                </Button>
               </div>
             </div>
           )}

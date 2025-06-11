@@ -13,6 +13,7 @@ import {
 import { useEffect, useState } from 'react'
 import type { MetaFunction } from 'react-router'
 import { useNavigate } from 'react-router'
+import { Button } from '~/components/ui/button'
 
 export const meta: MetaFunction = () => {
   return [
@@ -84,24 +85,28 @@ export default function OnboardingComplete() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
+              <Button
                 type="button"
                 onClick={goToPortfolio}
-                className="flex items-center justify-center gap-2 px-8 py-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-lg"
+                variant="primary"
+                size="lg"
+                className="flex items-center justify-center gap-2 shadow-lg"
               >
                 <Eye className="w-5 h-5" />
                 View Your Portfolio
                 <ArrowRight className="w-4 h-4" />
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
                 onClick={shareTips}
-                className="flex items-center justify-center gap-2 px-8 py-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                variant="outline"
+                size="lg"
+                className="flex items-center justify-center gap-2"
               >
                 <Share2 className="w-5 h-5" />
                 Learn How to Share
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -146,10 +151,11 @@ export default function OnboardingComplete() {
             <h2 className="font-serif text-2xl font-light text-gray-900 mb-6">What's Next?</h2>
 
             <div className="grid md:grid-cols-2 gap-6">
-              <button
+              <Button
                 type="button"
                 onClick={() => navigate('/portfolio-editor')}
-                className="flex items-start gap-4 p-6 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors group text-left"
+                variant="ghost"
+                className="flex items-start gap-4 p-6 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors group text-left h-auto"
               >
                 <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-blue-200 transition-colors">
                   <Edit3 className="w-5 h-5 text-blue-600" />
@@ -161,12 +167,13 @@ export default function OnboardingComplete() {
                     yours.
                   </p>
                 </div>
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
                 onClick={shareTips}
-                className="flex items-start gap-4 p-6 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-colors group text-left"
+                variant="ghost"
+                className="flex items-start gap-4 p-6 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-colors group text-left h-auto"
               >
                 <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-green-200 transition-colors">
                   <Share2 className="w-5 h-5 text-green-600" />
@@ -178,7 +185,7 @@ export default function OnboardingComplete() {
                     career.
                   </p>
                 </div>
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -252,12 +259,9 @@ export default function OnboardingComplete() {
                 <code className="flex-1 px-3 py-2 bg-gray-100 rounded text-sm font-mono text-gray-800">
                   https://craftd.dev/your-name
                 </code>
-                <button
-                  type="button"
-                  className="px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 transition-colors"
-                >
+                <Button type="button" variant="primary" size="sm">
                   Copy Link
-                </button>
+                </Button>
               </div>
             </div>
           </div>

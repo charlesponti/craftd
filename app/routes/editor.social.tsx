@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import type { ActionFunctionArgs, MetaFunction } from 'react-router'
 import { useFetcher, useOutletContext } from 'react-router'
+import { Button } from '~/components/ui/button'
 import { db } from '~/lib/db'
 import type { NewSocialLinks, SocialLinks } from '~/lib/db/schema'
 import { socialLinks } from '~/lib/db/schema'
@@ -83,7 +84,7 @@ function SocialLinksEditorSection({
   const isSaving = fetcher.state === 'submitting'
 
   return (
-    <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+    <section className="container flex flex-col gap-2xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -93,19 +94,16 @@ function SocialLinksEditorSection({
             </div>
             <h2 className="text-2xl font-semibold text-gray-900">Social</h2>
           </div>
-          <p className="text-gray-600">
-            Connect your social profiles to showcase your professional presence
-          </p>
         </div>
         <div className="flex gap-3">
-          <button
+          <Button
             type="submit"
             form="social-form"
             disabled={isSaving || !isDirty}
-            className="btn btn-primary"
+            variant="primary"
           >
             {isSaving ? 'Saving...' : 'Save'}
-          </button>
+          </Button>
         </div>
       </div>
 

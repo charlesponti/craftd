@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from 'react'
+import { Button } from '~/components/ui/button'
 
 interface ToastMessage {
   id: string
@@ -107,10 +108,12 @@ function ToastContainer() {
               )}
             </div>
             <div className="flex-1 text-sm font-medium">{toast.message}</div>
-            <button
+            <Button
               type="button"
               onClick={() => removeToast(toast.id)}
-              className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
+              variant="ghost"
+              size="sm"
+              className="flex-shrink-0 text-gray-400 hover:text-gray-600 p-1 h-auto"
               aria-label="Close notification"
             >
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
@@ -120,7 +123,7 @@ function ToastContainer() {
                   clipRule="evenodd"
                 />
               </svg>
-            </button>
+            </Button>
           </div>
         </div>
       ))}

@@ -1,7 +1,8 @@
-import { Check, Edit, Loader2, X } from 'lucide-react'
+import { Check, Loader2, X } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useSubmit } from 'react-router'
 import { Button } from '~/components/ui/button'
+import { cn } from '~/lib/utils'
 
 interface SlugEditorProps {
   portfolioId: string
@@ -21,7 +22,6 @@ export function SlugEditor({ portfolioId, initialSlug, onSave, onCancel }: SlugE
   const submit = useSubmit()
 
   // Component state
-  const [isEditing, setIsEditing] = useState(false)
   const [slugValue, setSlugValue] = useState(initialSlug)
   const [isSaving, setIsSaving] = useState(false)
   const [validation, setValidation] = useState<ValidationState>({
@@ -113,29 +113,14 @@ export function SlugEditor({ portfolioId, initialSlug, onSave, onCancel }: SlugE
 
   // Debounce validation calls
   useEffect(() => {
-    if (!isEditing) return
-
     const timer = setTimeout(() => {
       validateSlug(slugValue)
     }, 500)
 
     return () => clearTimeout(timer)
-  }, [slugValue, validateSlug, isEditing])
+  }, [slugValue, validateSlug])
 
   // Event handlers
-  const handleEdit = () => {
-    setIsEditing(true)
-    setSlugValue(initialSlug)
-    setValidation({ isChecking: false, isAvailable: null, message: '', isValid: true })
-  }
-
-  const handleCancel = () => {
-    setIsEditing(false)
-    setSlugValue(initialSlug)
-    setValidation({ isChecking: false, isAvailable: null, message: '', isValid: true })
-    onCancel?.()
-  }
-
   const handleSave = async () => {
     if (!validation.isValid || !validation.isAvailable || slugValue === initialSlug || isSaving) {
       return
@@ -153,7 +138,6 @@ export function SlugEditor({ portfolioId, initialSlug, onSave, onCancel }: SlugE
 
       // Let the parent component handle the success state
       onSave?.(slugValue)
-      setIsEditing(false)
     } catch (error) {
       console.error('Failed to save slug:', error)
     } finally {
@@ -173,7 +157,7 @@ export function SlugEditor({ portfolioId, initialSlug, onSave, onCancel }: SlugE
 
   // Get status icon and styling
   const getValidationStatus = () => {
-    if (!isEditing || !slugValue || slugValue === initialSlug) return null
+    if (!slugValue || slugValue === initialSlug) return null
 
     if (validation.isChecking) {
       return <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
@@ -204,64 +188,46 @@ export function SlugEditor({ portfolioId, initialSlug, onSave, onCancel }: SlugE
       <label htmlFor="portfolio-slug" className="text-sm font-medium text-gray-700">
         Portfolio URL
       </label>
-
       <div className="flex items-center space-x-2">
         <div className="flex items-center flex-1 min-w-0">
-          <span className="text-sm text-gray-500 flex-shrink-0">craftd.dev/p/</span>
-          {isEditing ? (
-            <div className="flex-1 relative">
-              <input
-                id="portfolio-slug"
-                type="text"
-                value={slugValue}
-                onChange={handleInputChange}
-                className="w-full text-sm font-mono px-2 py-1 pr-8 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="your-portfolio-name"
-              />
-              <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                {getValidationStatus()}
-              </div>
+          <div className="inline-flex items-center px-4 h-8 text-sm text-gray-500 bg-gray-50 border border-r-0 border-gray-300 rounded-l-md">
+            craftd.dev/p/
+          </div>
+          <div className="flex-1 relative">
+            <input
+              id="portfolio-slug"
+              type="text"
+              value={slugValue}
+              onChange={handleInputChange}
+              className={cn(
+                'input rounded-l-none border-l-0 pr-8 font-mono h-8',
+                !validation.isValid ? 'input-error' : ''
+              )}
+              placeholder="your-portfolio-name"
+            />
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+              {getValidationStatus()}
             </div>
-          ) : (
-            <span className="flex-1 text-sm font-mono text-blue-600 px-2 py-1">{initialSlug}</span>
-          )}
+          </div>
         </div>
 
         <div className="flex items-center space-x-1">
-          {isEditing ? (
-            <>
-              <Button
-                type="button"
-                onClick={handleSave}
-                disabled={!canSave}
-                variant="outline"
-                size="xs"
-                className="border-green-300 text-green-700 hover:bg-green-50"
-              >
-                {isSaving ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : null}
-                Save
-              </Button>
-              <Button type="button" onClick={handleCancel} variant="outline" size="xs">
-                Cancel
-              </Button>
-            </>
-          ) : (
-            <Button
-              type="button"
-              onClick={handleEdit}
-              variant="outline"
-              size="xs"
-              className="inline-flex items-center"
-            >
-              <Edit className="w-3 h-3 mr-1" />
-              Edit
-            </Button>
-          )}
+          <Button
+            type="button"
+            onClick={handleSave}
+            disabled={!canSave}
+            variant="outline"
+            size="xs"
+            className="border-green-300 text-green-700 hover:bg-green-50"
+          >
+            {isSaving ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : null}
+            Save
+          </Button>
         </div>
       </div>
 
       {/* Validation message */}
-      {isEditing && validation.message && (
+      {validation.message && (
         <p className={`text-xs ${getMessageStyling()}`}>{validation.message}</p>
       )}
     </div>

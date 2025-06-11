@@ -1,7 +1,8 @@
-import { ArrowLeftIcon, CheckIcon, PencilIcon, XIcon } from 'lucide-react'
+import { ArrowLeftIcon, CheckIcon, PencilIcon, PlusIcon, XIcon } from 'lucide-react'
 import { useState } from 'react'
 import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
 import { useLoaderData, useNavigate } from 'react-router'
+import { EditableArrayField } from '~/components/EditableArrayField'
 import { Button } from '~/components/ui/button'
 import type { WorkExperience } from '~/lib/db/schema'
 import { createSuccessResponse, withAuthLoader } from '~/lib/route-utils'
@@ -60,24 +61,37 @@ export async function action(args: ActionFunctionArgs) {
         processedValue = value ? Number.parseInt(value) : null
       } else if (['startDate', 'endDate'].includes(field)) {
         processedValue = value ? new Date(value) : null
-      } else if (
-        [
-          'tags',
-          'bonusHistory',
-          'benefits',
-          'performanceRatings',
-          'salaryAdjustments',
-          'metadata',
-        ].includes(field)
-      ) {
-        try {
-          processedValue = value ? JSON.parse(value) : null
-        } catch {
-          processedValue = value
-        }
       }
 
-      await updateWorkExperience(user.id, id, { [field]: processedValue })
+      // Now determine how to update the database
+      if (field.startsWith('metadata.')) {
+        const { getWorkExperienceById } = await import('~/lib/db/queries/base')
+        const currentExperience = await getWorkExperienceById(user.id, id)
+
+        if (currentExperience) {
+          const metadataField = field.replace('metadata.', '')
+          const currentMetadata = currentExperience.metadata || {}
+
+          // Parse JSON values for array fields like achievements, projects, etc.
+          let parsedValue = processedValue
+          try {
+            // Try to parse as JSON in case it's an array from EditableArrayField
+            parsedValue = JSON.parse(value)
+          } catch {
+            // If parsing fails, use the original string value
+            parsedValue = processedValue
+          }
+
+          const updatedMetadata = {
+            ...currentMetadata,
+            [metadataField]: parsedValue,
+          }
+
+          await updateWorkExperience(user.id, id, { metadata: updatedMetadata })
+        }
+      } else {
+        await updateWorkExperience(user.id, id, { [field]: processedValue })
+      }
 
       return createSuccessResponse({ success: true })
     } catch (error) {
@@ -314,6 +328,55 @@ export default function WorkExperienceDetail() {
             </div>
           </Section>
 
+          {/* Achievements & Projects */}
+          <Section title="Achievements & Projects">
+            <div className="space-y-6">
+              <EditableArrayField
+                label="Key Achievements"
+                value={workExperience.metadata?.achievements || []}
+                field="metadata.achievements"
+                workExperienceId={workExperience.id}
+                placeholder="Describe a key achievement or accomplishment"
+              />
+              <EditableArrayField
+                label="Major Projects"
+                value={workExperience.metadata?.projects || []}
+                field="metadata.projects"
+                workExperienceId={workExperience.id}
+                placeholder="Describe a major project you worked on"
+              />
+              <EditableArrayField
+                label="Technologies Used"
+                value={workExperience.metadata?.technologies || []}
+                field="metadata.technologies"
+                workExperienceId={workExperience.id}
+                placeholder="Technology, framework, or tool"
+              />
+              <EditableArrayField
+                label="Certifications Earned"
+                value={workExperience.metadata?.certifications_earned || []}
+                field="metadata.certifications_earned"
+                workExperienceId={workExperience.id}
+                placeholder="Certification name and date"
+              />
+
+              <div className="pt-4 border-t border-slate-200">
+                <Button
+                  type="button"
+                  onClick={() => navigate(`/career/experience/${workExperience.id}/projects`)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <PlusIcon className="w-4 h-4 mr-2" />
+                  Manage Detailed Projects
+                </Button>
+                <p className="text-sm text-slate-600 mt-2">
+                  Track specific work items, ongoing projects, and their impact for interview
+                  preparation
+                </p>
+              </div>
+            </div>
+          </Section>
+
           {/* Exit Information */}
           <Section title="Exit Information">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -426,59 +489,62 @@ function EditableField({
   if (isEditing) {
     return (
       <div className={className}>
-        <label htmlFor={field} className="block text-sm font-medium text-slate-700 mb-2">
-          {label}
-        </label>
-        <div className="flex items-center gap-2">
-          {prefix && <span className="text-slate-500">{prefix}</span>}
-          {type === 'textarea' ? (
-            <textarea
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              className="flex-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
-              rows={3}
-              placeholder={placeholder}
-            />
-          ) : type === 'select' ? (
-            <select
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              className="flex-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
+        <div className="block text-sm font-medium text-slate-700 mb-2">{label}</div>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            {prefix && <span className="text-slate-500">{prefix}</span>}
+            {type === 'textarea' ? (
+              <textarea
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                className="flex-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
+                rows={3}
+                placeholder={placeholder}
+              />
+            ) : type === 'select' ? (
+              <select
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                className="flex-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
+              >
+                <option value="">Select...</option>
+                {options.map((option) => (
+                  <option key={option} value={option}>
+                    {option.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type={type}
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                className="flex-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
+                placeholder={placeholder}
+              />
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              onClick={handleSave}
+              size="sm"
+              className="bg-green-600 hover:bg-green-700 text-white"
             >
-              <option value="">Select...</option>
-              {options.map((option) => (
-                <option key={option} value={option}>
-                  {option.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <input
-              type={type}
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              className="flex-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
-              placeholder={placeholder}
-            />
-          )}
-          <Button
-            type="button"
-            onClick={handleSave}
-            variant="ghost"
-            size="sm"
-            className="p-2 text-green-600 hover:bg-green-50"
-          >
-            <CheckIcon className="w-4 h-4" />
-          </Button>
-          <Button
-            type="button"
-            onClick={handleCancel}
-            variant="ghost"
-            size="sm"
-            className="p-2 text-red-600 hover:bg-red-50"
-          >
-            <XIcon className="w-4 h-4" />
-          </Button>
+              <CheckIcon className="w-4 h-4 mr-1" />
+              Save
+            </Button>
+            <Button
+              type="button"
+              onClick={handleCancel}
+              variant="ghost"
+              size="sm"
+              className="text-slate-600 hover:bg-slate-100"
+            >
+              <XIcon className="w-4 h-4 mr-1" />
+              Cancel
+            </Button>
+          </div>
         </div>
       </div>
     )
@@ -486,9 +552,7 @@ function EditableField({
 
   return (
     <div className={className}>
-      <label htmlFor={field} className="block text-sm font-medium text-slate-700 mb-2">
-        {label}
-      </label>
+      <div className="block text-sm font-medium text-slate-700 mb-2">{label}</div>
       <div className="flex items-center justify-between group">
         <div className="flex-1">
           {prefix && value && <span className="text-slate-500 mr-1">{prefix}</span>}
@@ -501,7 +565,8 @@ function EditableField({
           onClick={() => setIsEditing(true)}
           variant="ghost"
           size="sm"
-          className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-slate-600"
+          className="p-1 text-slate-400 hover:text-slate-600 focus:text-slate-600"
+          aria-label={`Edit ${label}`}
         >
           <PencilIcon className="w-4 h-4" />
         </Button>

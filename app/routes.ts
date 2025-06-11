@@ -13,6 +13,7 @@ export default [
     index('routes/career.tsx'),
     route('/applications', 'routes/career.applications.tsx'),
     route('/experience/:id', 'routes/career.experience.$id.tsx'),
+    route('/experience/:id/projects', 'routes/career.experience.$id.projects.tsx'),
   ]),
   route('/onboarding', 'routes/onboarding.tsx'),
   route('/onboarding/complete', 'routes/onboarding.complete.tsx'),

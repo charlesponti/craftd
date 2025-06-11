@@ -320,11 +320,7 @@ export default function Account() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        <div className="text-center -mt-4">
-          <p className="mt-2 text-gray-600">Manage your portfolio and account settings</p>
-        </div>
-
+      <div className="max-w-2xl mx-auto px-4 sm:px-0 space-y-6">
         {/* Profile Information Card */}
         <div className="bg-white shadow rounded-lg">
           <div className="px-4 py-5 sm:p-6 space-y-6">
@@ -417,18 +413,26 @@ export default function Account() {
                       </span>
                     </div>
                   </div>
-
-                  {portfolio.isPublic && (
+                  <div className="flex items-center gap-2">
                     <a
-                      href={`/p/${portfolio.slug}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      href="/editor"
                       className="inline-flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                     >
-                      <ExternalLink className="w-4 h-4" />
-                      View Live
+                      <Edit className="w-4 h-4" />
+                      Edit Portfolio
                     </a>
-                  )}
+                    {portfolio.isPublic && (
+                      <a
+                        href={`/p/${portfolio.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        View Live
+                      </a>
+                    )}
+                  </div>
                 </div>
 
                 <div className="mt-4 space-y-4">
@@ -445,16 +449,6 @@ export default function Account() {
 
                   {/* Responsive button layout */}
                   <div className="flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-2">
-                    <Button
-                      type="button"
-                      onClick={() => navigate('/editor')}
-                      variant="default"
-                      size="sm"
-                      className="w-full sm:w-auto"
-                    >
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit Portfolio
-                    </Button>
                     <Button
                       type="button"
                       onClick={handleDownloadPdf}

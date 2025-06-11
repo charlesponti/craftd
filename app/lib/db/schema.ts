@@ -1056,6 +1056,7 @@ export const careerEvents = pgTable(
     }>(),
 
     // Goals and Planning
+    // !TODO: Create a new table for career goals and planning, linked to the skills table
     careerGoals: json('career_goals').$type<{
       shortTerm?: string[]
       longTerm?: string[]

@@ -29,24 +29,24 @@ export function JobApplicationsMetricsCards({ metrics }: JobApplicationsMetricsC
       title: 'Response Rate',
       value: formatPercentage(metrics.responseRate),
       icon: '📧',
-      color: 'text-green-600',
+      color: 'text-emerald-600',
     },
   ]
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">Performance Metrics</h2>
+    <div>
+      <h2 className="text-2xl font-light text-slate-900 mb-6 font-serif">Performance Metrics</h2>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         {metricsData.map((metric) => (
-          <div key={metric.title} className="flex items-center gap-3">
+          <div key={metric.title} className="flex items-center gap-4">
             {/* Icon */}
-            <span className="text-lg">{metric.icon}</span>
+            <span className="text-xl">{metric.icon}</span>
 
             {/* Label and Value */}
             <div className="flex-1">
-              <div className="text-sm text-gray-600">{metric.title}</div>
-              <div className={`text-xl font-bold ${metric.color}`}>{metric.value}</div>
+              <div className="text-sm text-slate-500 font-sans">{metric.title}</div>
+              <div className={`text-2xl font-light font-serif ${metric.color}`}>{metric.value}</div>
             </div>
           </div>
         ))}

@@ -28,7 +28,7 @@ export default function ResumeCustomizerPage() {
         <div className="text-center mb-8">
           <div className="flex items-start justify-start gap-4 mb-6">
             <Link
-              to="/job-applications"
+              to="/career/applications"
               className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 bg-white border border-gray-300 hover:bg-gray-50 h-9 px-4 py-2"
             >
               <svg

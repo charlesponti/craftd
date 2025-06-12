@@ -1,4 +1,4 @@
-import { BriefcaseIcon, MenuIcon, PencilIcon, XIcon } from 'lucide-react'
+import { BriefcaseIcon, FileTextIcon, MenuIcon, PencilIcon, XIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router'
 import { Button, getButtonClasses } from '~/components/ui/button'
@@ -176,6 +176,20 @@ export default function Navigation() {
                     Career
                   </Link>
 
+                  <Link
+                    to="/career/applications"
+                    className={cn(
+                      getButtonClasses({ variant: 'ghost', size: 'sm' }),
+                      'inline-flex gap-sm items-center',
+                      isCurrentPage('/career/applications')
+                        ? 'bg-accent text-accent-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    <FileTextIcon className="w-4 h-4" />
+                    Applications
+                  </Link>
+
                   {/* Account dropdown */}
                   <Link
                     to="/account"
@@ -264,6 +278,14 @@ export default function Navigation() {
                     >
                       <BriefcaseIcon className="w-4 h-4" />
                       Career
+                    </Link>
+                    <Link
+                      to="/career/applications"
+                      onClick={closeMenu}
+                      className="flex items-center gap-sm px-md py-sm text-base font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-fast"
+                    >
+                      <FileTextIcon className="w-4 h-4" />
+                      Applications
                     </Link>
                     <Button
                       type="button"

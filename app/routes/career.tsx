@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs } from 'react-router'
-import { useLoaderData } from 'react-router'
+import { Link, useLoaderData } from 'react-router'
 import { CareerHistory } from '~/components/career/CareerHistory'
 import { SalaryChart } from '~/components/career/SalaryChart'
 import { StatCard } from '~/components/career/StatCard'
@@ -129,25 +129,22 @@ export default function CareerDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-light text-slate-900 font-serif">Career Dashboard</h1>
-              <p className="text-lg text-slate-600 mt-2 font-sans">
-                Your professional journey at a glance
-              </p>
+              <h1 className="text-4xl font-light text-slate-900 font-serif">Your Career</h1>
             </div>
-            <div className="hidden sm:flex items-center space-x-6 text-sm text-slate-500 font-sans">
-              <div className="text-center">
-                <div className="text-2xl font-light text-slate-900 font-serif">
-                  {summary.totalExperience.toFixed(1)}
-                </div>
-                <div>Years Experience</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-light text-slate-900 font-serif">
-                  {summary.jobChangeCount}
-                </div>
-                <div>Career Moves</div>
-              </div>
-            </div>
+            <nav className="hidden sm:flex items-center space-x-8">
+              <Link
+                to="/career/experience"
+                className="text-slate-600 hover:text-slate-900 font-medium transition-colors duration-200 font-sans"
+              >
+                Experience
+              </Link>
+              <Link
+                to="/career/applications"
+                className="text-slate-600 hover:text-slate-900 font-medium transition-colors duration-200 font-sans"
+              >
+                Applications
+              </Link>
+            </nav>
           </div>
         </div>
       </div>
@@ -162,16 +159,16 @@ export default function CareerDashboard() {
             trend="neutral"
           />
           <StatCard
-            title="Total Growth"
-            value={formatPercentage(summary.salaryGrowthPercentage)}
-            subtitle={`+${formatCurrency(summary.totalSalaryGrowth / 100)} lifetime`}
-            trend="up"
+            title="Years of Experience"
+            value={`${summary.totalExperience.toFixed(1)}y`}
+            subtitle="Total career experience"
+            trend="neutral"
           />
           <StatCard
-            title="Annual Growth Rate"
-            value={formatPercentage(summary.averageAnnualGrowth)}
+            title="Career Moves"
+            value={summary.jobChangeCount.toString()}
             subtitle={`${summary.promotionCount} promotions`}
-            trend="up"
+            trend="neutral"
           />
           <StatCard
             title="Average Tenure"

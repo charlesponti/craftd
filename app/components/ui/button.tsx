@@ -20,10 +20,12 @@ export function getButtonClasses({
   variant = 'default',
   size = 'default',
   className,
+  disabled,
 }: {
   variant?: ButtonProps['variant']
   size?: ButtonProps['size']
   className?: string
+  disabled?: boolean
 }) {
   return clsx(
     'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
@@ -36,6 +38,7 @@ export function getButtonClasses({
       'bg-red-600 text-white hover:bg-red-700': variant === 'destructive' || variant === 'error',
       'bg-green-600 text-white hover:bg-green-700': variant === 'success',
       'bg-yellow-500 text-white hover:bg-yellow-600': variant === 'warning',
+      'opacity-50 pointer-events-none bg-gray-200 !text-black': disabled,
     },
     {
       'h-8 px-2 py-1 text-xs': size === 'xs',
@@ -52,7 +55,11 @@ export function getButtonClasses({
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'default', size = 'default', ...props }, ref) => {
     return (
-      <button className={getButtonClasses({ variant, size, className })} ref={ref} {...props} />
+      <button
+        className={getButtonClasses({ variant, size, className, disabled: props.disabled })}
+        ref={ref}
+        {...props}
+      />
     )
   }
 )

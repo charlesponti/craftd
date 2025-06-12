@@ -319,12 +319,6 @@ export default function WorkExperienceDetail() {
                 field="reportsTo"
                 workExperienceId={workExperience.id}
               />
-              <EditableField
-                label="Metrics/KPIs"
-                value={workExperience.metrics || ''}
-                field="metrics"
-                workExperienceId={workExperience.id}
-              />
             </div>
           </Section>
 
@@ -465,12 +459,21 @@ function EditableField({
     fieldInput.name = 'field'
     fieldInput.value = field
 
-    const valueInput = document.createElement('input')
-    valueInput.name = 'value'
-    valueInput.value = editValue
+    // Use textarea for multiline content to preserve line breaks
+    if (type === 'textarea') {
+      const valueTextarea = document.createElement('textarea')
+      valueTextarea.name = 'value'
+      valueTextarea.value = editValue
+      valueTextarea.style.display = 'none'
+      form.appendChild(valueTextarea)
+    } else {
+      const valueInput = document.createElement('input')
+      valueInput.name = 'value'
+      valueInput.value = editValue
+      form.appendChild(valueInput)
+    }
 
     form.appendChild(fieldInput)
-    form.appendChild(valueInput)
     document.body.appendChild(form)
 
     form.submit()
@@ -552,14 +555,8 @@ function EditableField({
 
   return (
     <div className={className}>
-      <div className="block text-sm font-medium text-slate-700 mb-2">{label}</div>
-      <div className="flex items-center justify-between group">
-        <div className="flex-1">
-          {prefix && value && <span className="text-slate-500 mr-1">{prefix}</span>}
-          <span className={`${!value ? 'text-slate-400 italic' : 'text-slate-900'}`}>
-            {type === 'number' && value ? Number.parseInt(value).toLocaleString() : displayValue}
-          </span>
-        </div>
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-sm font-medium text-slate-700">{label}</div>
         <Button
           type="button"
           onClick={() => setIsEditing(true)}
@@ -570,6 +567,20 @@ function EditableField({
         >
           <PencilIcon className="w-4 h-4" />
         </Button>
+      </div>
+      <div>
+        {prefix && value && <span className="text-slate-500 mr-1">{prefix}</span>}
+        {type === 'textarea' ? (
+          <div
+            className={`${!value ? 'text-slate-400 italic' : 'text-slate-900'} whitespace-pre-line break-words`}
+          >
+            {value || 'Not set'}
+          </div>
+        ) : (
+          <span className={`${!value ? 'text-slate-400 italic' : 'text-slate-900'}`}>
+            {type === 'number' && value ? Number.parseInt(value).toLocaleString() : displayValue}
+          </span>
+        )}
       </div>
     </div>
   )

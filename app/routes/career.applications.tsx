@@ -191,10 +191,7 @@ export async function action(args: ActionFunctionArgs) {
 
 function CreateApplicationForm() {
   return (
-    <Link
-      to="/job-applications/create"
-      className="inline-flex items-center gap-2 justify-center whitespace-nowrap rounded-lg text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-blue-800 transform hover:scale-105 h-10 px-6 py-2"
-    >
+    <Link to="/career/applications/create" className="btn-primary-gradient">
       <svg
         className="w-4 h-4"
         fill="none"
@@ -227,10 +224,14 @@ export default function JobApplicationsDashboard() {
 
   if (!loaderData.success) {
     return (
-      <div className="p-8">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-red-800 mb-2">Error Loading Data</h2>
-          <p className="text-red-700">Failed to load job applications data</p>
+      <div className="page-background">
+        <div className="container-app">
+          <div className="card-error">
+            <h2 className="text-lg font-semibold text-red-800 mb-2 font-serif">
+              Error Loading Data
+            </h2>
+            <p className="text-red-700 font-sans">Failed to load job applications data</p>
+          </div>
         </div>
       </div>
     )
@@ -238,13 +239,17 @@ export default function JobApplicationsDashboard() {
 
   if (loaderData?.error) {
     return (
-      <div className="p-8">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-red-800 mb-2">Error Loading Data</h2>
-          <p className="text-red-700">{loaderData.error}</p>
-          <p className="text-sm text-red-600 mt-2">
-            Make sure you have job application data in your database.
-          </p>
+      <div className="page-background">
+        <div className="container-app">
+          <div className="card-error">
+            <h2 className="text-lg font-semibold text-red-800 mb-2 font-serif">
+              Error Loading Data
+            </h2>
+            <p className="text-red-700 font-sans">{loaderData.error}</p>
+            <p className="text-sm text-red-600 mt-2 font-sans">
+              Make sure you have job application data in your database.
+            </p>
+          </div>
         </div>
       </div>
     )
@@ -252,10 +257,14 @@ export default function JobApplicationsDashboard() {
 
   if (!loaderData.data) {
     return (
-      <div className="p-8">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-red-800 mb-2">Error Loading Data</h2>
-          <p className="text-red-700">Failed to load job applications data</p>
+      <div className="page-background">
+        <div className="container-app">
+          <div className="card-error">
+            <h2 className="text-lg font-semibold text-red-800 mb-2 font-serif">
+              Error Loading Data
+            </h2>
+            <p className="text-red-700 font-sans">Failed to load job applications data</p>
+          </div>
         </div>
       </div>
     )
@@ -271,14 +280,18 @@ export default function JobApplicationsDashboard() {
 
   if (!metrics) {
     return (
-      <div className="p-8">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-blue-800 mb-2">No Data Available</h2>
-          <p className="text-blue-700">
-            Start tracking your job applications to see analytics here.
-          </p>
-          <div className="mt-4 flex gap-3">
-            <CreateApplicationForm />
+      <div className="page-background">
+        <div className="container-app">
+          <div className="card-info">
+            <h2 className="text-lg font-semibold text-blue-800 mb-2 font-serif">
+              No Data Available
+            </h2>
+            <p className="text-blue-700 font-sans">
+              Start tracking your job applications to see analytics here.
+            </p>
+            <div className="mt-4 flex gap-3">
+              <CreateApplicationForm />
+            </div>
           </div>
         </div>
       </div>
@@ -286,112 +299,110 @@ export default function JobApplicationsDashboard() {
   }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8">
+    <div className="page-background">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Job Applications Dashboard</h1>
-          <p className="text-gray-600 mt-1">
-            Track your application success and optimize your job search strategy
-          </p>
-          <p className="text-sm text-gray-500 mt-1">Welcome back, {user.name}</p>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="text-right">
-            <p className="text-sm text-gray-500">Average Cycle Time</p>
-            <p className="text-2xl font-bold text-gray-900">{averageCycleTime} days</p>
+      <div className="page-header">
+        <div className="page-header-content">
+          <div className="flex-between">
+            <div>
+              <h1 className="page-title">Job Applications</h1>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Search Bar */}
-      <div className="flex justify-between items-center">
-        <div className="relative max-w-md">
-          <input
-            type="text"
-            placeholder="Search by position or company..."
-            value={search}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
-            className="h-11 pl-10 pr-4 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full"
+      <div className="container-app space-section">
+        {/* Search Bar */}
+        <div className="flex-between">
+          <div className="relative max-w-md">
+            <input
+              type="text"
+              placeholder="Search by position or company..."
+              value={search}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+              className="search-input"
+            />
+            <div className="absolute left-3 top-1/2 -translate-y-1/2">
+              <svg
+                className="w-4 h-4 text-slate-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+          </div>
+          <CreateApplicationForm />
+        </div>
+
+        {/* Key Metrics Cards */}
+        <div className="grid-responsive-2">
+          <div className="card-elevated">
+            <JobApplicationsMetricsCards metrics={metrics} />
+          </div>
+
+          {/* Application Progress */}
+          <div className="card-elevated">
+            <h2 className="section-title">Application Progress</h2>
+            <ApplicationProgressChart funnelData={funnel} statusData={metrics.statusBreakdown} />
+          </div>
+        </div>
+
+        {/* All Applications */}
+        <div className="card-elevated">
+          <div className="flex-between mb-6">
+            <h2 className="section-title mb-0">All Applications</h2>
+            <div className="flex gap-3">
+              <CreateApplicationForm />
+            </div>
+          </div>
+          <ApplicationTable
+            applications={filteredApplications}
+            emptyTitle="No applications found"
+            emptyDescription="Start tracking your job applications to see them here"
           />
-          <div className="absolute left-3 top-1/2 -translate-y-1/2">
-            <svg
-              className="w-4 h-4 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-          </div>
         </div>
-        <CreateApplicationForm />
-      </div>
 
-      {/* Key Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <JobApplicationsMetricsCards metrics={metrics} />
-
-        {/* Application Progress */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Application Progress</h2>
-          <ApplicationProgressChart funnelData={funnel} statusData={metrics.statusBreakdown} />
-        </div>
-      </div>
-
-      {/* All Applications */}
-      <div className="bg-white rounded-lg shadow-sm border p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">All Applications</h2>
-          <div className="flex gap-3">
-            <CreateApplicationForm />
-          </div>
-        </div>
-        <ApplicationTable
-          applications={filteredApplications}
-          emptyTitle="No applications found"
-          emptyDescription="Start tracking your job applications to see them here"
-        />
-      </div>
-
-      {/* Salary Insights */}
-      {metrics.salaryMetrics.averageOffered > 0 && (
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Salary Insights</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div>
-              <p className="text-sm text-gray-500">Average Offered</p>
-              <p className="text-2xl font-bold text-gray-900">
-                ${centsToDollars(metrics.salaryMetrics.averageOffered).toLocaleString()}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Average Accepted</p>
-              <p className="text-2xl font-bold text-gray-900">
-                ${centsToDollars(metrics.salaryMetrics.averageAccepted).toLocaleString()}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Negotiation Success</p>
-              <p className="text-2xl font-bold text-green-600">
-                {formatPercentage(metrics.salaryMetrics.negotiationSuccessRate)}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Avg. Negotiation Increase</p>
-              <p className="text-2xl font-bold text-green-600">
-                {formatPercentage(metrics.salaryMetrics.averageNegotiationIncrease)}
-              </p>
+        {/* Salary Insights */}
+        {metrics.salaryMetrics.averageOffered > 0 && (
+          <div className="card-elevated">
+            <h2 className="section-title">Salary Insights</h2>
+            <div className="grid-responsive-4">
+              <div>
+                <p className="metric-label">Average Offered</p>
+                <p className="metric-value-large text-slate-900">
+                  ${centsToDollars(metrics.salaryMetrics.averageOffered).toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p className="metric-label">Average Accepted</p>
+                <p className="metric-value-large text-slate-900">
+                  ${centsToDollars(metrics.salaryMetrics.averageAccepted).toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p className="metric-label">Negotiation Success</p>
+                <p className="metric-value-large text-success">
+                  {formatPercentage(metrics.salaryMetrics.negotiationSuccessRate)}
+                </p>
+              </div>
+              <div>
+                <p className="metric-label">Avg. Negotiation Increase</p>
+                <p className="metric-value-large text-success">
+                  {formatPercentage(metrics.salaryMetrics.averageNegotiationIncrease)}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }

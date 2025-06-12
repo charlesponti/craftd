@@ -71,7 +71,7 @@ export async function action(args: Route.ActionArgs) {
         })
         .returning()
 
-      return redirect('/job-applications')
+      return redirect('/career/applications')
     } catch (error) {
       console.error('Error creating job application:', error)
       return createErrorResponse('Failed to create job application. Please try again.')
@@ -209,7 +209,7 @@ export default function CreateJobApplication() {
                     Create Application
                   </Button>
                   <Link
-                    to="/job-applications"
+                    to="/career/applications"
                     className="flex-1 h-11 inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors border border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
                   >
                     Cancel

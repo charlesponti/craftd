@@ -249,7 +249,7 @@ export default function ApplicationDetail() {
             <h1 className="text-2xl font-bold text-red-600 mb-4">Application not found</h1>
             <p className="text-gray-600">The requested job application could not be found.</p>
             <Link
-              to="/job-applications"
+              to="/career/applications"
               className="mt-6 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 h-10 px-4 py-2"
             >
               Back to Applications
@@ -269,7 +269,7 @@ export default function ApplicationDetail() {
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Link
-            to="/job-applications"
+            to="/career/applications"
             className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 bg-white border border-gray-300 hover:bg-gray-50 h-9 px-4 py-2"
           >
             <svg

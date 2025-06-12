@@ -2,7 +2,7 @@ import { and, eq } from 'drizzle-orm'
 import { Briefcase, PlusIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { SubmitHandler } from 'react-hook-form'
-import { useForm } from 'react-hook-form'
+import { useFieldArray, useForm } from 'react-hook-form'
 import type { ActionFunctionArgs } from 'react-router'
 import { useFetcher, useOutletContext } from 'react-router'
 import { Button } from '~/components/ui/button'
@@ -33,7 +33,7 @@ interface WorkExperienceFormValues {
   startDate?: string
   endDate?: string
   description: string
-  metrics?: string
+  achievements?: { value: string }[]
   action?: string
   tags?: string[]
   metadata?: Record<string, unknown>
@@ -64,6 +64,7 @@ function WorkExperienceForm({
     register,
     handleSubmit,
     reset,
+    control,
     formState: { isDirty, isValid },
   } = useForm<WorkExperienceFormValues>({
     defaultValues: {
@@ -73,7 +74,8 @@ function WorkExperienceForm({
       startDate: formatDateForInput(experience?.startDate),
       endDate: formatDateForInput(experience?.endDate),
       description: experience?.description || '',
-      metrics: nullToUndefined(experience?.metrics),
+      achievements:
+        (experience?.metadata?.achievements as string[])?.map((value) => ({ value })) || [],
       action: nullToUndefined(experience?.action),
       tags: nullArrayToUndefined(experience?.tags) || [],
       metadata: nullObjectToUndefined(experience?.metadata) || {},
@@ -82,6 +84,11 @@ function WorkExperienceForm({
       portfolioId,
     },
     mode: 'onChange',
+  })
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'achievements',
   })
 
   // Handle fetcher responses
@@ -101,7 +108,8 @@ function WorkExperienceForm({
             ...result.data,
             startDate: formatDateForInput(result.data.startDate),
             endDate: formatDateForInput(result.data.endDate),
-            metrics: nullToUndefined(result.data.metrics),
+            achievements:
+              (result.data.metadata?.achievements as string[])?.map((value) => ({ value })) || [],
             action: nullToUndefined(result.data.action),
             tags: nullArrayToUndefined(result.data.tags) || [],
             metadata: nullObjectToUndefined(result.data.metadata) || {},
@@ -124,9 +132,24 @@ function WorkExperienceForm({
       return
     }
 
+    // Convert achievements array to metadata format
+    const achievements =
+      formData.achievements?.map((item) => item.value).filter((value) => value.trim() !== '') || []
+
+    const submissionData = {
+      ...formData,
+      metadata: {
+        ...formData.metadata,
+        achievements,
+      },
+    }
+
+    // Remove the achievements field from the top level since it's now in metadata
+    const { achievements: _, ...finalData } = submissionData
+
     const formDataToSubmit = new FormData()
     formDataToSubmit.append('operation', isNew ? 'create' : 'update')
-    formDataToSubmit.append('workExperienceData', JSON.stringify(formData))
+    formDataToSubmit.append('workExperienceData', JSON.stringify(finalData))
 
     fetcher.submit(formDataToSubmit, {
       method: 'POST',
@@ -157,8 +180,8 @@ function WorkExperienceForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="card bg-muted/50 space-y-lg">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium text-foreground">
-          {isNew ? 'New Experience' : 'Work Experience'}
+        <h3 className="text-2xl tracking-tight font-medium text-foreground font-serif">
+          {isNew ? 'New Experience' : experience?.company || 'Work Experience'}
         </h3>
         <div className="flex gap-sm">
           <Button
@@ -253,19 +276,41 @@ function WorkExperienceForm({
       </div>
 
       <div className="form-group">
-        <label htmlFor={`metrics-${experience?.id || 'new'}`} className="label">
-          Key Metrics & Achievements
-        </label>
-        <input
-          id={`metrics-${experience?.id || 'new'}`}
-          type="text"
-          {...register('metrics')}
-          className="input"
-          placeholder="e.g., Increased team productivity by 40%, Led team of 8 engineers"
-        />
-        <p className="text-xs text-muted-foreground mt-xs">
-          Quantifiable achievements and metrics from this role
-        </p>
+        <fieldset>
+          <legend className="label">Key Achievements</legend>
+          <div className="space-y-2">
+            {fields.map((field, index) => (
+              <div key={field.id} className="flex gap-2">
+                <input
+                  {...register(`achievements.${index}.value` as const)}
+                  className="input flex-1"
+                  placeholder="e.g., Increased team productivity by 40%"
+                />
+                <Button
+                  type="button"
+                  onClick={() => remove(index)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-600 hover:text-red-700"
+                >
+                  Remove
+                </Button>
+              </div>
+            ))}
+            <Button
+              type="button"
+              onClick={() => append({ value: '' })}
+              variant="outline"
+              size="sm"
+              className="w-full border-dashed"
+            >
+              Add Achievement
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-xs">
+            Add quantifiable achievements and key accomplishments from this role
+          </p>
+        </fieldset>
       </div>
     </form>
   )

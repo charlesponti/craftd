@@ -1,4 +1,5 @@
 import { eq } from 'drizzle-orm'
+import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
 import { Form, Link, redirect, useActionData } from 'react-router'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent } from '~/components/ui/Card'
@@ -13,15 +14,14 @@ import {
   withAuthLoader,
 } from '~/lib/route-utils'
 import { JobApplicationStage, JobApplicationStatus } from '~/types/career'
-import type { Route } from './+types/job-applications.create'
 
-export async function loader(args: Route.LoaderArgs) {
+export async function loader(args: LoaderFunctionArgs) {
   return withAuthLoader(args, async ({ user }) => {
     return createSuccessResponse({ user })
   })
 }
 
-export async function action(args: Route.ActionArgs) {
+export async function action(args: ActionFunctionArgs) {
   return withAuthAction(args, async ({ user, request }) => {
     const formData = await request.formData()
     const position = formData.get('position') as string

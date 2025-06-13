@@ -1,4 +1,4 @@
-import { ArrowLeftIcon, CheckIcon, PencilIcon, PlusIcon, XIcon } from 'lucide-react'
+import { ArrowLeftIcon, CheckIcon, PencilIcon, XIcon } from 'lucide-react'
 import { useState } from 'react'
 import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
 import { useLoaderData, useNavigate } from 'react-router'
@@ -329,44 +329,34 @@ export default function WorkExperienceDetail() {
                 label="Key Achievements"
                 value={workExperience.metadata?.achievements || []}
                 field="metadata.achievements"
-                workExperienceId={workExperience.id}
                 placeholder="Describe a key achievement or accomplishment"
               />
-              <EditableArrayField
-                label="Major Projects"
-                value={workExperience.metadata?.projects || []}
-                field="metadata.projects"
-                workExperienceId={workExperience.id}
-                placeholder="Describe a major project you worked on"
-              />
+
               <EditableArrayField
                 label="Technologies Used"
                 value={workExperience.metadata?.technologies || []}
                 field="metadata.technologies"
-                workExperienceId={workExperience.id}
                 placeholder="Technology, framework, or tool"
               />
-              <EditableArrayField
-                label="Certifications Earned"
-                value={workExperience.metadata?.certifications_earned || []}
-                field="metadata.certifications_earned"
-                workExperienceId={workExperience.id}
-                placeholder="Certification name and date"
-              />
 
-              <div className="pt-4 border-t border-slate-200">
-                <Button
-                  type="button"
-                  onClick={() => navigate(`/career/experience/${workExperience.id}/projects`)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  <PlusIcon className="w-4 h-4 mr-2" />
-                  Manage Detailed Projects
-                </Button>
-                <p className="text-sm text-slate-600 mt-2">
-                  Track specific work items, ongoing projects, and their impact for interview
-                  preparation
-                </p>
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium text-slate-700">Major Projects</h3>
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
+                  <div>
+                    <p className="text-xs text-slate-600 mt-1">
+                      Track work items, projects, and their impact for interview prep
+                    </p>
+                  </div>
+                  <Button
+                    id="manage-projects-button"
+                    type="button"
+                    onClick={() => navigate(`/career/experience/${workExperience.id}/projects`)}
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    Manage Projects
+                  </Button>
+                </div>
               </div>
             </div>
           </Section>

@@ -7,7 +7,6 @@ interface EditableArrayFieldProps {
   label: string
   value: string[]
   field: string
-  workExperienceId: string
   placeholder?: string
   className?: string
   onSave?: (field: string, value: string[]) => void
@@ -16,7 +15,6 @@ interface EditableArrayFieldProps {
 interface ArrayItemProps {
   value: string
   index: number
-  field: string
   placeholder?: string
   onUpdate: (index: number, value: string) => void
   onRemove: (index: number) => void
@@ -26,7 +24,6 @@ interface ArrayItemProps {
 const ArrayItem = memo(function ArrayItem({
   value,
   index,
-  field,
   placeholder,
   onUpdate,
   onRemove,
@@ -67,7 +64,6 @@ export function EditableArrayField({
   label,
   value,
   field,
-  workExperienceId,
   placeholder,
   className = '',
   onSave,
@@ -156,7 +152,6 @@ export function EditableArrayField({
               key={`edit-${field}-${normalizeString(item)}`}
               value={item}
               index={index}
-              field={field}
               placeholder={placeholder}
               onUpdate={updateItem}
               onRemove={removeItem}

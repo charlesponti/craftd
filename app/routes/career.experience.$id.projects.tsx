@@ -3,39 +3,12 @@ import { useState } from 'react'
 import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
 import { useLoaderData, useNavigate } from 'react-router'
 import { Button } from '~/components/ui/button'
+import type { Project, WorkExperience } from '~/lib/db/schema'
 import { createSuccessResponse, withAuthLoader } from '~/lib/route-utils'
-
-interface WorkExperienceMetadata {
-  company_size?: string
-  industry?: string
-  location?: string
-  website?: string
-  achievements?: string[]
-  technologies?: string[]
-  projects?: Project[]
-  certifications_earned?: string[]
-}
-
-interface Project {
-  id: string
-  title: string
-  description: string
-  status: string
-  technologies: string[]
-  impact: string
-  updatedAt: string
-  createdAt: string
-}
-
-interface WorkExperience {
-  id: string
-  metadata: WorkExperienceMetadata
-  role: string
-  company: string
-}
 
 interface LoaderData {
   workExperience: WorkExperience
+  projects: Project[]
 }
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -47,16 +20,19 @@ export async function loader(args: LoaderFunctionArgs) {
 
     try {
       const { getWorkExperienceById } = await import('~/lib/db/queries/base')
-      const workExperience = await getWorkExperienceById(user.id, id)
+      const { getProjectsByWorkExperience } = await import('~/lib/db/queries/projects')
 
+      const workExperience = await getWorkExperienceById(user.id, id)
       if (!workExperience) {
         throw new Response('Work experience not found', { status: 404 })
       }
 
-      return createSuccessResponse({ workExperience })
+      const projects = await getProjectsByWorkExperience(workExperience.portfolioId, id)
+
+      return createSuccessResponse({ workExperience, projects })
     } catch (error) {
-      console.error('Error loading work experience:', error)
-      throw new Response('Error loading work experience', { status: 500 })
+      console.error('Error loading work experience projects:', error)
+      throw new Response('Error loading work experience projects', { status: 500 })
     }
   })
 }
@@ -72,86 +48,59 @@ export async function action(args: ActionFunctionArgs) {
     const actionType = formData.get('actionType') as string
 
     try {
-      const { updateWorkExperience, getWorkExperienceById } = await import('~/lib/db/queries/base')
-      const currentExperience = await getWorkExperienceById(user.id, id)
+      const { getWorkExperienceById } = await import('~/lib/db/queries/base')
+      const { createProject, updateProject, deleteProject } = await import(
+        '~/lib/db/queries/projects'
+      )
 
+      const currentExperience = await getWorkExperienceById(user.id, id)
       if (!currentExperience) {
         throw new Response('Work experience not found', { status: 404 })
       }
-
-      const currentMetadata = currentExperience.metadata || {}
-      const currentProjects = currentMetadata.projects || []
 
       if (actionType === 'add') {
         const title = formData.get('title') as string
         const description = formData.get('description') as string
         const status = formData.get('status') as string
         const technologies = formData.get('technologies') as string
-        const impact = formData.get('impact') as string
+        const shortDescription = formData.get('shortDescription') as string
 
-        const newProject = {
-          id: Date.now().toString(), // Simple ID for now
+        await createProject({
+          portfolioId: currentExperience.portfolioId,
+          workExperienceId: id,
           title,
           description,
+          shortDescription: shortDescription || null,
           status,
           technologies: technologies ? technologies.split(',').map((t) => t.trim()) : [],
-          impact,
-          createdAt: new Date().toISOString(),
-        }
-
-        const updatedProjects = [...currentProjects, newProject]
-        const updatedMetadata = {
-          ...currentMetadata,
-          projects: updatedProjects,
-        }
-
-        await updateWorkExperience(user.id, id, { metadata: updatedMetadata })
+          isVisible: true,
+          isFeatured: false,
+          sortOrder: 0,
+        })
       } else if (actionType === 'update') {
         const projectId = formData.get('projectId') as string
         const title = formData.get('title') as string
         const description = formData.get('description') as string
         const status = formData.get('status') as string
         const technologies = formData.get('technologies') as string
-        const impact = formData.get('impact') as string
+        const shortDescription = formData.get('shortDescription') as string
 
-        const updatedProjects = currentProjects.map((project: Project) =>
-          project.id === projectId
-            ? {
-                ...project,
-                title,
-                description,
-                status,
-                technologies: technologies ? technologies.split(',').map((t) => t.trim()) : [],
-                impact,
-                updatedAt: new Date().toISOString(),
-              }
-            : project
-        )
-
-        const updatedMetadata = {
-          ...currentMetadata,
-          projects: updatedProjects,
-        }
-
-        await updateWorkExperience(user.id, id, { metadata: updatedMetadata })
+        await updateProject(projectId, {
+          title,
+          description,
+          shortDescription: shortDescription || null,
+          status,
+          technologies: technologies ? technologies.split(',').map((t) => t.trim()) : [],
+        })
       } else if (actionType === 'delete') {
         const projectId = formData.get('projectId') as string
-
-        const updatedProjects = currentProjects.filter(
-          (project: Project) => project.id !== projectId
-        )
-        const updatedMetadata = {
-          ...currentMetadata,
-          projects: updatedProjects,
-        }
-
-        await updateWorkExperience(user.id, id, { metadata: updatedMetadata })
+        await deleteProject(projectId)
       }
 
       return createSuccessResponse({ success: true })
     } catch (error) {
-      console.error('Error updating projects:', error)
-      throw new Response('Error updating projects', { status: 500 })
+      console.error('Error managing project:', error)
+      throw new Response('Error managing project', { status: 500 })
     }
   })
 }
@@ -159,15 +108,13 @@ export async function action(args: ActionFunctionArgs) {
 export default function WorkExperienceProjects() {
   const response = useLoaderData<{ success: boolean; data: LoaderData }>()
   const data = response?.data || {}
-  const { workExperience } = data
+  const { workExperience, projects = [] } = data
   const navigate = useNavigate()
   const [showAddForm, setShowAddForm] = useState(false)
 
   if (!workExperience) {
     return <div>Work experience not found</div>
   }
-
-  const projects = workExperience.metadata?.projects || []
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
@@ -208,22 +155,11 @@ export default function WorkExperienceProjects() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-6">
           {/* Add Project Form */}
-          {showAddForm && (
-            <ProjectForm
-              workExperienceId={workExperience.id}
-              onCancel={() => setShowAddForm(false)}
-            />
-          )}
+          {showAddForm && <ProjectForm onCancel={() => setShowAddForm(false)} />}
 
           {/* Projects List */}
           {projects.length > 0 ? (
-            projects.map((project: Project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                workExperienceId={workExperience.id}
-              />
-            ))
+            projects.map((project: Project) => <ProjectCard key={project.id} project={project} />)
           ) : (
             <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-200/50 text-center">
               <div className="text-slate-400 mb-4">
@@ -251,18 +187,17 @@ export default function WorkExperienceProjects() {
 }
 
 interface ProjectFormProps {
-  workExperienceId: string
   project?: Project
   onCancel: () => void
 }
 
-function ProjectForm({ workExperienceId, project, onCancel }: ProjectFormProps) {
+function ProjectForm({ project, onCancel }: ProjectFormProps) {
   const [formData, setFormData] = useState({
     title: project?.title || '',
     description: project?.description || '',
+    shortDescription: project?.shortDescription || '',
     status: project?.status || 'in-progress',
     technologies: project?.technologies?.join(', ') || '',
-    impact: project?.impact || '',
   })
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -287,7 +222,7 @@ function ProjectForm({ workExperienceId, project, onCancel }: ProjectFormProps) 
     for (const [key, value] of Object.entries(formData)) {
       const input = document.createElement('input')
       input.name = key
-      input.value = value
+      input.value = value || ''
       form.appendChild(input)
     }
 
@@ -319,6 +254,23 @@ function ProjectForm({ workExperienceId, project, onCancel }: ProjectFormProps) 
         </div>
 
         <div>
+          <label
+            htmlFor="shortDescription"
+            className="block text-sm font-medium text-slate-700 mb-2"
+          >
+            Short Description
+          </label>
+          <input
+            type="text"
+            id="shortDescription"
+            value={formData.shortDescription}
+            onChange={(e) => setFormData((prev) => ({ ...prev, shortDescription: e.target.value }))}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
+            placeholder="Brief one-line summary"
+          />
+        </div>
+
+        <div>
           <label htmlFor="description" className="block text-sm font-medium text-slate-700 mb-2">
             Description
           </label>
@@ -344,11 +296,9 @@ function ProjectForm({ workExperienceId, project, onCancel }: ProjectFormProps) 
               onChange={(e) => setFormData((prev) => ({ ...prev, status: e.target.value }))}
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
             >
-              <option value="planning">Planning</option>
               <option value="in-progress">In Progress</option>
               <option value="completed">Completed</option>
-              <option value="on-hold">On Hold</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="archived">Archived</option>
             </select>
           </div>
 
@@ -365,20 +315,6 @@ function ProjectForm({ workExperienceId, project, onCancel }: ProjectFormProps) 
               placeholder="React, Node.js, PostgreSQL, AWS"
             />
           </div>
-        </div>
-
-        <div>
-          <label htmlFor="impact" className="block text-sm font-medium text-slate-700 mb-2">
-            Impact & Results
-          </label>
-          <textarea
-            id="impact"
-            value={formData.impact}
-            onChange={(e) => setFormData((prev) => ({ ...prev, impact: e.target.value }))}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
-            rows={3}
-            placeholder="What was the outcome? Include metrics if possible (e.g., reduced load time by 40%, improved user conversion by 15%)"
-          />
         </div>
 
         <div className="flex items-center gap-4">
@@ -403,10 +339,9 @@ function ProjectForm({ workExperienceId, project, onCancel }: ProjectFormProps) 
 
 interface ProjectCardProps {
   project: Project
-  workExperienceId: string
 }
 
-function ProjectCard({ project, workExperienceId }: ProjectCardProps) {
+function ProjectCard({ project }: ProjectCardProps) {
   const [isEditing, setIsEditing] = useState(false)
 
   const handleDelete = () => {
@@ -437,25 +372,15 @@ function ProjectCard({ project, workExperienceId }: ProjectCardProps) {
         return 'bg-green-100 text-green-800'
       case 'in-progress':
         return 'bg-blue-100 text-blue-800'
-      case 'planning':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'on-hold':
-        return 'bg-orange-100 text-orange-800'
-      case 'cancelled':
-        return 'bg-red-100 text-red-800'
+      case 'archived':
+        return 'bg-gray-100 text-gray-800'
       default:
         return 'bg-gray-100 text-gray-800'
     }
   }
 
   if (isEditing) {
-    return (
-      <ProjectForm
-        workExperienceId={workExperienceId}
-        project={project}
-        onCancel={() => setIsEditing(false)}
-      />
-    )
+    return <ProjectForm project={project} onCancel={() => setIsEditing(false)} />
   }
 
   return (
@@ -463,6 +388,9 @@ function ProjectCard({ project, workExperienceId }: ProjectCardProps) {
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <h3 className="text-xl font-medium text-slate-900 mb-2">{project.title}</h3>
+          {project.shortDescription && (
+            <p className="text-slate-600 mb-2">{project.shortDescription}</p>
+          )}
           <span
             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}
           >
@@ -513,21 +441,12 @@ function ProjectCard({ project, workExperienceId }: ProjectCardProps) {
           </div>
         )}
 
-        {project.impact && (
-          <div>
-            <h4 className="text-sm font-medium text-slate-700 mb-2">Impact & Results</h4>
-            <p className="text-slate-600">{project.impact}</p>
-          </div>
-        )}
-
-        {project.createdAt && (
-          <div className="text-xs text-slate-400">
-            Added {new Date(project.createdAt).toLocaleDateString()}
-            {project.updatedAt &&
-              project.updatedAt !== project.createdAt &&
-              `, updated ${new Date(project.updatedAt).toLocaleDateString()}`}
-          </div>
-        )}
+        <div className="text-xs text-slate-400">
+          Created {new Date(project.createdAt).toLocaleDateString()}
+          {project.updatedAt &&
+            project.createdAt !== project.updatedAt &&
+            `, updated ${new Date(project.updatedAt).toLocaleDateString()}`}
+        </div>
       </div>
     </div>
   )

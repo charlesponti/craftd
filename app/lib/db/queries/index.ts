@@ -8,6 +8,9 @@ export * from './utils'
 // Base query functions
 export * from './base'
 
+// Project management
+export * from './projects'
+
 // Financial metrics
 export {
   getCompensationBreakdown,

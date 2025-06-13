@@ -154,7 +154,6 @@ const createMockPortfolio = (overrides: Partial<FullPortfolio> = {}): FullPortfo
       icon: null,
       description: 'Expert in React development with hooks and context',
       yearsOfExperience: 5,
-      certifications: [],
       isVisible: true,
       sortOrder: 0,
       createdAt: new Date('2024-01-01'),
@@ -169,7 +168,6 @@ const createMockPortfolio = (overrides: Partial<FullPortfolio> = {}): FullPortfo
       icon: null,
       description: 'Strong backend development skills',
       yearsOfExperience: 4,
-      certifications: [],
       isVisible: true,
       sortOrder: 1,
       createdAt: new Date('2024-01-01'),
@@ -184,7 +182,6 @@ const createMockPortfolio = (overrides: Partial<FullPortfolio> = {}): FullPortfo
       icon: null,
       description: null,
       yearsOfExperience: null,
-      certifications: [],
       isVisible: true,
       sortOrder: 2,
       createdAt: new Date('2024-01-01'),
@@ -195,6 +192,7 @@ const createMockPortfolio = (overrides: Partial<FullPortfolio> = {}): FullPortfo
     {
       id: 'project-1',
       portfolioId: 'test-portfolio-id',
+      workExperienceId: null,
       title: 'E-commerce Platform',
       description:
         'Built a full-stack e-commerce platform with payment integration and admin dashboard.',
@@ -216,6 +214,7 @@ const createMockPortfolio = (overrides: Partial<FullPortfolio> = {}): FullPortfo
     {
       id: 'project-2',
       portfolioId: 'test-portfolio-id',
+      workExperienceId: null,
       title: 'Task Management App',
       description: 'A collaborative task management application with real-time updates.',
       shortDescription: null,
@@ -395,7 +394,6 @@ describe('formatPortfolioForLLM', () => {
           icon: null,
           description: null,
           yearsOfExperience: null,
-          certifications: [],
           isVisible: true,
           sortOrder: 0,
           createdAt: new Date('2024-01-01'),
@@ -416,6 +414,7 @@ describe('formatPortfolioForLLM', () => {
         {
           id: 'project-minimal',
           portfolioId: 'test-portfolio-id',
+          workExperienceId: null,
           title: 'Simple App',
           description: 'A basic application',
           shortDescription: null,

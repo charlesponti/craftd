@@ -78,6 +78,13 @@
       "when": 1749433042740,
       "tag": "0010_cultured_vector",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1749785158151,
+      "tag": "0011_solid_komodo",
+      "breakpoints": true
     }
   ]
 }

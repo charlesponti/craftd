@@ -288,12 +288,23 @@ export function getWorkExperiencesWithFinancials(
       website?: string
       achievements?: string[]
       technologies?: string[]
-      projects?: string[]
+      projects?: Array<{
+        id: string
+        title: string
+        description: string
+        status: string
+        technologies: string[]
+        impact: string
+        createdAt: string
+        updatedAt?: string
+      }>
       certifications_earned?: string[]
     }
     const skillsAcquired = [
       ...(metadata.technologies || []),
       ...(metadata.certifications_earned || []),
+      // Extract technologies from projects
+      ...(metadata.projects?.flatMap((p) => p.technologies) || []),
     ]
 
     return {

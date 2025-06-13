@@ -1,5 +1,6 @@
 import { and, eq } from 'drizzle-orm'
 import { useState } from 'react'
+import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
 import { Form, Link, useActionData, useFetcher, useLoaderData, useParams } from 'react-router'
 import { ResumeCustomizer } from '~/components/ResumeCustomizer'
 import { Button } from '~/components/ui/button'
@@ -23,8 +24,6 @@ import {
   withAuthLoader,
 } from '~/lib/route-utils'
 import { JobApplicationStatus } from '~/types/career'
-import type { Route } from './+types/job-applications.$id'
-
 // Component prop types
 interface OverviewTabProps {
   application: ApplicationWithCompany
@@ -47,9 +46,13 @@ interface FilesTabProps {
   applicationId: string
 }
 
-export async function loader(args: Route.LoaderArgs) {
+export async function loader(args: LoaderFunctionArgs) {
   return withAuthLoader(args, async ({ user }) => {
     const { id } = args.params
+
+    if (!id) {
+      return createErrorResponse('Application ID is required')
+    }
 
     try {
       // Fetch application with company details
@@ -115,11 +118,15 @@ export async function loader(args: Route.LoaderArgs) {
   })
 }
 
-export async function action(args: Route.ActionArgs) {
+export async function action(args: ActionFunctionArgs) {
   return withAuthAction(args, async ({ user, request }) => {
     const { id } = args.params
     const formData = await request.formData()
     const operation = formData.get('operation') as string
+
+    if (!id) {
+      return createErrorResponse('Application ID is required')
+    }
 
     try {
       // Verify ownership

@@ -191,7 +191,6 @@ export const defaultTestPortfolio: FullPortfolio = {
       icon: 'react',
       description: 'Expert in React development',
       yearsOfExperience: 5,
-      certifications: [],
       isVisible: true,
       sortOrder: 0,
       createdAt: new Date(),
@@ -206,7 +205,6 @@ export const defaultTestPortfolio: FullPortfolio = {
       icon: 'typescript',
       description: 'Strong TypeScript skills',
       yearsOfExperience: 4,
-      certifications: [],
       isVisible: true,
       sortOrder: 1,
       createdAt: new Date(),
@@ -217,6 +215,7 @@ export const defaultTestPortfolio: FullPortfolio = {
     {
       id: 'project-1',
       portfolioId: 'test-portfolio-id',
+      workExperienceId: null,
       title: 'E-commerce Platform',
       description: 'A full-stack e-commerce platform built with React and Node.js',
       shortDescription: 'E-commerce platform with modern UI',

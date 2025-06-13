@@ -263,8 +263,6 @@ export const workExperiences = pgTable(
       website?: string
       achievements?: string[]
       technologies?: string[]
-      projects?: string[]
-      certifications_earned?: string[]
     }>(),
 
     // Ordering and display
@@ -328,7 +326,6 @@ export const skills = pgTable(
     // Additional metadata
     description: text('description'),
     yearsOfExperience: integer('years_of_experience'),
-    certifications: json('certifications').$type<string[]>().default([]),
 
     // Display options
     isVisible: boolean('is_visible').default(true).notNull(),
@@ -349,6 +346,69 @@ export const skills = pgTable(
     index('skills_portfolio_sort_idx').on(table.portfolioId, table.sortOrder),
     // Check constraints
     check('skills_level_check', sql`${table.level} >= 1 AND ${table.level} <= 100`),
+  ]
+)
+
+// Professional certifications
+export const certifications = pgTable(
+  'certifications',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .references(() => users.id, { onDelete: 'cascade' })
+      .notNull(),
+
+    // Basic Information
+    name: varchar('name', { length: 255 }).notNull(),
+    description: text('description'),
+    issuingOrganization: varchar('issuing_organization', { length: 255 }).notNull(),
+
+    // Dates
+    issueDate: timestamp('issue_date').notNull(),
+    expirationDate: timestamp('expiration_date'),
+    nextRenewalDate: timestamp('next_renewal_date'),
+
+    // Status
+    status: varchar('status', { length: 50 }).default('active').notNull(),
+
+    // Optional work experience link
+    workExperienceId: uuid('work_experience_id').references(() => workExperiences.id, {
+      onDelete: 'set null',
+    }),
+
+    // Simple categorization
+    category: varchar('category', { length: 100 }),
+
+    // Cost tracking
+    cost: integer('cost'),
+
+    // Display options
+    isVisible: boolean('is_visible').default(true).notNull(),
+    sortOrder: integer('sort_order').default(0).notNull(),
+
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('certifications_user_id_idx').on(table.userId),
+    index('certifications_status_idx').on(table.status),
+    index('certifications_category_idx').on(table.category),
+    index('certifications_issue_date_idx').on(table.issueDate),
+    index('certifications_expiration_date_idx').on(table.expirationDate),
+    index('certifications_work_exp_idx').on(table.workExperienceId),
+    // Composite indexes for common queries
+    index('certifications_user_status_idx').on(table.userId, table.status),
+    index('certifications_user_visible_idx').on(table.userId, table.isVisible),
+    index('certifications_user_sort_idx').on(table.userId, table.sortOrder, table.isVisible),
+    // Check constraints
+    check(
+      'certifications_status_check',
+      sql`${table.status} IN ('active', 'expired', 'pending_renewal', 'archived')`
+    ),
+    check(
+      'certifications_category_check',
+      sql`${table.category} IN ('technical', 'leadership', 'compliance', 'industry', 'language', 'project_management', 'security', 'cloud', 'data', 'design')`
+    ),
   ]
 )
 
@@ -378,6 +438,11 @@ export const projects = pgTable(
     startDate: timestamp('start_date'),
     endDate: timestamp('end_date'),
 
+    // Optional work experience link
+    workExperienceId: uuid('work_experience_id').references(() => workExperiences.id, {
+      onDelete: 'set null',
+    }),
+
     // Display options
     isFeatured: boolean('is_featured').default(false).notNull(),
     isVisible: boolean('is_visible').default(true).notNull(),
@@ -391,6 +456,7 @@ export const projects = pgTable(
     index('projects_status_idx').on(table.status),
     index('projects_featured_idx').on(table.isFeatured),
     index('projects_sort_order_idx').on(table.sortOrder),
+    index('projects_work_exp_idx').on(table.workExperienceId),
     // Composite indexes for common queries
     index('projects_portfolio_featured_visible_idx').on(
       table.portfolioId,
@@ -398,6 +464,7 @@ export const projects = pgTable(
       table.isVisible
     ),
     index('projects_portfolio_visible_idx').on(table.portfolioId, table.isVisible),
+    index('projects_work_exp_visible_idx').on(table.workExperienceId, table.isVisible),
     // Check constraints
     check(
       'projects_status_check',
@@ -711,6 +778,11 @@ export type NewSkill = typeof skills.$inferInsert
 
 export type Project = typeof projects.$inferSelect
 export type NewProject = typeof projects.$inferInsert
+
+// Enhanced project with relations
+export interface ProjectWithRelations extends Project {
+  workExperience?: WorkExperience
+}
 
 export type Testimonial = typeof testimonials.$inferSelect
 export type NewTestimonial = typeof testimonials.$inferInsert
@@ -1039,7 +1111,6 @@ export const careerEvents = pgTable(
     description: text('description'),
     achievements: json('achievements').$type<string[]>().default([]),
     skillsGained: json('skills_gained').$type<string[]>().default([]),
-    certifications: json('certifications').$type<string[]>().default([]),
 
     // Performance Context
     performanceRating: varchar('performance_rating', { length: 50 }),
@@ -1081,7 +1152,7 @@ export const careerEvents = pgTable(
     // Check constraints
     check(
       'career_events_type_check',
-      sql`${table.eventType} IN ('promotion', 'raise', 'bonus', 'equity_grant', 'role_change', 'department_change', 'location_change', 'performance_review', 'goal_achievement', 'certification', 'skill_milestone', 'manager_change', 'team_expansion')`
+      sql`${table.eventType} IN ('promotion', 'raise', 'bonus', 'equity_grant', 'role_change', 'department_change', 'location_change', 'performance_review', 'goal_achievement', 'skill_milestone', 'manager_change', 'team_expansion')`
     ),
     check(
       'career_events_bonus_type_check',
@@ -1089,3 +1160,77 @@ export const careerEvents = pgTable(
     ),
   ]
 )
+
+export type Certification = typeof certifications.$inferSelect
+export type NewCertification = typeof certifications.$inferInsert
+
+// Enhanced certification with relations
+export interface CertificationWithRelations extends Certification {
+  workExperience?: WorkExperience
+}
+
+// Certification summary for dashboard
+export interface CertificationSummary {
+  totalCertifications: number
+  activeCertifications: number
+  expiredCertifications: number
+  expiringInSixMonths: number
+
+  categories: Array<{
+    category: string
+    count: number
+  }>
+
+  totalInvestment: number // total cost in cents
+
+  upcomingRenewals: Array<{
+    id: string
+    name: string
+    expirationDate: string
+    daysUntilExpiration: number
+  }>
+
+  certificationsByYear: Array<{
+    year: number
+    count: number
+    totalCost: number
+  }>
+}
+
+// Legacy PersonalInfo interface (for backward compatibility during migration)
+export interface PersonalInfo {
+  name: string
+  initials?: string
+  title: string
+  bio: string
+  tagline: string
+  location: {
+    current: string
+    tagline?: string
+  }
+  availability: {
+    status: boolean
+    message?: string
+  }
+  contact: {
+    email: string
+    phone?: string
+  }
+  social: {
+    github?: string
+    linkedin?: string
+    twitter?: string
+    website?: string
+  }
+  stats: Array<{
+    label: string
+    value: string
+  }>
+  copyright?: string
+  theme?: {
+    primaryColor?: string
+    accentColor?: string
+    backgroundColor?: string
+    fontFamily?: string
+  }
+}

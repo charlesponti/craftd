@@ -94,7 +94,6 @@ export async function saveResumeToDatabase(
           category: skill.category ?? undefined,
           description: skill.description ?? undefined,
           yearsOfExperience: skill.yearsOfExperience ?? undefined,
-          certifications: skill.certifications,
         })
       )
     )
@@ -104,6 +103,7 @@ export async function saveResumeToDatabase(
       data.projects.map((proj) =>
         tx.insert(projectsTable).values({
           portfolioId,
+          workExperienceId: null, // Resume projects are standalone, not linked to specific jobs
           title: proj.title,
           description: proj.description,
           shortDescription: proj.shortDescription ?? undefined,
@@ -113,6 +113,9 @@ export async function saveResumeToDatabase(
           videoUrl: undefined,
           technologies: proj.technologies,
           status: proj.status,
+          isVisible: true,
+          sortOrder: 0,
+          isFeatured: false,
         })
       )
     )

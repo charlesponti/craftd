@@ -26,14 +26,13 @@ import {
 import { createClient } from '../lib/supabase/client'
 import { getMockPortfolioForForms } from '../lib/utils/mock-data'
 
-// Account loader - migrated from Svelte layout server
 export async function loader(args: LoaderFunctionArgs) {
   return withAuthLoader(args, async ({ user, request }) => {
     return withMockDataFallback(
       request,
       async (request) => {
         const mockData = await getMockPortfolioForForms(request)
-        // Convert mock data to PortfolioSummary format
+
         const mockSummary = {
           id: mockData.portfolioId,
           slug: 'test-portfolio',
@@ -54,33 +53,71 @@ export async function loader(args: LoaderFunctionArgs) {
       },
       async () => {
         const fullPortfolio = await getFullUserPortfolio(user.id)
-        const portfolios: Portfolio[] = fullPortfolio
-          ? [
-              {
-                id: fullPortfolio.id,
-                title: fullPortfolio.title,
-                slug: fullPortfolio.slug,
-                isPublic: fullPortfolio.isPublic,
-                isActive: fullPortfolio.isActive,
-                updatedAt: fullPortfolio.updatedAt,
-                name: fullPortfolio.name,
-                jobTitle: fullPortfolio.jobTitle,
-                bio: fullPortfolio.bio,
-                profileImageUrl: fullPortfolio.profileImageUrl || undefined,
-              },
-            ]
-          : []
+
+        let userPortfolios: Portfolio[] = []
+
+        if (!fullPortfolio) {
+          // Create a new portfolio if one doesn't exist
+          const randomString = Math.random().toString(36).substring(2, 8)
+          const timestamp = Date.now().toString(36)
+          const slug = `portfolio-${randomString}-${timestamp}`
+
+          const [newPortfolio] = await db
+            .insert(portfolios)
+            .values({
+              userId: user.id,
+              slug,
+              title: `${user.name}'s Portfolio`,
+              name: user.name,
+              jobTitle: 'Software Engineer',
+              bio: 'Welcome to my portfolio!',
+              tagline: 'Building the future of software',
+              currentLocation: 'San Francisco, CA',
+              email: user.email,
+            })
+            .returning()
+
+          userPortfolios = [
+            {
+              id: newPortfolio.id,
+              title: newPortfolio.title,
+              slug: newPortfolio.slug,
+              isPublic: newPortfolio.isPublic,
+              isActive: newPortfolio.isActive,
+              updatedAt: newPortfolio.updatedAt,
+              name: newPortfolio.name,
+              jobTitle: newPortfolio.jobTitle,
+              bio: newPortfolio.bio,
+              profileImageUrl: newPortfolio.profileImageUrl || undefined,
+            },
+          ]
+        } else {
+          userPortfolios = [
+            {
+              id: fullPortfolio.id,
+              title: fullPortfolio.title,
+              slug: fullPortfolio.slug,
+              isPublic: fullPortfolio.isPublic,
+              isActive: fullPortfolio.isActive,
+              updatedAt: fullPortfolio.updatedAt,
+              name: fullPortfolio.name,
+              jobTitle: fullPortfolio.jobTitle,
+              bio: fullPortfolio.bio,
+              profileImageUrl: fullPortfolio.profileImageUrl || undefined,
+            },
+          ]
+        }
+
         return {
           user,
-          portfolios,
-          hasPortfolio: portfolios.length > 0,
+          portfolios: userPortfolios,
+          hasPortfolio: userPortfolios.length > 0,
         }
       }
     )
   })
 }
 
-// Server action for portfolio operations
 export async function action(args: ActionFunctionArgs) {
   return withAuthAction(args, async ({ supabase, user }) => {
     const formData = await args.request.formData()
@@ -316,7 +353,6 @@ export default function Account() {
   }
 
   const userDisplayName = user.supabaseUser?.user_metadata?.full_name || user.name || user.email
-  const userAvatar = user.supabaseUser?.user_metadata?.avatar_url
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">

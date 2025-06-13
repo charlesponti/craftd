@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm'
 import { redirect } from 'react-router'
 import { db } from './db'
-import { users } from './db/schema'
+import { portfolios, users } from './db/schema'
 import { createClient } from './supabase/server'
 import { createTestUser, defaultTestPortfolio, defaultTestUser } from './test/mock-data'
 
@@ -63,16 +63,38 @@ export async function getAuthenticatedUser(request: Request): Promise<User | nul
 
     // Create user if doesn't exist
     if (dbUser.length === 0) {
-      const newUser = await db
-        .insert(users)
-        .values({
-          email,
-          name: user.user_metadata?.full_name || 'User',
-          supabaseUserId: user.id,
-        })
-        .returning({ id: users.id, email: users.email, name: users.name })
+      const result = await db.transaction(async (tx) => {
+        // Create the user
+        const newUser = await tx
+          .insert(users)
+          .values({
+            email,
+            name: user.user_metadata?.full_name || 'User',
+            supabaseUserId: user.id,
+          })
+          .returning({ id: users.id, email: users.email, name: users.name })
 
-      dbUser = newUser
+        // Create an empty portfolio for the user
+        const randomString = Math.random().toString(36).substring(2, 8)
+        const timestamp = Date.now().toString(36)
+        const slug = `portfolio-${randomString}-${timestamp}`
+
+        await tx.insert(portfolios).values({
+          userId: newUser[0].id,
+          slug,
+          title: `${newUser[0].name}'s Portfolio`,
+          name: newUser[0].name,
+          jobTitle: 'Software Engineer',
+          bio: 'Welcome to my portfolio!',
+          tagline: 'Building the future of software',
+          currentLocation: 'San Francisco, CA',
+          email: newUser[0].email,
+        })
+
+        return newUser
+      })
+
+      dbUser = result
     }
 
     return {

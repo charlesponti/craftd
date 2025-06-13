@@ -28,7 +28,7 @@ export const links = () => [
     href: 'https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap',
   },
   // Favicon
-  { rel: 'icon', type: 'image/x-icon', href: '/public/icons/favicon.ico' },
+  { rel: 'icon', type: 'image/x-icon', href: '/icons/favicon.ico' },
   { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/public/icons/favicon-16x16.png' },
   { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/public/icons/favicon-32x32.png' },
   { rel: 'icon', type: 'image/png', sizes: '96x96', href: '/public/icons/favicon-96x96.png' },
@@ -64,7 +64,7 @@ export const links = () => [
   },
 
   // Web Manifest
-  { rel: 'manifest', href: '/public/manifest.json' },
+  { rel: 'manifest', href: '/manifest.json' },
 
   // Safari Pinned Tab Icon
   { rel: 'mask-icon', href: '/public/icons/safari-pinned-tab.svg', color: '#ffffff' },

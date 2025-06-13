@@ -101,7 +101,7 @@ export function safeParseJson<T>(jsonField: unknown, fallback: T): T {
     }
     return jsonField as T
   } catch (error) {
-    console.warn('Failed to parse JSON field:', error)
+    console.error('Failed to parse JSON field:', error)
     return fallback
   }
 }

@@ -123,3 +123,7 @@ export const stringToDate = (dateString?: string): Date | undefined => {
   const date = new Date(dateString)
   return Number.isNaN(date.getTime()) ? undefined : date
 }
+
+export const normalizeString = (str: string): string => {
+  return str.toLocaleLowerCase().replace(/\s+/g, '-')
+}

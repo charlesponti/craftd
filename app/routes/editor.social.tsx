@@ -84,9 +84,8 @@ function SocialLinksEditorSection({
   const isSaving = fetcher.state === 'submitting'
 
   return (
-    <section className="container flex flex-col gap-2xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+    <section className="container flex flex-col gap-4 mx-auto">
+      <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -108,7 +107,11 @@ function SocialLinksEditorSection({
       </div>
 
       {/* Form */}
-      <form id="social-form" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        id="social-form"
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-2 md:space-y-6 card"
+      >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* GitHub */}
           <div className="form-group">

@@ -1,3 +1,4 @@
+import { BriefcaseIcon } from 'lucide-react'
 import { Link } from 'react-router'
 import type { WorkExperienceWithFinancials } from '~/lib/db/schema'
 import { formatCurrency, formatPercentage } from '~/lib/utils'
@@ -211,23 +212,7 @@ export function CareerHistory({ workExperiences }: CareerHistoryProps) {
       ) : (
         <div className="text-center py-12" data-testid="empty-state">
           <div className="text-slate-400 mb-4">
-            <svg
-              className="w-16 h-16 mx-auto"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-label="Empty work experience illustration"
-              role="img"
-              data-testid="empty-illustration"
-            >
-              <title>No work experience</title>
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1}
-                d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6"
-              />
-            </svg>
+            <BriefcaseIcon className="w-16 h-16 mx-auto" />
           </div>
           <p className="text-slate-500 font-sans" data-testid="empty-message">
             No work experience yet

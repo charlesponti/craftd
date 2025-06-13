@@ -81,9 +81,9 @@ export default function EditorLayout() {
 
   return (
     <div className="bg-gray-50 flex flex-col flex-1 overflow-hidden">
-      <div className="max-w-6xl mx-auto px-6 py-8 flex-1 w-full grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="max-w-6xl mx-auto py-8 flex-1 w-full grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Sidebar Navigation */}
-        <div className="md:col-span-2 lg:col-span-1">
+        <div className="md:col-span-2 lg:col-span-1 px-4 md:px-0">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-8">
             <nav className="space-y-2">
               {editorSteps.map((step, index) => {

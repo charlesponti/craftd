@@ -3,8 +3,36 @@ import { useState } from 'react'
 import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
 import { useLoaderData, useNavigate } from 'react-router'
 import { Button } from '~/components/ui/button'
-import type { WorkExperience } from '~/lib/db/schema'
 import { createSuccessResponse, withAuthLoader } from '~/lib/route-utils'
+
+interface WorkExperienceMetadata {
+  company_size?: string
+  industry?: string
+  location?: string
+  website?: string
+  achievements?: string[]
+  technologies?: string[]
+  projects?: Project[]
+  certifications_earned?: string[]
+}
+
+interface Project {
+  id: string
+  title: string
+  description: string
+  status: string
+  technologies: string[]
+  impact: string
+  updatedAt: string
+  createdAt: string
+}
+
+interface WorkExperience {
+  id: string
+  metadata: WorkExperienceMetadata
+  role: string
+  company: string
+}
 
 interface LoaderData {
   workExperience: WorkExperience
@@ -86,7 +114,7 @@ export async function action(args: ActionFunctionArgs) {
         const technologies = formData.get('technologies') as string
         const impact = formData.get('impact') as string
 
-        const updatedProjects = currentProjects.map((project: any) =>
+        const updatedProjects = currentProjects.map((project: Project) =>
           project.id === projectId
             ? {
                 ...project,
@@ -109,7 +137,9 @@ export async function action(args: ActionFunctionArgs) {
       } else if (actionType === 'delete') {
         const projectId = formData.get('projectId') as string
 
-        const updatedProjects = currentProjects.filter((project: any) => project.id !== projectId)
+        const updatedProjects = currentProjects.filter(
+          (project: Project) => project.id !== projectId
+        )
         const updatedMetadata = {
           ...currentMetadata,
           projects: updatedProjects,
@@ -187,7 +217,7 @@ export default function WorkExperienceProjects() {
 
           {/* Projects List */}
           {projects.length > 0 ? (
-            projects.map((project: any) => (
+            projects.map((project: Project) => (
               <ProjectCard
                 key={project.id}
                 project={project}
@@ -222,7 +252,7 @@ export default function WorkExperienceProjects() {
 
 interface ProjectFormProps {
   workExperienceId: string
-  project?: any
+  project?: Project
   onCancel: () => void
 }
 
@@ -254,12 +284,12 @@ function ProjectForm({ workExperienceId, project, onCancel }: ProjectFormProps) 
       form.appendChild(projectIdInput)
     }
 
-    Object.entries(formData).forEach(([key, value]) => {
+    for (const [key, value] of Object.entries(formData)) {
       const input = document.createElement('input')
       input.name = key
       input.value = value
       form.appendChild(input)
-    })
+    }
 
     document.body.appendChild(form)
     form.submit()
@@ -372,7 +402,7 @@ function ProjectForm({ workExperienceId, project, onCancel }: ProjectFormProps) 
 }
 
 interface ProjectCardProps {
-  project: any
+  project: Project
   workExperienceId: string
 }
 

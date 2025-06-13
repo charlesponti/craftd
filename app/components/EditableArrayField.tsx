@@ -1,8 +1,9 @@
 import { CheckIcon, PencilIcon, PlusIcon, TrashIcon, XIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { memo, useState } from 'react'
 import { Button } from '~/components/ui/button'
+import { normalizeString } from '~/lib/utils'
 
-export interface EditableArrayFieldProps {
+interface EditableArrayFieldProps {
   label: string
   value: string[]
   field: string
@@ -11,6 +12,56 @@ export interface EditableArrayFieldProps {
   className?: string
   onSave?: (field: string, value: string[]) => void
 }
+
+interface ArrayItemProps {
+  value: string
+  index: number
+  field: string
+  placeholder?: string
+  onUpdate: (index: number, value: string) => void
+  onRemove: (index: number) => void
+  onKeyDown: (e: React.KeyboardEvent, index: number) => void
+}
+
+const ArrayItem = memo(function ArrayItem({
+  value,
+  index,
+  field,
+  placeholder,
+  onUpdate,
+  onRemove,
+  onKeyDown,
+}: ArrayItemProps) {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value
+    onUpdate(index, newValue)
+  }
+
+  return (
+    <div className="flex items-center gap-2" data-testid={`array-item-${normalizeString(value)}`}>
+      <input
+        type="text"
+        value={value}
+        onChange={handleChange}
+        onKeyDown={(e) => onKeyDown(e, index)}
+        className="flex-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
+        placeholder={placeholder}
+        data-testid={`array-input-${normalizeString(value)}`}
+      />
+      <Button
+        type="button"
+        onClick={() => onRemove(index)}
+        variant="ghost"
+        size="sm"
+        className="p-2 text-red-600 hover:bg-red-50"
+        data-testid={`remove-item-${normalizeString(value)}`}
+        aria-label={`Remove item ${value}`}
+      >
+        <TrashIcon className="w-4 h-4" />
+      </Button>
+    </div>
+  )
+})
 
 export function EditableArrayField({
   label,
@@ -24,10 +75,11 @@ export function EditableArrayField({
   const [isEditing, setIsEditing] = useState(false)
   const [editValues, setEditValues] = useState(value)
 
-  // Sync editValues with value prop changes
-  useEffect(() => {
+  // Reset edit values when entering edit mode
+  const handleEdit = () => {
     setEditValues(value)
-  }, [value])
+    setIsEditing(true)
+  }
 
   const handleSave = () => {
     const filteredValues = editValues.map((v) => v.trim()).filter((v) => v !== '')
@@ -35,7 +87,6 @@ export function EditableArrayField({
     if (onSave) {
       onSave(field, filteredValues)
     } else {
-      // Default form submission behavior
       const form = document.createElement('form')
       form.method = 'POST'
       form.style.display = 'none'
@@ -55,8 +106,8 @@ export function EditableArrayField({
       try {
         form.submit()
       } catch (error) {
-        // Handle JSDOM test environment where form.submit() isn't implemented
-        console.log('Form submission attempted:', { field, value: filteredValues })
+        console.error('Form submission attempted:', { field, value: filteredValues })
+        console.error(error)
       }
 
       document.body.removeChild(form)
@@ -71,17 +122,19 @@ export function EditableArrayField({
   }
 
   const addItem = () => {
-    setEditValues([...editValues, ''])
+    setEditValues((prev) => [...prev, ''])
   }
 
   const removeItem = (index: number) => {
-    setEditValues(editValues.filter((_, i) => i !== index))
+    setEditValues((prev) => prev.filter((_, i) => i !== index))
   }
 
   const updateItem = (index: number, newValue: string) => {
-    const updated = [...editValues]
-    updated[index] = newValue
-    setEditValues(updated)
+    setEditValues((prev) => {
+      const updated = [...prev]
+      updated[index] = newValue
+      return updated
+    })
   }
 
   const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
@@ -99,32 +152,16 @@ export function EditableArrayField({
         <div className="block text-sm font-medium text-slate-700 mb-2">{label}</div>
         <div className="space-y-2">
           {editValues.map((item, index) => (
-            <div
-              key={`edit-${field}-${index}`}
-              className="flex items-center gap-2"
-              data-testid={`array-item-${index}`}
-            >
-              <input
-                type="text"
-                value={item}
-                onChange={(e) => updateItem(index, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, index)}
-                className="flex-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
-                placeholder={placeholder}
-                data-testid={`array-input-${index}`}
-              />
-              <Button
-                type="button"
-                onClick={() => removeItem(index)}
-                variant="ghost"
-                size="sm"
-                className="p-2 text-red-600 hover:bg-red-50"
-                data-testid={`remove-item-${index}`}
-                aria-label={`Remove item ${index + 1}`}
-              >
-                <TrashIcon className="w-4 h-4" />
-              </Button>
-            </div>
+            <ArrayItem
+              key={`edit-${field}-${normalizeString(item)}`}
+              value={item}
+              index={index}
+              field={field}
+              placeholder={placeholder}
+              onUpdate={updateItem}
+              onRemove={removeItem}
+              onKeyDown={handleKeyDown}
+            />
           ))}
           <Button
             type="button"
@@ -171,11 +208,11 @@ export function EditableArrayField({
       <div className="group">
         <div className="space-y-2" data-testid="array-items-display">
           {value.length > 0 ? (
-            value.map((item, index) => (
+            value.map((item) => (
               <div
-                key={`display-${field}-${index}`}
+                key={`display-${field}-${normalizeString(item)}`}
                 className="text-slate-900 bg-slate-50 rounded px-3 py-2"
-                data-testid={`display-item-${index}`}
+                data-testid={`display-item-${normalizeString(item)}`}
               >
                 {item}
               </div>
@@ -192,7 +229,7 @@ export function EditableArrayField({
           </span>
           <Button
             type="button"
-            onClick={() => setIsEditing(true)}
+            onClick={handleEdit}
             variant="ghost"
             size="sm"
             className="p-1 text-slate-400 hover:text-slate-600 focus:text-slate-600"

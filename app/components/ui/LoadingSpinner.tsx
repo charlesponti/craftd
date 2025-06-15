@@ -25,7 +25,7 @@ export function LoadingSpinner({ size = 'md', message, className = '' }: Loading
 
 export function FullPageLoader({ message = 'Loading...' }: { message?: string }) {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="flex items-center justify-center">
       <LoadingSpinner size="lg" message={message} />
     </div>
   )

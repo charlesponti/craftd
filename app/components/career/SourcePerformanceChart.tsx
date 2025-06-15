@@ -67,7 +67,7 @@ export function SourcePerformanceChart({ data }: SourcePerformanceChartProps) {
       ))}
 
       {/* Legend */}
-      <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+      <div className="mt-6 p-4 rounded-lg">
         <h4 className="font-medium text-gray-900 mb-2">Performance Guide</h4>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
           <div className="flex items-center">
@@ -79,7 +79,7 @@ export function SourcePerformanceChart({ data }: SourcePerformanceChartProps) {
             <span className="text-gray-600">Offer Rate</span>
           </div>
           <div className="flex items-center">
-            <div className="w-3 h-3 bg-gray-500 rounded mr-2" />
+            <div className="w-3 h-30 rounded mr-2" />
             <span className="text-gray-600">Application Volume</span>
           </div>
         </div>

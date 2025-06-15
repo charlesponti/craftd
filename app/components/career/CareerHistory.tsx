@@ -79,136 +79,208 @@ export function CareerHistory({ workExperiences }: CareerHistoryProps) {
       </div>
 
       {sortedExperiences.length > 0 ? (
-        <div className="space-y-2" data-testid="work-experience-list">
-          {sortedExperiences.map((exp) => (
-            <div
-              key={exp.id}
-              className="border border-slate-200 rounded-sm p-6 hover:border-slate-300 transition-colors"
-              data-testid={`work-experience-${exp.id}`}
-            >
-              {/* Header */}
-              <div className="flex flex-col md:flex-row items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3">
-                    <h3
-                      className="text-base font-medium text-slate-900 font-serif mb-1"
-                      data-testid="job-title"
-                    >
-                      {exp.role}
-                    </h3>
-                    <Link
-                      to={`/career/experience/${exp.id}`}
-                      className="inline-flex items-center px-2 py-1 rounded text-xs bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
-                    >
-                      View Details
-                    </Link>
-                  </div>
-                  <p className="text-sm text-slate-700 font-sans mb-2" data-testid="company-name">
-                    {exp.company}
-                  </p>
-                </div>
-                <div
-                  className="flex items-center gap-1 text-sm text-slate-500 font-sans"
-                  data-testid="employment-dates"
-                >
-                  {exp.startDate && (
-                    <>
-                      <span data-testid="date-range">
-                        {formatDateRange(exp.startDate, exp.endDate)}
-                      </span>
-                      <span>•</span>
-                      <span data-testid="duration">
-                        {formatDuration(exp.startDate, exp.endDate)}
-                      </span>
-                    </>
-                  )}
-                  {!exp.endDate && (
-                    <span
-                      className="px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full font-sans"
-                      data-testid="current-badge"
-                    >
-                      Current
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Metrics */}
-              {exp.metrics && (
-                <p className="text-sm text-slate-600 font-sans italic" data-testid="job-metrics">
-                  {exp.metrics}
-                </p>
-              )}
-
-              {/* Key Stats */}
+        <>
+          {/* Desktop View */}
+          <div className="hidden md:block space-y-2" data-testid="work-experience-list">
+            {sortedExperiences.map((exp) => (
               <div
-                className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4"
-                data-testid="key-stats"
+                key={exp.id}
+                className="border border-slate-200 rounded-sm p-6 hover:border-slate-300 transition-colors"
+                data-testid={`work-experience-${exp.id}`}
               >
-                {exp.currentAnnualizedSalary ? (
-                  <KeyStat
-                    data-testid="salary-stat"
-                    label="Salary"
-                    value={formatCurrency(exp.currentAnnualizedSalary / 100)}
-                  />
-                ) : null}
-
-                {exp.promotionCount !== undefined && exp.promotionCount > 0 ? (
-                  <KeyStat
-                    data-testid="promotion-stat"
-                    label="Promotions"
-                    value={exp.promotionCount.toString()}
-                  />
-                ) : null}
-
-                {exp.averageAnnualRaise && exp.averageAnnualRaise > 0 ? (
-                  <KeyStat
-                    data-testid="raise-stat"
-                    label="Avg. Raise"
-                    value={formatPercentage(exp.averageAnnualRaise)}
-                  />
-                ) : null}
-
-                {exp.totalCompensationReceived && exp.totalCompensationReceived > 0 ? (
-                  <KeyStat
-                    data-testid="total-comp-stat"
-                    label="Total Comp"
-                    value={formatCurrency(exp.totalCompensationReceived / 100)}
-                  />
-                ) : null}
-              </div>
-
-              {/* Skills/Tags */}
-              {exp.skillsAcquired && exp.skillsAcquired.length > 0 ? (
-                <div data-testid="skills-section" className="mt-3">
-                  <span className="text-xs text-slate-500 font-sans block mb-2">
-                    Skills & Technologies
-                  </span>
-                  <div className="flex flex-wrap gap-1 md:gap-2" data-testid="skills-list">
-                    {exp.skillsAcquired.slice(0, 8).map((skill) => (
-                      <span
-                        key={skill}
-                        className="px-1.5 md:px-2 py-0.5 md:py-1 text-xs bg-slate-100 text-slate-700 rounded font-sans truncate max-w-[120px]"
-                        data-testid="skill-tag"
-                        title={skill}
+                {/* Header */}
+                <div className="flex flex-col md:flex-row items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3">
+                      <h3
+                        className="text-base font-medium text-slate-900 font-serif mb-1"
+                        data-testid="job-title"
                       >
-                        {skill}
-                      </span>
-                    ))}
-                    {exp.skillsAcquired.length > 8 && (
-                      <span
-                        className="px-1.5 md:px-2 py-0.5 md:py-1 text-xs bg-slate-100 text-slate-500 rounded font-sans"
-                        data-testid="more-skills-tag"
+                        {exp.role}
+                      </h3>
+                      <Link
+                        to={`/career/experience/${exp.id}`}
+                        className="inline-flex items-center px-2 py-1 rounded text-xs bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
                       >
-                        +{exp.skillsAcquired.length - 8} more
+                        View Details
+                      </Link>
+                    </div>
+                    <p className="text-sm text-slate-700 font-sans mb-2" data-testid="company-name">
+                      {exp.company}
+                    </p>
+                  </div>
+                  <div
+                    className="flex items-center gap-1 text-sm text-slate-500 font-sans"
+                    data-testid="employment-dates"
+                  >
+                    {exp.startDate && (
+                      <>
+                        <span data-testid="date-range">
+                          {formatDateRange(exp.startDate, exp.endDate)}
+                        </span>
+                        <span>•</span>
+                        <span data-testid="duration">
+                          {formatDuration(exp.startDate, exp.endDate)}
+                        </span>
+                      </>
+                    )}
+                    {!exp.endDate && (
+                      <span
+                        className="px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full font-sans"
+                        data-testid="current-badge"
+                      >
+                        Current
                       </span>
                     )}
                   </div>
                 </div>
-              ) : null}
+
+                {/* Metrics */}
+                {exp.metrics && (
+                  <p className="text-sm text-slate-600 font-sans italic" data-testid="job-metrics">
+                    {exp.metrics}
+                  </p>
+                )}
+
+                {/* Key Stats */}
+                <div
+                  className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4"
+                  data-testid="key-stats"
+                >
+                  {exp.currentAnnualizedSalary ? (
+                    <KeyStat
+                      data-testid="salary-stat"
+                      label="Salary"
+                      value={formatCurrency(exp.currentAnnualizedSalary / 100)}
+                    />
+                  ) : null}
+
+                  {exp.promotionCount !== undefined && exp.promotionCount > 0 ? (
+                    <KeyStat
+                      data-testid="promotion-stat"
+                      label="Promotions"
+                      value={exp.promotionCount.toString()}
+                    />
+                  ) : null}
+
+                  {exp.averageAnnualRaise && exp.averageAnnualRaise > 0 ? (
+                    <KeyStat
+                      data-testid="raise-stat"
+                      label="Avg. Raise"
+                      value={formatPercentage(exp.averageAnnualRaise)}
+                    />
+                  ) : null}
+
+                  {exp.totalCompensationReceived && exp.totalCompensationReceived > 0 ? (
+                    <KeyStat
+                      data-testid="total-comp-stat"
+                      label="Total Comp"
+                      value={formatCurrency(exp.totalCompensationReceived / 100)}
+                    />
+                  ) : null}
+                </div>
+
+                {/* Skills/Tags */}
+                {exp.skillsAcquired && exp.skillsAcquired.length > 0 ? (
+                  <div data-testid="skills-section" className="mt-3">
+                    <span className="text-xs text-slate-500 font-sans block mb-2">
+                      Skills & Technologies
+                    </span>
+                    <div className="flex flex-wrap gap-1 md:gap-2" data-testid="skills-list">
+                      {exp.skillsAcquired.slice(0, 8).map((skill) => (
+                        <span
+                          key={skill}
+                          className="px-1.5 md:px-2 py-0.5 md:py-1 text-xs bg-slate-100 text-slate-700 rounded font-sans truncate max-w-[120px]"
+                          data-testid="skill-tag"
+                          title={skill}
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                      {exp.skillsAcquired.length > 8 && (
+                        <span
+                          className="px-1.5 md:px-2 py-0.5 md:py-1 text-xs bg-slate-100 text-slate-500 rounded font-sans"
+                          data-testid="more-skills-tag"
+                        >
+                          +{exp.skillsAcquired.length - 8} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            ))}
+          </div>
+
+          {/* Mobile List View */}
+          <div className="md:hidden bg-white rounded-lg border border-gray-200 shadow-sm">
+            <div className="divide-y divide-gray-200">
+              {sortedExperiences.map((exp) => (
+                <Link
+                  key={exp.id}
+                  to={`/career/experience/${exp.id}`}
+                  className="block p-4 hover:bg-gray-50 transition-colors duration-200 focus:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
+                  data-testid={`mobile-experience-${exp.id}`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div
+                        className="text-sm font-medium text-gray-900 truncate"
+                        data-testid="mobile-job-title"
+                      >
+                        {exp.role}
+                      </div>
+                      <div
+                        className="text-sm text-gray-500 truncate"
+                        data-testid="mobile-company-name"
+                      >
+                        {exp.company}
+                      </div>
+                      {exp.startDate && (
+                        <div className="text-xs text-gray-400 mt-1" data-testid="mobile-duration">
+                          {formatDuration(exp.startDate, exp.endDate)}
+                        </div>
+                      )}
+                    </div>
+                    <div className="ml-4 flex items-center space-x-3">
+                      {!exp.endDate ? (
+                        <span
+                          className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800"
+                          data-testid="mobile-current-badge"
+                        >
+                          Current
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-400" data-testid="mobile-end-date">
+                          {exp.endDate
+                            ? new Date(exp.endDate).toLocaleDateString('en-US', {
+                                month: 'short',
+                                year: 'numeric',
+                              })
+                            : ''}
+                        </span>
+                      )}
+                      <svg
+                        className="h-5 w-5 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </Link>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        </>
       ) : (
         <div className="text-center py-12" data-testid="empty-state">
           <div className="text-slate-400 mb-4">

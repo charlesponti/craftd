@@ -1,4 +1,9 @@
 {
+  "[css]": {
+    "editor.suggest.insertMode": "replace",
+    "cSpell.fixSpellingWithRenameProvider": false,
+    "editor.defaultFormatter": "stylelint.vscode-stylelint"
+  },
   "editor.codeActionsOnSave": {
     "source.sortImports": "always",
     "source.fixAll": "always"

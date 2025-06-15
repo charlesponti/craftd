@@ -190,7 +190,7 @@ export function SlugEditor({ portfolioId, initialSlug, onSave, onCancel }: SlugE
       </label>
       <div className="flex items-center space-x-2">
         <div className="flex items-center flex-1 min-w-0">
-          <div className="inline-flex items-center px-4 h-8 text-sm text-gray-500 bg-gray-50 border border-r-0 border-gray-300 rounded-l-md">
+          <div className="inline-flex items-center px-4 h-8 text-sm text-gray-900 border border-r-0 bg-gray-200 border-gray-300 rounded-l-md">
             craftd.dev/p/
           </div>
           <div className="flex-1 relative">
@@ -200,7 +200,7 @@ export function SlugEditor({ portfolioId, initialSlug, onSave, onCancel }: SlugE
               value={slugValue}
               onChange={handleInputChange}
               className={cn(
-                'input rounded-l-none border-l-0 pr-8 font-mono h-8',
+                'input rounded-l-none pr-8 font-mono h-8',
                 !validation.isValid ? 'input-error' : ''
               )}
               placeholder="your-portfolio-name"

@@ -120,7 +120,7 @@ function SocialLinksEditorSection({
               GitHub Username
             </label>
             <div className="flex">
-              <div className="inline-flex items-center px-3 text-sm text-gray-500 bg-gray-50 border border-r-0 border-gray-300 rounded-l-md">
+              <div className="inline-flex items-center px-3 text-sm text-gray-500 border border-r-0 border-gray-300 rounded-l-md">
                 github.com/
               </div>
               <input
@@ -148,7 +148,7 @@ function SocialLinksEditorSection({
               LinkedIn Username
             </label>
             <div className="flex">
-              <div className="inline-flex items-center px-3 text-sm text-gray-500 bg-gray-50 border border-r-0 border-gray-300 rounded-l-md">
+              <div className="inline-flex items-center px-3 text-sm text-gray-500 border border-r-0 border-gray-300 rounded-l-md">
                 linkedin.com/in/
               </div>
               <input
@@ -177,7 +177,7 @@ function SocialLinksEditorSection({
               Twitter Username
             </label>
             <div className="flex">
-              <div className="inline-flex items-center px-3 text-sm text-gray-500 bg-gray-50 border border-r-0 border-gray-300 rounded-l-md">
+              <div className="inline-flex items-center px-3 text-sm text-gray-500 border border-r-0 border-gray-300 rounded-l-md">
                 twitter.com/
               </div>
               <input
@@ -223,7 +223,7 @@ function SocialLinksEditorSection({
           watchedValues.linkedin ||
           watchedValues.twitter ||
           watchedValues.website) && (
-          <div className="mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="mt-8 p-6 rounded-lg border border-gray-200">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Preview</h3>
             <div className="flex flex-wrap gap-3">
               {watchedValues.github && (

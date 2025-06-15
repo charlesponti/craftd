@@ -20,7 +20,7 @@ export default function Onboarding() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center">
+    <div className="flex flex-col items-center justify-center">
       {/* Step Content */}
       {currentStep === 0 && (
         <UploadResumeForm

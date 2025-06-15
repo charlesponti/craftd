@@ -165,10 +165,10 @@ function ProjectForm({
   const isSaving = fetcher.state === 'submitting'
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="card bg-muted/50 space-y-lg">
+    <form onSubmit={handleSubmit(onSubmit)} className="card bg-muted/50 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-medium text-foreground">{isNew ? 'New Project' : 'Project'}</h3>
-        <div className="flex gap-sm">
+        <div className="flex gap-2">
           <Button
             type="submit"
             disabled={isSaving || (!isDirty && !isNew) || !isValid}
@@ -230,7 +230,7 @@ function ProjectForm({
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="form-group">
           <label htmlFor={`liveUrl-${project?.id || 'new'}`} className="label">
             Live URL
@@ -257,7 +257,7 @@ function ProjectForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="form-group">
           <label htmlFor={`imageUrl-${project?.id || 'new'}`} className="label">
             Image URL
@@ -300,7 +300,7 @@ function ProjectForm({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="form-group">
           <label htmlFor={`status-${project?.id || 'new'}`} className="label">
             Status
@@ -335,7 +335,7 @@ function ProjectForm({
         </div>
       </div>
 
-      <div className="flex gap-lg">
+      <div className="flex gap-4">
         <div className="form-group">
           <label className="flex items-center gap-2">
             <input type="checkbox" {...register('isFeatured')} className="checkbox" />
@@ -374,7 +374,7 @@ function ProjectsEditorSection({
   }
 
   return (
-    <section className="container flex flex-col gap-2xl mx-auto">
+    <section className="container flex flex-col gap-8 mx-auto">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -396,7 +396,7 @@ function ProjectsEditorSection({
         )}
       </div>
 
-      <div className="flex flex-col gap-2xl">
+      <div className="flex flex-col gap-8">
         {/* Show new project form if requested */}
         {showNewForm && (
           <ProjectForm portfolioId={portfolioId} onDelete={() => setShowNewForm(false)} />

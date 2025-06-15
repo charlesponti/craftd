@@ -1,8 +1,35 @@
-import { centsToDollars, formatCurrency } from '~/lib/utils'
+import { PlusIcon } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router'
+import {
+  formatApplicationDate,
+  formatApplicationSalary,
+  formatStatusText,
+  getCompanyName,
+  getStatusColor,
+  getUniqueSources,
+  getUniqueStatuses,
+  hasActiveFilters,
+} from '~/lib/utils/applicationUtils'
 import type { ApplicationWithCompany } from '~/types/applications'
+
+interface PaginationInfo {
+  page: number
+  limit: number
+  total: number
+  totalPages: number
+}
+
+interface FiltersInfo {
+  search?: string
+  statuses?: string[]
+  source?: string
+}
 
 interface ApplicationTableProps {
   applications: ApplicationWithCompany[]
+  pagination: PaginationInfo
+  filters: FiltersInfo
   emptyTitle?: string
   emptyDescription?: string
   className?: string
@@ -10,117 +37,385 @@ interface ApplicationTableProps {
 
 export function ApplicationTable({
   applications,
+  pagination,
+  filters,
   emptyTitle = 'No applications found',
   emptyDescription = 'Start tracking your job applications to see them here',
   className = '',
 }: ApplicationTableProps) {
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false)
+  const statusDropdownRef = useRef<HTMLDivElement>(null)
+
+  // Get unique statuses and sources from current applications for filter options
+  const uniqueStatuses = getUniqueStatuses(applications)
+  const uniqueSources = getUniqueSources(applications)
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target as Node)) {
+        setIsStatusDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const updateSearchParams = (updates: Record<string, string | string[] | null>) => {
+    const newSearchParams = new URLSearchParams(searchParams)
+
+    for (const [key, value] of Object.entries(updates)) {
+      if (value === null || value === '' || (Array.isArray(value) && value.length === 0)) {
+        newSearchParams.delete(key)
+      } else if (Array.isArray(value)) {
+        newSearchParams.delete(key)
+        for (const v of value) {
+          newSearchParams.append(key, v)
+        }
+      } else {
+        newSearchParams.set(key, value)
+      }
+    }
+
+    navigate(`?${newSearchParams.toString()}`)
+  }
+
+  const handleSearchChange = (search: string) => {
+    updateSearchParams({ search: search || null, page: '1' })
+  }
+
+  const handleStatusToggle = (status: string) => {
+    const currentStatuses = filters.statuses || []
+    const newStatuses = currentStatuses.includes(status)
+      ? currentStatuses.filter((s) => s !== status)
+      : [...currentStatuses, status]
+
+    updateSearchParams({ status: newStatuses, page: '1' })
+  }
+
+  const handleSourceChange = (source: string) => {
+    updateSearchParams({ source: source === 'ALL' ? null : source, page: '1' })
+  }
+
+  const handlePageChange = (page: number) => {
+    updateSearchParams({ page: page.toString() })
+  }
+
+  const clearAllFilters = () => {
+    updateSearchParams({ search: null, status: [], source: null, page: '1' })
+  }
+
+  const activeFilters = hasActiveFilters(filters)
+
   if (!applications || applications.length === 0) {
     return (
       <div className={`text-center py-8 text-gray-500 ${className}`}>
         <div className="text-4xl mb-4">📝</div>
         <p className="font-medium">{emptyTitle}</p>
         <p className="text-sm mt-1">{emptyDescription}</p>
+        <Link
+          to="/career/applications/create"
+          className="btn-primary mt-4 inline-flex items-center gap-2"
+        >
+          <PlusIcon className="size-4" />
+          Add Application
+        </Link>
       </div>
     )
   }
 
-  const getStatusColor = (status: string) => {
-    const colors = {
-      APPLIED: 'bg-blue-100 text-blue-800',
-      PHONE_SCREEN: 'bg-yellow-100 text-yellow-800',
-      INTERVIEW: 'bg-purple-100 text-purple-800',
-      FINAL_INTERVIEW: 'bg-indigo-100 text-indigo-800',
-      OFFER: 'bg-green-100 text-green-800',
-      ACCEPTED: 'bg-emerald-100 text-emerald-800',
-      REJECTED: 'bg-red-100 text-red-800',
-      WITHDRAWN: 'bg-gray-100 text-gray-800',
-    }
-    return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800'
-  }
-
-  const formatDate = (date: Date | string | null | undefined) => {
-    if (!date) return '—'
-    const dateObj = typeof date === 'string' ? new Date(date) : date
-    return dateObj.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    })
-  }
-
-  const formatSalary = (salary: number | string | null | undefined) => {
-    if (!salary) return '—'
-
-    // If it's already a formatted string, return it
-    if (typeof salary === 'string') return salary
-
-    // If it's a number, assume it's in cents and convert
-    return formatCurrency(centsToDollars(salary))
-  }
-
-  const getCompanyName = (company: string | { name: string } | null | undefined) => {
-    if (!company) return 'Unknown Company'
-    if (typeof company === 'string') return company
-    return company.name || 'Unknown Company'
-  }
-
   return (
-    <div className={`overflow-x-auto ${className}`}>
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Position & Company
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Status
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Applied
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Response
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Salary
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Source
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {applications.map((app) => (
-            <tr key={app.id} className="hover:bg-gray-50">
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div>
-                  <div className="text-sm font-medium text-gray-900">{app.position}</div>
-                  <div className="text-sm text-gray-500">{getCompanyName(app.company)}</div>
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <span
-                  className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(app.status)}`}
+    <div className={`space-y-4 ${className}`}>
+      {/* Search and Filter Section */}
+      <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+        <div className="flex flex-col sm:flex-row gap-4">
+          {/* Search Input */}
+          <div className="flex-1">
+            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+              Search
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg
+                  className="h-5 w-5 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
                 >
-                  {app.status.replace('_', ' ')}
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+              <input
+                id="search"
+                type="text"
+                placeholder="Search by position or company..."
+                value={filters.search || ''}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              />
+            </div>
+          </div>
+
+          {/* Status Filter - Multi-select */}
+          <div className="sm:w-48 relative" ref={statusDropdownRef}>
+            <label
+              htmlFor="status-dropdown"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Status ({(filters.statuses || []).length} selected)
+            </label>
+            <button
+              id="status-dropdown"
+              type="button"
+              onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+              className="w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-left flex items-center justify-between"
+            >
+              <span className="truncate">
+                {!filters.statuses || filters.statuses.length === 0
+                  ? 'All Statuses'
+                  : filters.statuses.length === 1
+                    ? formatStatusText(filters.statuses[0])
+                    : `${filters.statuses.length} statuses`}
+              </span>
+              <svg
+                className="h-4 w-4 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
+
+            {isStatusDropdownOpen && (
+              <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg">
+                <div className="py-1 max-h-60 overflow-auto">
+                  <div className="px-3 py-2 border-b border-gray-200">
+                    <button
+                      type="button"
+                      onClick={() => updateSearchParams({ status: [], page: '1' })}
+                      className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      Clear all
+                    </button>
+                    <span className="text-gray-400 mx-2">|</span>
+                    <button
+                      type="button"
+                      onClick={() => updateSearchParams({ status: uniqueStatuses, page: '1' })}
+                      className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      Select all
+                    </button>
+                  </div>
+                  {uniqueStatuses.map((status) => (
+                    <label
+                      key={status}
+                      className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={(filters.statuses || []).includes(status)}
+                        onChange={() => handleStatusToggle(status)}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <span className="ml-2 text-sm text-gray-900">{formatStatusText(status)}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Source Filter */}
+          <div className="sm:w-48">
+            <label htmlFor="source-filter" className="block text-sm font-medium text-gray-700 mb-1">
+              Source
+            </label>
+            <select
+              id="source-filter"
+              value={filters.source || 'ALL'}
+              onChange={(e) => handleSourceChange(e.target.value)}
+              className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            >
+              <option value="ALL">All Sources</option>
+              {uniqueSources.map((source) => (
+                <option key={source} value={source || ''}>
+                  {source}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Results Summary and Pagination Controls */}
+        <div className="mt-3 flex items-center justify-between text-sm text-gray-500">
+          <span>
+            Showing {(pagination.page - 1) * pagination.limit + 1} to{' '}
+            {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total}{' '}
+            applications
+          </span>
+          <div className="flex items-center gap-4">
+            {activeFilters && (
+              <button
+                type="button"
+                onClick={clearAllFilters}
+                className="text-blue-600 hover:text-blue-800 font-medium"
+              >
+                Clear filters
+              </button>
+            )}
+
+            {/* Pagination Controls */}
+            {pagination.totalPages > 1 && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                  disabled={pagination.page <= 1}
+                  className="px-3 py-1 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                >
+                  Previous
+                </button>
+
+                <span className="text-gray-700">
+                  Page {pagination.page} of {pagination.totalPages}
                 </span>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {formatDate(app.applicationDate || app.startDate || null)}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {formatDate(app.responseDate)}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {formatSalary(app.salaryOffered || app.salaryQuoted)}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <span className="text-sm text-gray-500 capitalize">{app.source || '—'}</span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                  disabled={pagination.page >= pagination.totalPages}
+                  className="px-3 py-1 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Table Section */}
+      {applications.length === 0 ? (
+        <div className="text-center py-8 text-gray-500 bg-white rounded-lg border border-gray-200">
+          <div className="text-4xl mb-4">🔍</div>
+          <p className="font-medium">
+            {activeFilters ? 'No applications match your filters' : emptyTitle}
+          </p>
+          <p className="text-sm mt-1">
+            {activeFilters ? 'Try adjusting your search criteria' : emptyDescription}
+          </p>
+        </div>
+      ) : (
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto bg-white rounded-lg border border-gray-200 shadow-sm">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="table-header">Position & Company</th>
+                  <th className="table-header">Status</th>
+                  <th className="table-header">Applied</th>
+                  <th className="table-header">Response</th>
+                  <th className="table-header">Salary</th>
+                  <th className="table-header">Source</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {applications.map((app) => (
+                  <tr key={app.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{app.position}</div>
+                        <div className="text-sm text-gray-500">{getCompanyName(app.company)}</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(app.status)}`}
+                      >
+                        {formatStatusText(app.status)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {formatApplicationDate(app.applicationDate || app.startDate || null)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {formatApplicationDate(app.responseDate)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {formatApplicationSalary(app.salaryOffered || app.salaryQuoted)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm text-gray-500 capitalize">{app.source || '—'}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile List View */}
+          <div className="md:hidden bg-white rounded-lg border border-gray-200 shadow-sm">
+            <div className="divide-y divide-gray-200">
+              {applications.map((app) => (
+                <Link
+                  key={app.id}
+                  to={`/career/applications/${app.id}`}
+                  className="block p-4 hover:bg-gray-50 transition-colors duration-200 focus:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-gray-900 truncate">
+                        {app.position}
+                      </div>
+                      <div className="text-sm text-gray-500 truncate">
+                        {getCompanyName(app.company)}
+                      </div>
+                    </div>
+                    <div className="ml-4 flex items-center space-x-3">
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(app.status)}`}
+                      >
+                        {formatStatusText(app.status)}
+                      </span>
+                      <svg
+                        className="h-5 w-5 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }

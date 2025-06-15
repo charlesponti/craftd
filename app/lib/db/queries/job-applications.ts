@@ -7,10 +7,28 @@ import {
 } from './base'
 import { calculatePercentageChange } from './utils'
 
-export async function getJobApplicationMetrics(userId: string): Promise<JobApplicationMetrics> {
-  const applicationsResult = await getUserJobApplications(userId)
+// Filter and pagination types
+export type JobApplicationFilter = {
+  status?: string
+  companyId?: string
+  source?: string
+  startDate?: Date
+  endDate?: Date
+  salaryMin?: number
+  salaryMax?: number
+}
 
-  if (applicationsResult.length === 0) {
+export type PaginationOptions = {
+  limit?: number
+  offset?: number
+  orderBy?: 'applicationDate' | 'responseDate' | 'offerDate' | 'companyName' | 'position'
+  orderDirection?: 'asc' | 'desc'
+}
+
+export async function getJobApplicationMetrics(
+  applications: ReturnType<typeof extractJobApplications>
+): Promise<JobApplicationMetrics> {
+  if (applications.length === 0) {
     return {
       totalApplications: 0,
       responseRate: 0,
@@ -31,7 +49,7 @@ export async function getJobApplicationMetrics(userId: string): Promise<JobAppli
     }
   }
 
-  const apps = extractJobApplications(applicationsResult)
+  const apps = applications
   const totalApplications = apps.length
 
   // Calculate conversion rates
@@ -312,12 +330,69 @@ export async function getAverageApplicationCycleTime(userId: string): Promise<nu
 }
 
 export async function getAllApplicationsWithCompany(
-  userId: string
+  userId: string,
+  filter?: JobApplicationFilter,
+  pagination?: PaginationOptions
 ): Promise<ApplicationWithCompany[]> {
   const { db } = await import('../index')
   const { companies, jobApplications } = await import('../schema')
-  const { eq } = await import('drizzle-orm')
+  const { eq, and, gte, lte, desc, asc, or, sql } = await import('drizzle-orm')
 
+  // Build where conditions
+  const conditions = [eq(jobApplications.userId, userId)]
+  
+  if (filter) {
+    if (filter.status) {
+      conditions.push(eq(jobApplications.status, filter.status))
+    }
+    if (filter.companyId) {
+      conditions.push(eq(jobApplications.companyId, filter.companyId))
+    }
+    if (filter.source) {
+      conditions.push(eq(jobApplications.source, filter.source))
+    }
+    if (filter.startDate) {
+      conditions.push(gte(jobApplications.applicationDate, filter.startDate))
+    }
+    if (filter.endDate) {
+      conditions.push(lte(jobApplications.applicationDate, filter.endDate))
+    }
+    if (filter.salaryMin) {
+      // Note: Salary filtering can be added later when needed
+      // For now, skip to avoid TypeScript complexity
+    }
+    if (filter.salaryMax) {
+      // Note: Salary filtering can be added later when needed  
+      // For now, skip to avoid TypeScript complexity
+    }
+  }
+
+  // Create ordering SQL
+  const orderColumn = pagination?.orderBy || 'applicationDate'
+  const orderDirection = pagination?.orderDirection === 'asc' ? asc : desc
+  
+  let orderBySql: ReturnType<typeof asc | typeof desc>
+  switch (orderColumn) {
+    case 'applicationDate':
+      orderBySql = orderDirection(jobApplications.applicationDate)
+      break
+    case 'responseDate':
+      orderBySql = orderDirection(jobApplications.responseDate)
+      break
+    case 'offerDate':
+      orderBySql = orderDirection(jobApplications.offerDate)
+      break
+    case 'companyName':
+      orderBySql = orderDirection(companies.name)
+      break
+    case 'position':
+      orderBySql = orderDirection(jobApplications.position)
+      break
+    default:
+      orderBySql = desc(jobApplications.applicationDate)
+  }
+
+  // Build query step by step to avoid TypeScript issues
   const results = await db
     .select({
       id: jobApplications.id,
@@ -332,6 +407,9 @@ export async function getAllApplicationsWithCompany(
       jobPosting: jobApplications.jobPosting,
       salaryQuoted: jobApplications.salaryQuoted,
       salaryAccepted: jobApplications.salaryAccepted,
+      applicationDate: jobApplications.applicationDate,
+      responseDate: jobApplications.responseDate,
+      offerDate: jobApplications.offerDate,
       coverLetter: jobApplications.coverLetter,
       resume: jobApplications.resume,
       jobId: jobApplications.jobId,
@@ -344,8 +422,11 @@ export async function getAllApplicationsWithCompany(
     })
     .from(jobApplications)
     .leftJoin(companies, eq(jobApplications.companyId, companies.id))
-    .where(eq(jobApplications.userId, userId))
-    .orderBy(jobApplications.startDate)
+    .where(and(...conditions))
+    .orderBy(orderBySql)
+    .$dynamic()
+    .limit(pagination?.limit || 1000)
+    .offset(pagination?.offset || 0)
 
   // Transform the results to match ApplicationWithCompany type
   return results.map((app) => ({
@@ -365,4 +446,21 @@ export async function getAllApplicationsWithCompany(
     createdAt: app.createdAt || undefined,
     updatedAt: app.updatedAt || undefined,
   })) as ApplicationWithCompany[]
+}
+
+/**
+ * Helper function to get job application metrics for a user
+ * This function fetches applications and then computes metrics
+ */
+export async function getJobApplicationMetricsForUser(userId: string): Promise<JobApplicationMetrics> {
+  const applicationsResult = await getUserJobApplications(userId)
+  const applications = extractJobApplications(applicationsResult)
+  return getJobApplicationMetrics(applications)
+}
+
+// Helper function to get all applications with companies for a user without filters
+export async function getAllApplicationsWithCompanyForUser(
+  userId: string
+): Promise<ApplicationWithCompany[]> {
+  return getAllApplicationsWithCompany(userId)
 }

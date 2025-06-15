@@ -182,7 +182,7 @@ export default function EditorBasic() {
   const isSaving = fetcher.state === 'submitting'
 
   return (
-    <section className="flex flex-col gap-2xl mx-auto">
+    <section className="flex flex-col gap-8 mx-auto">
       <h2 className="text-2xl font-semibold text-gray-800">Basic Information</h2>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Basic Information Card */}

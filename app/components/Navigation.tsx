@@ -1,41 +1,82 @@
 import { BriefcaseIcon, FileTextIcon, MenuIcon, PencilIcon, XIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link, useLocation } from 'react-router'
+import { Link, useLocation, useNavigation } from 'react-router'
 import { Button, getButtonClasses } from '~/components/ui/button'
 import { cn } from '~/lib/utils'
 import { useUser } from '../hooks/useAuth'
 import { createClient } from '../lib/supabase/client'
+import { Avatar } from './Avatar'
+import styles from './Navigation.module.css'
 
-// User type interface
-interface User {
-  name?: string
-  email?: string
-  avatarUrl?: string
+// Navigation item interface
+interface NavItem {
+  href: string
+  label: string
+  icon?: React.ComponentType<{ className?: string }>
 }
 
-const Avatar = ({ user, className = 'size-8' }: { user: User; className?: string }) => (
-  <div
-    className={cn(
-      className,
-      'bg-muted border border-input rounded-full flex items-center justify-center transition-fast'
-    )}
-  >
-    {user?.avatarUrl ? (
-      <img
-        src={user.avatarUrl}
-        alt={user.name || 'User'}
-        className="w-full h-full rounded-full object-cover"
-      />
-    ) : (
-      <span className="text-sm font-medium text-muted-foreground">
-        {(user?.name || user?.email || 'U')[0].toUpperCase()}
-      </span>
-    )}
-  </div>
-)
+const AUTH_LINKS: { authenticated: NavItem[]; unauthenticated: NavItem[] } = {
+  authenticated: [
+    { href: '/editor', label: 'Editor', icon: PencilIcon },
+    { href: '/career', label: 'Career', icon: BriefcaseIcon },
+    { href: '/career/applications', label: 'Applications', icon: FileTextIcon },
+  ],
+  unauthenticated: [
+    { href: '/login', label: 'Log In' },
+    { href: '/onboarding', label: 'Sign Up' },
+  ],
+}
+
+const NavLink = ({
+  href,
+  label,
+  icon: Icon,
+  isCurrentPage,
+  onClick,
+  variant = 'desktop',
+}: {
+  href: string
+  label: string
+  icon?: React.ComponentType<{ className?: string }>
+  isCurrentPage: (href: string) => boolean
+  onClick?: () => void
+  variant?: 'desktop' | 'mobile'
+}) => {
+  const baseClasses = getButtonClasses({
+    variant: 'ghost',
+    size: variant === 'desktop' ? 'sm' : 'default',
+  })
+  const desktopClasses = cn(
+    baseClasses,
+    'inline-flex gap-2 items-center',
+    isCurrentPage(href)
+      ? 'bg-accent text-accent-foreground'
+      : 'text-muted-foreground hover:text-foreground'
+  )
+
+  const mobileClasses = cn(
+    'flex items-center gap-2 px-md py-sm text-base font-medium rounded-md transition-fast',
+    isCurrentPage(href)
+      ? 'bg-accent text-accent-foreground'
+      : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+  )
+
+  return (
+    <Link
+      to={href}
+      onClick={onClick}
+      className={variant === 'desktop' ? desktopClasses : mobileClasses}
+    >
+      {Icon && <Icon className={variant === 'desktop' ? 'w-4 h-4' : 'size-4'} />}
+      {label}
+    </Link>
+  )
+}
 
 export default function Navigation() {
   const user = useUser()
+  const navigation = useNavigation()
+  const isNavigating = navigation.state === 'loading'
 
   const location = useLocation()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -80,7 +121,7 @@ export default function Navigation() {
     if (href === '/') {
       return location.pathname === '/'
     }
-    return location.pathname.startsWith(href)
+    return location.pathname === href
   }
 
   const handleSignOut = async () => {
@@ -93,102 +134,73 @@ export default function Navigation() {
     }
   }
 
+  // Helper function to get container classes
+  const getContainerClasses = () =>
+    cn(
+      'mx-auto mt-4 max-w-7xl transition-all duration-300 ease-out rounded-full px-6 py-2',
+      styles.navigationPill,
+      isNavigating && styles.animatedBorder,
+      isScrolled
+        ? 'backdrop-blur-2xl bg-background/60 border border-white/20 shadow-2xl shadow-black/10'
+        : 'backdrop-blur-xl bg-background/40 border border-white/10 shadow-xl shadow-black/5'
+    )
+
   return (
     <>
       {/* Main Navigation */}
       <nav
         className={cn(
-          'fixed top-0 left-0 right-0 z-50 transition-base',
-          isNavHidden ? '-translate-y-full' : 'translate-y-0',
-          isScrolled
-            ? 'backdrop-blur-xl bg-background/80 border-b border-border shadow-sm'
-            : 'bg-transparent'
+          'fixed top-0 left-0 right-0 z-50 transition-base px-4',
+          isNavHidden ? '-translate-y-full' : 'translate-y-0'
         )}
       >
-        <div className="max-w-7xl mx-auto px-lg">
-          <div className="flex items-center justify-between h-16">
+        <div className={getContainerClasses()}>
+          <div className="flex items-center justify-between h-12">
             {/* Logo */}
-            <Link
-              to="/"
-              className="flex items-center gap-sm group transition-fast hover:opacity-80"
-            >
-              <div className="size-8 rounded-lg bg-primary flex items-center justify-center text-white text-sm font-semibold shadow-sm">
+            <Link to="/" className="flex items-center gap-2 group transition-fast hover:opacity-80">
+              <div className="size-7 rounded-lg flex items-center justify-center text-white text-sm font-semibold">
                 <img
                   src="/icons/icon-192x192.png"
                   alt="Craftd Logo"
-                  className="h-6 w-auto transition-fast group-hover:opacity-80"
+                  className="h-5 w-auto transition-fast group-hover:opacity-80"
                 />
               </div>
-              <span className="font-sans text-xl font-semibold tracking-tight text-foreground">
+              <span className="font-sans text-lg font-semibold tracking-tight text-foreground">
                 Craftd
               </span>
             </Link>
 
             {/* Desktop Navigation */}
-            {navLinks.length > 0 && (
-              <div className="hidden md:flex items-center gap-sm">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    to={link.href}
-                    className={cn(
-                      getButtonClasses({ variant: 'ghost', size: 'sm' }),
-                      isCurrentPage(link.href)
-                        ? 'bg-accent text-accent-foreground'
-                        : 'text-muted-foreground hover:text-foreground'
-                    )}
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
-            )}
+            <div className="flex gap-2">
+              {navLinks.length > 0 && (
+                <div className="hidden md:flex items-center gap-2">
+                  {navLinks.map((link) => (
+                    <NavLink
+                      key={link.href}
+                      href={link.href}
+                      label={link.label}
+                      isCurrentPage={isCurrentPage}
+                      variant="desktop"
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* User Menu or Sign In */}
-            <div className="flex items-center gap-sm">
+            <div className="flex items-center gap-2">
               {user ? (
                 <div className="hidden md:flex items-center gap-md">
-                  <Link
-                    to="/editor"
-                    className={cn(
-                      getButtonClasses({ variant: 'ghost', size: 'sm' }),
-                      'inline-flex gap-sm items-center',
-                      isCurrentPage('/editor')
-                        ? 'bg-accent text-accent-foreground'
-                        : 'text-muted-foreground hover:text-foreground'
-                    )}
-                  >
-                    <PencilIcon className="w-4 h-4" />
-                    Editor
-                  </Link>
-
-                  <Link
-                    to="/career"
-                    className={cn(
-                      getButtonClasses({ variant: 'ghost', size: 'sm' }),
-                      'inline-flex gap-sm items-center',
-                      isCurrentPage('/career')
-                        ? 'bg-accent text-accent-foreground'
-                        : 'text-muted-foreground hover:text-foreground'
-                    )}
-                  >
-                    <BriefcaseIcon className="w-4 h-4" />
-                    Career
-                  </Link>
-
-                  <Link
-                    to="/career/applications"
-                    className={cn(
-                      getButtonClasses({ variant: 'ghost', size: 'sm' }),
-                      'inline-flex gap-sm items-center',
-                      isCurrentPage('/career/applications')
-                        ? 'bg-accent text-accent-foreground'
-                        : 'text-muted-foreground hover:text-foreground'
-                    )}
-                  >
-                    <FileTextIcon className="w-4 h-4" />
-                    Applications
-                  </Link>
+                  {AUTH_LINKS.authenticated.map((link) => (
+                    <NavLink
+                      key={link.href}
+                      href={link.href}
+                      label={link.label}
+                      icon={link.icon}
+                      isCurrentPage={isCurrentPage}
+                      variant="desktop"
+                    />
+                  ))}
 
                   {/* Account dropdown */}
                   <Link
@@ -200,7 +212,7 @@ export default function Navigation() {
                   </Link>
                 </div>
               ) : (
-                <div className="hidden md:flex items-center gap-sm">
+                <div className="hidden md:flex items-center gap-2">
                   <Link to="/login" className={getButtonClasses({ variant: 'ghost', size: 'sm' })}>
                     Log In
                   </Link>
@@ -230,24 +242,19 @@ export default function Navigation() {
 
         {/* Mobile menu */}
         {isMenuOpen && (
-          <div className="md:hidden bg-background/95 backdrop-blur-xl border-t border-border shadow-lg">
+          <div className="md:hidden bg-background/95 backdrop-blur-xl border border-white/20 rounded-2xl mx-4 mt-2 shadow-lg">
             <div className="px-lg py-lg space-y-1">
               {navLinks.length > 0 && (
                 <div className="space-y-1 pb-lg border-b border-border">
                   {navLinks.map((link) => (
-                    <Link
+                    <NavLink
                       key={link.href}
-                      to={link.href}
+                      href={link.href}
+                      label={link.label}
+                      isCurrentPage={isCurrentPage}
                       onClick={closeMenu}
-                      className={cn(
-                        'block px-md py-sm text-base font-medium rounded-md transition-fast',
-                        isCurrentPage(link.href)
-                          ? 'bg-accent text-accent-foreground'
-                          : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-                      )}
-                    >
-                      {link.label}
-                    </Link>
+                      variant="mobile"
+                    />
                   ))}
                 </div>
               )}
@@ -258,35 +265,22 @@ export default function Navigation() {
                     <Link
                       to="/account"
                       onClick={closeMenu}
-                      className="flex items-center gap-sm px-md py-sm text-base font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-fast"
+                      className="flex items-center gap-2 px-md py-sm text-base font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-fast"
                     >
                       <Avatar user={user} className="size-8" />
                       My Account
                     </Link>
-                    <Link
-                      to="/editor"
-                      onClick={closeMenu}
-                      className="flex items-center gap-sm px-md py-sm text-base font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-fast"
-                    >
-                      <PencilIcon className="size-4" />
-                      Editor
-                    </Link>
-                    <Link
-                      to="/career"
-                      onClick={closeMenu}
-                      className="flex items-center gap-sm px-md py-sm text-base font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-fast"
-                    >
-                      <BriefcaseIcon className="w-4 h-4" />
-                      Career
-                    </Link>
-                    <Link
-                      to="/career/applications"
-                      onClick={closeMenu}
-                      className="flex items-center gap-sm px-md py-sm text-base font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-fast"
-                    >
-                      <FileTextIcon className="w-4 h-4" />
-                      Applications
-                    </Link>
+                    {AUTH_LINKS.authenticated.map((link) => (
+                      <NavLink
+                        key={link.href}
+                        href={link.href}
+                        label={link.label}
+                        icon={link.icon}
+                        isCurrentPage={isCurrentPage}
+                        onClick={closeMenu}
+                        variant="mobile"
+                      />
+                    ))}
                     <Button
                       type="button"
                       onClick={handleSignOut}
@@ -298,23 +292,20 @@ export default function Navigation() {
                   </>
                 ) : (
                   <>
-                    <Link
-                      to="/login"
-                      onClick={closeMenu}
-                      className="block px-md py-sm text-base font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-fast"
-                    >
-                      Log In
-                    </Link>
-                    <Link
-                      to="/onboarding"
-                      onClick={closeMenu}
-                      className={cn(
-                        getButtonClasses({ variant: 'primary', size: 'default' }),
-                        'block mx-md my-sm text-center'
-                      )}
-                    >
-                      Sign Up
-                    </Link>
+                    {AUTH_LINKS.unauthenticated.map((link) => (
+                      <Link
+                        key={link.href}
+                        to={link.href}
+                        onClick={closeMenu}
+                        className={cn(
+                          link.href === '/onboarding'
+                            ? `${getButtonClasses({ variant: 'primary', size: 'default' })} block mx-md my-sm text-center`
+                            : 'block px-md py-sm text-base font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-fast'
+                        )}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
                   </>
                 )}
               </div>

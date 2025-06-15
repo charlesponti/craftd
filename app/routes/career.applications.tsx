@@ -1,5 +1,5 @@
 import { and, eq } from 'drizzle-orm'
-import { useState } from 'react'
+import { PlusIcon } from 'lucide-react'
 import {
   Link,
   useActionData,
@@ -8,20 +8,16 @@ import {
   type LoaderFunctionArgs,
 } from 'react-router'
 
-import { ApplicationProgressChart } from '~/components/career/ApplicationProgressChart'
 import { ApplicationTable } from '~/components/career/ApplicationTable'
-import { JobApplicationsMetricsCards } from '~/components/career/JobApplicationsMetricsCards'
+import { ApplicationsMetrics } from '~/components/career/ApplicationsMetrics'
 
 import { useToast } from '~/hooks/useToast'
 import { db } from '~/lib/db'
+import { extractJobApplications, getUserJobApplications } from '~/lib/db/queries/base'
 import {
-  getAverageApplicationCycleTime,
-  getJobApplicationFunnel,
+  getAllApplicationsWithCompany,
   getJobApplicationMetrics,
-} from '~/lib/db/queries'
-import type { JobApplicationFunnel } from '~/lib/db/queries/job-applications'
-import { getAllApplicationsWithCompany } from '~/lib/db/queries/job-applications'
-import type { JobApplicationMetrics } from '~/lib/db/schema'
+} from '~/lib/db/queries/job-applications'
 import { companies, jobApplications } from '~/lib/db/schema'
 import {
   createErrorResponse,
@@ -29,35 +25,71 @@ import {
   withAuthAction,
   withAuthLoader,
 } from '~/lib/route-utils'
-import { centsToDollars, formatPercentage } from '~/lib/utils'
-import type { ApplicationWithCompany } from '~/types/applications'
 import { JobApplicationStage, type JobApplicationStatus } from '~/types/career'
 
-interface LoaderData {
-  user: { id: string; email?: string | null; firstName?: string | null; name?: string | null }
-  metrics: JobApplicationMetrics
-  funnel: JobApplicationFunnel[]
-  averageCycleTime: number
-  allApplications: ApplicationWithCompany[]
-  error?: string
-}
-
 export async function loader(args: LoaderFunctionArgs) {
-  return withAuthLoader(args, async ({ user }) => {
+  return withAuthLoader(args, async ({ user, request }) => {
     try {
-      const [metrics, funnel, averageCycleTime, allApplications] = await Promise.all([
-        getJobApplicationMetrics(user.id),
-        getJobApplicationFunnel(user.id),
-        getAverageApplicationCycleTime(user.id),
-        getAllApplicationsWithCompany(user.id),
-      ])
+      const url = new URL(request.url)
+      const searchParams = url.searchParams
+
+      // Extract pagination and filter parameters
+      const page = Math.max(1, Number.parseInt(searchParams.get('page') || '1'))
+      const limit = Math.max(1, Math.min(100, Number.parseInt(searchParams.get('limit') || '10'))) // Default 10, max 100
+      const offset = (page - 1) * limit
+
+      const searchQuery = searchParams.get('search') || undefined
+      const selectedStatuses = searchParams.getAll('status').filter(Boolean)
+      const source = searchParams.get('source') || undefined
+
+      // Build filter object
+      const filter = {
+        ...(selectedStatuses.length > 0 && { statuses: selectedStatuses }),
+        ...(source && source !== 'ALL' && { source }),
+        ...(searchQuery && { search: searchQuery }),
+      }
+
+      // Build pagination object
+      const pagination = {
+        limit,
+        offset,
+        orderBy: (searchParams.get('orderBy') || 'applicationDate') as
+          | 'applicationDate'
+          | 'responseDate'
+          | 'offerDate'
+          | 'companyName'
+          | 'position',
+        orderDirection: (searchParams.get('orderDirection') as 'asc' | 'desc') || 'desc',
+      }
+
+      // Get applications with company data using server-side filtering/pagination
+      const paginatedApplications = await getAllApplicationsWithCompany(user.id, filter, pagination)
+
+      // Get total count for pagination (without filters for now, we can optimize this later)
+      const allApplicationsForMetrics = await getAllApplicationsWithCompany(user.id)
+
+      // Get job applications for metrics calculation
+      const applicationsResult = await getUserJobApplications(user.id)
+      const applications = extractJobApplications(applicationsResult)
+
+      // Calculate metrics from the applications
+      const metrics = await getJobApplicationMetrics(applications)
 
       return createSuccessResponse({
         user,
         metrics,
-        funnel,
-        averageCycleTime,
-        allApplications,
+        applications: paginatedApplications,
+        pagination: {
+          page,
+          limit,
+          total: allApplicationsForMetrics.length,
+          totalPages: Math.ceil(allApplicationsForMetrics.length / limit),
+        },
+        filters: {
+          search: searchQuery,
+          statuses: selectedStatuses,
+          source: source && source !== 'ALL' ? source : undefined,
+        },
       })
     } catch (error) {
       console.error('Error loading job applications data:', error)
@@ -81,9 +113,14 @@ export async function loader(args: LoaderFunctionArgs) {
           sourceMetrics: [],
           statusBreakdown: [],
         },
-        funnel: [],
-        averageCycleTime: 0,
-        allApplications: [],
+        applications: [],
+        pagination: {
+          page: 1,
+          limit: 10,
+          total: 0,
+          totalPages: 0,
+        },
+        filters: {},
         error: 'Failed to load job applications data',
       })
     }
@@ -189,27 +226,9 @@ export async function action(args: ActionFunctionArgs) {
   })
 }
 
-function CreateApplicationForm() {
-  return (
-    <Link to="/career/applications/create" className="btn-primary-gradient">
-      <svg
-        className="w-4 h-4"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-      </svg>
-      Add Application
-    </Link>
-  )
-}
-
-export default function JobApplicationsDashboard() {
+export default function CareerApplications() {
   const loaderData = useLoaderData<typeof loader>()
   const actionData = useActionData()
-  const [search, setSearch] = useState('')
   const { addToast } = useToast()
 
   // Handle action responses
@@ -224,14 +243,10 @@ export default function JobApplicationsDashboard() {
 
   if (!loaderData.success) {
     return (
-      <div className="page-background">
-        <div className="container-app">
-          <div className="card-error">
-            <h2 className="text-lg font-semibold text-red-800 mb-2 font-serif">
-              Error Loading Data
-            </h2>
-            <p className="text-red-700 font-sans">Failed to load job applications data</p>
-          </div>
+      <div className="bg-gray-50">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h2 className="text-lg font-semibold text-red-800 mb-2 font-serif">Error Loading Data</h2>
+          <p className="text-red-700 font-sans">Failed to load job applications data</p>
         </div>
       </div>
     )
@@ -239,27 +254,21 @@ export default function JobApplicationsDashboard() {
 
   if (loaderData?.error) {
     return (
-      <div className="page-background">
-        <div className="container-app">
-          <div className="card-error">
-            <h2 className="text-lg font-semibold text-red-800 mb-2 font-serif">
-              Error Loading Data
-            </h2>
-            <p className="text-red-700 font-sans">{loaderData.error}</p>
-            <p className="text-sm text-red-600 mt-2 font-sans">
-              Make sure you have job application data in your database.
-            </p>
-          </div>
-        </div>
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+        <h2 className="text-lg font-semibold text-red-800 mb-2 font-serif">Error Loading Data</h2>
+        <p className="text-red-700 font-sans">{loaderData.error}</p>
+        <p className="text-sm text-red-600 mt-2 font-sans">
+          Make sure you have job application data in your database.
+        </p>
       </div>
     )
   }
 
   if (!loaderData.data) {
     return (
-      <div className="page-background">
-        <div className="container-app">
-          <div className="card-error">
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
             <h2 className="text-lg font-semibold text-red-800 mb-2 font-serif">
               Error Loading Data
             </h2>
@@ -270,28 +279,23 @@ export default function JobApplicationsDashboard() {
     )
   }
 
-  const { user, metrics, funnel, averageCycleTime, allApplications } = loaderData.data
-
-  const filteredApplications = allApplications.filter(
-    (app) =>
-      app.position.toLowerCase().includes(search.toLowerCase()) ||
-      app.company?.toLowerCase().includes(search.toLowerCase())
-  )
+  const { metrics, applications, pagination, filters } = loaderData.data
 
   if (!metrics) {
     return (
-      <div className="page-background">
-        <div className="container-app">
-          <div className="card-info">
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
             <h2 className="text-lg font-semibold text-blue-800 mb-2 font-serif">
               No Data Available
             </h2>
             <p className="text-blue-700 font-sans">
               Start tracking your job applications to see analytics here.
             </p>
-            <div className="mt-4 flex gap-3">
-              <CreateApplicationForm />
-            </div>
+            <Link to="/career/applications/create" className="btn-primary">
+              <PlusIcon className="size-4" />
+              Add Application
+            </Link>
           </div>
         </div>
       </div>
@@ -299,109 +303,29 @@ export default function JobApplicationsDashboard() {
   }
 
   return (
-    <div className="page-background">
+    <div className="space-y-8 px-2 sm:px-0">
       {/* Header */}
-      <div className="page-header">
-        <div className="page-header-content">
-          <div className="flex-between">
-            <div>
-              <h1 className="page-title">Job Applications</h1>
-            </div>
+      <div className="bg-white border-b border-gray-200 pb-4  ">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold leading-tight text-gray-900">Job Applications</h1>
           </div>
         </div>
       </div>
-
-      <div className="container-app space-section">
-        {/* Search Bar */}
-        <div className="flex-between">
-          <div className="relative max-w-md">
-            <input
-              type="text"
-              placeholder="Search by position or company..."
-              value={search}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
-              className="search-input"
-            />
-            <div className="absolute left-3 top-1/2 -translate-y-1/2">
-              <svg
-                className="w-4 h-4 text-slate-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            </div>
-          </div>
-          <CreateApplicationForm />
-        </div>
-
-        {/* Key Metrics Cards */}
-        <div className="grid-responsive-2">
-          <div className="card-elevated">
-            <JobApplicationsMetricsCards metrics={metrics} />
-          </div>
-
-          {/* Application Progress */}
-          <div className="card-elevated">
-            <h2 className="section-title">Application Progress</h2>
-            <ApplicationProgressChart funnelData={funnel} statusData={metrics.statusBreakdown} />
-          </div>
-        </div>
+      <div className="space-y-8">
+        {/* Performance Metrics */}
+        <ApplicationsMetrics metrics={metrics} />
 
         {/* All Applications */}
-        <div className="card-elevated">
-          <div className="flex-between mb-6">
-            <h2 className="section-title mb-0">All Applications</h2>
-            <div className="flex gap-3">
-              <CreateApplicationForm />
-            </div>
-          </div>
+        <div className="bg-white shadow-lg rounded-lg border border-gray-200 p-0">
           <ApplicationTable
-            applications={filteredApplications}
+            applications={applications}
+            pagination={pagination}
+            filters={filters}
             emptyTitle="No applications found"
             emptyDescription="Start tracking your job applications to see them here"
           />
         </div>
-
-        {/* Salary Insights */}
-        {metrics.salaryMetrics.averageOffered > 0 && (
-          <div className="card-elevated">
-            <h2 className="section-title">Salary Insights</h2>
-            <div className="grid-responsive-4">
-              <div>
-                <p className="metric-label">Average Offered</p>
-                <p className="metric-value-large text-slate-900">
-                  ${centsToDollars(metrics.salaryMetrics.averageOffered).toLocaleString()}
-                </p>
-              </div>
-              <div>
-                <p className="metric-label">Average Accepted</p>
-                <p className="metric-value-large text-slate-900">
-                  ${centsToDollars(metrics.salaryMetrics.averageAccepted).toLocaleString()}
-                </p>
-              </div>
-              <div>
-                <p className="metric-label">Negotiation Success</p>
-                <p className="metric-value-large text-success">
-                  {formatPercentage(metrics.salaryMetrics.negotiationSuccessRate)}
-                </p>
-              </div>
-              <div>
-                <p className="metric-label">Avg. Negotiation Increase</p>
-                <p className="metric-value-large text-success">
-                  {formatPercentage(metrics.salaryMetrics.averageNegotiationIncrease)}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   )

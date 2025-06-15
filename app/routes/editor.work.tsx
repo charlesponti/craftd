@@ -178,12 +178,12 @@ function WorkExperienceForm({
   const isSaving = fetcher.state === 'submitting'
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="card bg-muted/50 space-y-lg">
+    <form onSubmit={handleSubmit(onSubmit)} className="card bg-muted/50 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-2xl tracking-tight font-medium text-foreground font-serif">
           {isNew ? 'New Experience' : experience?.company || 'Work Experience'}
         </h3>
-        <div className="flex gap-sm">
+        <div className="flex gap-2">
           <Button
             type="submit"
             disabled={isSaving || (!isDirty && !isNew) || !isValid}
@@ -206,7 +206,7 @@ function WorkExperienceForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="form-group">
           <label htmlFor={`role-${experience?.id || 'new'}`} className="label">
             Job Title *
@@ -233,7 +233,7 @@ function WorkExperienceForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="form-group">
           <label htmlFor={`startDate-${experience?.id || 'new'}`} className="label">
             Start Date *
@@ -342,7 +342,7 @@ function WorkExperienceEditorSection({
   }
 
   return (
-    <section className="container flex flex-col gap-2xl mx-auto">
+    <section className="container flex flex-col gap-8 mx-auto">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -363,7 +363,7 @@ function WorkExperienceEditorSection({
         )}
       </div>
 
-      <div className="flex flex-col gap-2xl">
+      <div className="flex flex-col gap-8">
         {/* Show new experience form if requested */}
         {showNewForm && (
           <WorkExperienceForm portfolioId={portfolioId} onDelete={() => setShowNewForm(false)} />

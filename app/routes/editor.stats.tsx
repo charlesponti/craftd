@@ -118,7 +118,7 @@ function PortfolioStatsEditorSection({
           </div>
           <h2 className="text-2xl font-semibold text-gray-900">Portfolio Stats</h2>
         </div>
-        <div className="flex gap-sm">
+        <div className="flex gap-2">
           <Button
             type="button"
             onClick={handleAddNewStat}

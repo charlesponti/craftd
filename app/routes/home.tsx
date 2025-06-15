@@ -1,6 +1,6 @@
+import { useEffect, useState } from 'react'
+import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
 import { Link } from 'react-router'
-import { useState, useEffect } from 'react'
-import type { MetaFunction, LoaderFunctionArgs } from 'react-router'
 
 export const meta: MetaFunction = () => {
   return [
@@ -113,7 +113,7 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-600">Loading...</p>
@@ -123,61 +123,59 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="bg-white max-w-7xl mx-auto">
       {/* Hero Section */}
       <section className="pt-20 pb-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-4xl mx-auto">
-            <div className="mb-6 inline-flex items-center px-4 py-2 rounded-full border border-blue-200 text-blue-700">
-              <span className="animate-pulse">✨</span>
-              <span className="ml-2">Trusted by 25K+ professionals</span>
-            </div>
+        <div className="text-center max-w-4xl mx-auto">
+          <div className="mb-6 inline-flex items-center px-4 py-2 rounded-full border border-blue-200 text-blue-700">
+            <span className="animate-pulse">✨</span>
+            <span className="ml-2">Trusted by 25K+ professionals</span>
+          </div>
 
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-8 leading-tight">
-              Create Your{' '}
-              <span className="bg-linear-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Dream Portfolio
-              </span>{' '}
-              in Minutes
-            </h1>
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-8 leading-tight">
+            Create Your{' '}
+            <span className="bg-linear-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Dream Portfolio
+            </span>{' '}
+            in Minutes
+          </h1>
 
-            <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
-              Create stunning portfolios in minutes, not hours. Our AI-powered builder makes
-              professional portfolio creation simple and beautiful.
-            </p>
+          <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
+            Create stunning portfolios in minutes, not hours. Our AI-powered builder makes
+            professional portfolio creation simple and beautiful.
+          </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-              <Link
-                to="/onboarding"
-                className="bg-black hover:bg-gray-800 text-white px-8 py-4 text-lg group rounded-md font-medium transition-all duration-300 inline-flex items-center hover:scale-105"
-              >
-                Start Building
-                <span className="ml-2 group-hover:translate-x-1 transition-transform inline-block">
-                  →
-                </span>
-              </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+            <Link
+              to="/onboarding"
+              className="bg-black hover:bg-gray-800 text-white px-8 py-4 text-lg group rounded-md font-medium transition-all duration-300 inline-flex items-center hover:scale-105"
+            >
+              Start Building
+              <span className="ml-2 group-hover:translate-x-1 transition-transform inline-block">
+                →
+              </span>
+            </Link>
 
-              <Link
-                to="/demo"
-                className="px-8 py-4 text-lg group border border-gray-300 hover:border-gray-400 rounded-md font-medium transition-all duration-300 inline-flex items-center hover:scale-105"
-              >
-                <span className="mr-2 group-hover:scale-110 transition-transform inline-block">
-                  ▶
-                </span>
-                View Demo
-              </Link>
-            </div>
+            <Link
+              to="/demo"
+              className="px-8 py-4 text-lg group border border-gray-300 hover:border-gray-400 rounded-md font-medium transition-all duration-300 inline-flex items-center hover:scale-105"
+            >
+              <span className="mr-2 group-hover:scale-110 transition-transform inline-block">
+                ▶
+              </span>
+              View Demo
+            </Link>
+          </div>
 
-            <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-              No credit card required
-            </div>
+          <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+            No credit card required
           </div>
         </div>
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-16">
+        <div className="px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {stats.map((stat) => (
               <div key={stat.label} className="text-center">
@@ -192,44 +190,42 @@ export default function Home() {
 
       {/* Features Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-6">
-              Everything you need to{' '}
-              <span className="bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                stand out
-              </span>
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Professional features that make your portfolio shine and help you land your next
-              opportunity.
-            </p>
-          </div>
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold text-gray-900 mb-6">
+            Everything you need to{' '}
+            <span className="bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              stand out
+            </span>
+          </h2>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Professional features that make your portfolio shine and help you land your next
+            opportunity.
+          </p>
+        </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {features.map((feature, index) => (
+            <div
+              key={feature.title}
+              className="h-full group hover:shadow-xl transition-all duration-300 border-0 bg-linear-to-br from-white to-gray-50 rounded-lg p-8 hover:scale-105"
+              onMouseEnter={() => setHoveredFeature(index)}
+              onMouseLeave={() => setHoveredFeature(null)}
+            >
               <div
-                key={feature.title}
-                className="h-full group hover:shadow-xl transition-all duration-300 border-0 bg-linear-to-br from-white to-gray-50 rounded-lg p-8 hover:scale-105"
-                onMouseEnter={() => setHoveredFeature(index)}
-                onMouseLeave={() => setHoveredFeature(null)}
+                className={`w-12 h-12 rounded-lg bg-linear-to-br flex items-center justify-center mb-6 group-hover:scale-110 transition-transform text-white text-xl ${feature.gradient}`}
               >
-                <div
-                  className={`w-12 h-12 rounded-lg bg-linear-to-br flex items-center justify-center mb-6 group-hover:scale-110 transition-transform text-white text-xl ${feature.gradient}`}
-                >
-                  {feature.icon}
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">{feature.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+                {feature.icon}
               </div>
-            ))}
-          </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">{feature.title}</h3>
+              <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-20">
+        <div className="px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-6">
               Loved by{' '}
@@ -328,7 +324,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-gray-200 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="flex items-center gap-2 mb-4 md:mb-0">
               <div className="w-6 h-6 rounded bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center">

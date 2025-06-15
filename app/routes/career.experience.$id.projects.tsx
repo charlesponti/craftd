@@ -117,39 +117,33 @@ export default function WorkExperienceProjects() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
+    <div>
       {/* Header */}
-      <div className="border-b border-slate-200/50 bg-white/80 backdrop-blur-sm">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center gap-4">
-            <Button
-              type="button"
-              onClick={() => navigate(`/career/experience/${workExperience.id}`)}
-              variant="ghost"
-              size="sm"
-              className="p-2"
-              data-testid="back-button"
-            >
-              <ArrowLeftIcon className="w-5 h-5 text-slate-600" />
-            </Button>
-            <div className="flex-1">
-              <h1 className="text-3xl font-light text-slate-900 font-serif">
-                Projects & Work Items
-              </h1>
-              <p className="text-lg text-slate-600 font-sans">
-                {workExperience.role} at {workExperience.company}
-              </p>
-            </div>
-            <Button
-              type="button"
-              onClick={() => setShowAddForm(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <PlusIcon className="w-4 h-4 mr-2" />
-              Add Project
-            </Button>
-          </div>
+      <div className="flex items-center gap-4">
+        <Button
+          type="button"
+          onClick={() => navigate(`/career/experience/${workExperience.id}`)}
+          variant="ghost"
+          size="sm"
+          className="p-2"
+          data-testid="back-button"
+        >
+          <ArrowLeftIcon className="w-5 h-5 text-slate-600" />
+        </Button>
+        <div className="flex-1 flex gap-2 items-center">
+          <h1 className="text-3xl font-light text-slate-900 font-serif">Projects</h1>
+          <p className="text-sm text-slate-600 font-sans">
+            @ {workExperience.role} at {workExperience.company}
+          </p>
         </div>
+        <Button
+          type="button"
+          onClick={() => setShowAddForm(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          <PlusIcon className="w-4 h-4 mr-2" />
+          Add Project
+        </Button>
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

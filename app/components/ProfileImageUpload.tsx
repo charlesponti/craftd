@@ -315,7 +315,7 @@ export function ProfileImageUpload({
             />
 
             {selectedFile && (
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3 p-3 rounded-lg">
                 <ImageIcon className="w-5 h-5 text-gray-600" />
                 <div className="text-left">
                   <p className="font-medium text-gray-900">{selectedFile.name}</p>

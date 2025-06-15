@@ -123,99 +123,95 @@ export default function CareerDashboard() {
   const timeline = careerTimeline || []
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
+    <div className="space-y-8">
       {/* Header */}
       <div className="border-b border-slate-200/50 bg-white/80 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-light text-slate-900 font-serif">Your Career</h1>
+          </div>
+          <nav className="hidden sm:flex items-center space-x-8">
+            <Link
+              to="/career/applications"
+              className="text-slate-600 hover:text-slate-900 font-medium transition-colors duration-200 font-sans"
+            >
+              Applications
+            </Link>
+            <Link
+              to="/projects"
+              className="text-slate-600 hover:text-slate-900 font-medium transition-colors duration-200 font-sans"
+            >
+              Projects
+            </Link>
+          </nav>
+        </div>
+      </div>
+
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          title="Current Salary"
+          value={formatCurrency(summary.currentSalary / 100)}
+          subtitle="Current compensation"
+          trend="neutral"
+        />
+        <StatCard
+          title="Years of Experience"
+          value={`${summary.totalExperience.toFixed(1)}y`}
+          subtitle="Total career experience"
+          trend="neutral"
+        />
+        <StatCard
+          title="Career Moves"
+          value={summary.jobChangeCount.toString()}
+          subtitle={`${summary.promotionCount} promotions`}
+          trend="neutral"
+        />
+        <StatCard
+          title="Average Tenure"
+          value={`${summary.averageTenurePerJob.toFixed(1)}y`}
+          subtitle={`${summary.jobChangeCount} job changes`}
+          trend="neutral"
+        />
+      </div>
+
+      {/* Salary Progression */}
+
+      {summary.salaryByYear.length > 0 ? (
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/50">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-light text-slate-900 font-serif">Salary Progression</h2>
+            <span className="text-sm text-slate-500 font-sans">By Year</span>
+          </div>
+          <SalaryChart data={summary.salaryByYear} />
+        </div>
+      ) : null}
+
+      {/* Highest Salary Increase Highlight */}
+      {summary.highestSalaryIncrease.amount > 0 && (
+        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-8 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-light text-slate-900 font-serif">Your Career</h1>
+              <h3 className="text-lg font-medium font-sans opacity-90">Biggest Career Win</h3>
+              <p className="text-3xl font-light font-serif mt-2">
+                +{formatCurrency(summary.highestSalaryIncrease.amount / 100)}
+              </p>
+              <p className="text-emerald-100 mt-1 font-sans">
+                {formatPercentage(summary.highestSalaryIncrease.percentage)} increase •{' '}
+                {summary.highestSalaryIncrease.reason}
+              </p>
             </div>
-            <nav className="hidden sm:flex items-center space-x-8">
-              <Link
-                to="/career/experience"
-                className="text-slate-600 hover:text-slate-900 font-medium transition-colors duration-200 font-sans"
-              >
-                Experience
-              </Link>
-              <Link
-                to="/career/applications"
-                className="text-slate-600 hover:text-slate-900 font-medium transition-colors duration-200 font-sans"
-              >
-                Applications
-              </Link>
-            </nav>
+            <div className="text-right opacity-75">
+              <p className="text-sm font-sans">
+                {new Date(summary.highestSalaryIncrease.date).toLocaleDateString()}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard
-            title="Current Salary"
-            value={formatCurrency(summary.currentSalary / 100)}
-            subtitle="Current compensation"
-            trend="neutral"
-          />
-          <StatCard
-            title="Years of Experience"
-            value={`${summary.totalExperience.toFixed(1)}y`}
-            subtitle="Total career experience"
-            trend="neutral"
-          />
-          <StatCard
-            title="Career Moves"
-            value={summary.jobChangeCount.toString()}
-            subtitle={`${summary.promotionCount} promotions`}
-            trend="neutral"
-          />
-          <StatCard
-            title="Average Tenure"
-            value={`${summary.averageTenurePerJob.toFixed(1)}y`}
-            subtitle={`${summary.jobChangeCount} job changes`}
-            trend="neutral"
-          />
-        </div>
-
-        {/* Salary Progression */}
-
-        {summary.salaryByYear.length > 0 ? (
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/50">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-light text-slate-900 font-serif">Salary Progression</h2>
-              <span className="text-sm text-slate-500 font-sans">By Year</span>
-            </div>
-            <SalaryChart data={summary.salaryByYear} />
-          </div>
-        ) : null}
-
-        {/* Highest Salary Increase Highlight */}
-        {summary.highestSalaryIncrease.amount > 0 && (
-          <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-8 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-medium font-sans opacity-90">Biggest Career Win</h3>
-                <p className="text-3xl font-light font-serif mt-2">
-                  +{formatCurrency(summary.highestSalaryIncrease.amount / 100)}
-                </p>
-                <p className="text-emerald-100 mt-1 font-sans">
-                  {formatPercentage(summary.highestSalaryIncrease.percentage)} increase •{' '}
-                  {summary.highestSalaryIncrease.reason}
-                </p>
-              </div>
-              <div className="text-right opacity-75">
-                <p className="text-sm font-sans">
-                  {new Date(summary.highestSalaryIncrease.date).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Career History - Combined Timeline and Experiences */}
-        <CareerHistory workExperiences={experiences} careerTimeline={timeline} />
-      </div>
+      {/* Career History - Combined Timeline and Experiences */}
+      <CareerHistory workExperiences={experiences} careerTimeline={timeline} />
     </div>
   )
 }

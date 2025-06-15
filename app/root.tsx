@@ -129,7 +129,7 @@ export default function App() {
       <ToastProvider>
         <div className="flex flex-col min-h-screen overflow-hidden">
           <Navigation />
-          <div className="font-sans pt-16 flex-1 flex flex-col">
+          <div className="w-full max-w-6xl mx-auto font-sans mt-24 pt-8 flex-1 flex flex-col">
             <Outlet />
           </div>
         </div>

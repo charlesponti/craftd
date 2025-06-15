@@ -17,7 +17,8 @@
     "db:up": "docker-compose up -d",
     "db:down": "docker-compose down",
     "db:generate": "npx drizzle-kit generate",
-    "db:migrate": "npx drizzle-kit migrate"
+    "db:migrate": "npx drizzle-kit migrate",
+    "db:inject-jobs": "bun run scripts/inject-job-applications.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^1.2.19",
@@ -32,6 +33,7 @@
     "ai": "^4.3.16",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "csv-parse": "^5.6.0",
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.44.2",
     "isbot": "^5.1.27",

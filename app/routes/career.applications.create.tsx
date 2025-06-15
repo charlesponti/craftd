@@ -83,7 +83,7 @@ export default function CreateJobApplication() {
   const actionData = useActionData<{ success: boolean; error?: string }>()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       <div className="container mx-auto py-12">
         <div className="max-w-2xl mx-auto">
           {/* Header */}

@@ -2,10 +2,10 @@ import { eq } from 'drizzle-orm'
 import { useState } from 'react'
 import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
 import { Form, Link, redirect, useActionData } from 'react-router'
-import { JobScrapingResumeCustomizer } from '~/components/JobScrapingResumeCustomizer'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent } from '~/components/ui/Card'
 import { Input } from '~/components/ui/input'
+import { LoadingSpinner } from '~/components/ui/LoadingSpinner'
 import { Select } from '~/components/ui/select'
 import { db } from '~/lib/db'
 import { companies, jobApplications } from '~/lib/db/schema'
@@ -15,7 +15,7 @@ import {
   withAuthAction,
   withAuthLoader,
 } from '~/lib/route-utils'
-import type { JobPosting } from '~/types/applications'
+import type { JobPosting, ScrapedJobPostingResponse } from '~/types/applications'
 import { JobApplicationStage, JobApplicationStatus } from '~/types/career'
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -35,6 +35,9 @@ export async function action(args: ActionFunctionArgs) {
     const jobPosting = formData.get('jobPosting') as string
     const jobPostingData = formData.get('jobPostingData') as string
     const salaryQuoted = formData.get('salaryQuoted') as string
+    const recruiterName = formData.get('recruiterName') as string
+    const recruiterEmail = formData.get('recruiterEmail') as string
+    const recruiterLinkedin = formData.get('recruiterLinkedin') as string
 
     try {
       if (!position || !companyName) {
@@ -90,6 +93,9 @@ export async function action(args: ActionFunctionArgs) {
           jobPostingUrl,
           jobPostingWordCount,
           salaryQuoted: salaryQuoted || null,
+          recruiterName: recruiterName || null,
+          recruiterEmail: recruiterEmail || null,
+          recruiterLinkedin: recruiterLinkedin || null,
           reference: false,
           stages: [
             {
@@ -113,10 +119,40 @@ export default function CreateJobApplication() {
   const [inputMethod, setInputMethod] = useState<'manual' | 'url' | 'paste' | null>(null)
   const [scrapedData, setScrapedData] = useState<JobPosting | null>(null)
   const [pastedDescription, setPastedDescription] = useState('')
+  const [url, setUrl] = useState('')
+  const [isScraping, setIsScraping] = useState(false)
+  const [scrapingError, setScrapingError] = useState<string | null>(null)
 
   const handleScrapedData = (data: JobPosting) => {
     setScrapedData(data)
     setInputMethod('manual')
+  }
+
+  const handleScrape = async () => {
+    if (!url.trim()) return
+    setIsScraping(true)
+    setScrapingError(null)
+
+    try {
+      const response = await fetch('/api/job/scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      })
+
+      const result: ScrapedJobPostingResponse = await response.json()
+
+      if (result.success && result.jobPosting) {
+        handleScrapedData(result.jobPosting)
+      } else {
+        setScrapingError(result.error || 'Failed to scrape job posting.')
+      }
+    } catch (error) {
+      console.error('Scraping error:', error)
+      setScrapingError('An unexpected error occurred.')
+    } finally {
+      setIsScraping(false)
+    }
   }
 
   const handlePasteDescription = () => {
@@ -203,13 +239,28 @@ export default function CreateJobApplication() {
               {/* URL Scraping */}
               {inputMethod === 'url' && (
                 <div className="mt-4 pt-4 border-t border-gray-200">
-                  <h3 className="text-md font-semibold text-gray-800 mb-4">
-                    Scrape Job Posting from URL
-                  </h3>
-                  <JobScrapingResumeCustomizer
-                    onScrapedData={handleScrapedData}
-                    showResumeGeneration={false}
-                  />
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="url"
+                      name="url"
+                      id="url"
+                      placeholder="Paste job posting URL..."
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                      className="h-11"
+                      disabled={isScraping}
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleScrape}
+                      disabled={isScraping || !url.trim()}
+                      className="h-11"
+                      variant="default"
+                    >
+                      {isScraping ? <LoadingSpinner size="sm" /> : 'Scrape'}
+                    </Button>
+                  </div>
+                  {scrapingError && <p className="text-red-500 text-sm mt-2">{scrapingError}</p>}
                 </div>
               )}
 
@@ -240,7 +291,7 @@ export default function CreateJobApplication() {
                       <Button
                         onClick={handlePasteDescription}
                         disabled={!pastedDescription.trim()}
-                        className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                        variant="default"
                       >
                         Use This Description
                       </Button>
@@ -447,11 +498,63 @@ export default function CreateJobApplication() {
                     />
                   </div>
 
+                  {/* Recruiter Information */}
+                  <div className="pt-4 border-t border-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Recruiter Information
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="recruiterName"
+                          className="text-sm font-medium text-gray-700"
+                        >
+                          Recruiter Name
+                        </label>
+                        <Input
+                          id="recruiterName"
+                          name="recruiterName"
+                          placeholder="e.g. John Smith"
+                          className="h-11"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="recruiterEmail"
+                          className="text-sm font-medium text-gray-700"
+                        >
+                          Recruiter Email
+                        </label>
+                        <Input
+                          id="recruiterEmail"
+                          name="recruiterEmail"
+                          type="email"
+                          placeholder="e.g. john.smith@company.com"
+                          className="h-11"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-6 space-y-2">
+                      <label
+                        htmlFor="recruiterLinkedin"
+                        className="text-sm font-medium text-gray-700"
+                      >
+                        Recruiter LinkedIn URL
+                      </label>
+                      <Input
+                        id="recruiterLinkedin"
+                        name="recruiterLinkedin"
+                        type="url"
+                        placeholder="e.g. https://linkedin.com/in/johnsmith"
+                        className="h-11"
+                      />
+                    </div>
+                  </div>
+
                   <div className="flex gap-3 pt-6">
-                    <Button
-                      type="submit"
-                      className="flex-1 h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium"
-                    >
+                    <Button type="submit" className="flex-1 h-11 font-medium" variant="default">
                       Create Application
                     </Button>
                     <Link

@@ -19,8 +19,7 @@ export const action: ActionFunction = async ({ request }) => {
       })
     }
 
-    const formData = await request.formData()
-    const jobUrl = formData.get('jobUrl') as string
+    const { url: jobUrl } = (await request.json()) as { url: string }
 
     if (!jobUrl) {
       return new Response(JSON.stringify({ error: 'Job posting URL is required' }), {

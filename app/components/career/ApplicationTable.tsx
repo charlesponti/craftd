@@ -325,49 +325,65 @@ export function ApplicationTable({
         <>
           {/* Desktop Table View */}
           <div className="hidden md:block overflow-x-auto bg-white rounded-lg border border-gray-200 shadow-sm">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="table-header">Position & Company</th>
-                  <th className="table-header">Status</th>
-                  <th className="table-header">Applied</th>
-                  <th className="table-header">Response</th>
-                  <th className="table-header">Salary</th>
-                  <th className="table-header">Source</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {applications.map((app) => (
-                  <tr key={app.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{app.position}</div>
-                        <div className="text-sm text-gray-500">{getCompanyName(app.company)}</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(app.status)}`}
+            <div className="align-middle inline-block min-w-full">
+              <div className="shadow border-b border-gray-200 sm:rounded-lg">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       >
-                        {formatStatusText(app.status)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatApplicationDate(app.applicationDate || app.startDate || null)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatApplicationDate(app.responseDate)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatApplicationSalary(app.salaryOffered || app.salaryQuoted)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-500 capitalize">{app.source || '—'}</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                        Position
+                      </th>
+                      <th className="table-header">Status</th>
+                      <th className="table-header">Applied</th>
+                      <th className="table-header">Response</th>
+                      <th className="table-header">Salary</th>
+                      <th className="table-header">Source</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {applications.map((app) => (
+                      <tr key={app.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <Link
+                            to={`/career/applications/${app.id}`}
+                            className="block hover:text-blue-600"
+                          >
+                            <div className="text-sm font-medium text-gray-900">{app.position}</div>
+                            <div className="text-sm text-gray-500">
+                              {getCompanyName(app.company)}
+                            </div>
+                          </Link>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(app.status)}`}
+                          >
+                            {formatStatusText(app.status)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {formatApplicationDate(app.applicationDate || app.startDate || null)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {formatApplicationDate(app.responseDate)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {formatApplicationSalary(app.salaryOffered || app.salaryQuoted)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm text-gray-500 capitalize">
+                            {app.source || '—'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
 
           {/* Mobile List View */}

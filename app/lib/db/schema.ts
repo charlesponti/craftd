@@ -667,6 +667,11 @@ export const jobApplications = pgTable(
     companyNotes: text('company_notes'), // Research about the company
     negotiationNotes: text('negotiation_notes'), // Salary negotiation tracking
 
+    // Recruiter Information
+    recruiterName: varchar('recruiter_name', { length: 255 }),
+    recruiterEmail: varchar('recruiter_email', { length: 255 }),
+    recruiterLinkedin: varchar('recruiter_linkedin', { length: 500 }),
+
     stages: json('stages')
       .$type<
         Array<{
@@ -948,6 +953,9 @@ export interface JobApplicationUpdate {
   salaryAccepted?: string | null
   companyNotes?: string | null
   negotiationNotes?: string | null
+  recruiterName?: string | null
+  recruiterEmail?: string | null
+  recruiterLinkedin?: string | null
   updatedAt?: Date
 }
 

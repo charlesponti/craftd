@@ -1,139 +1,87 @@
+import { useState } from 'react'
 import { Form } from 'react-router'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/Card'
 import { Input } from '~/components/ui/input'
-import { Select } from '~/components/ui/select'
 import type { ApplicationWithCompany, Company } from '~/lib/db/schema'
-import { JobApplicationStatus } from '~/types/career'
 import { getStatusColor } from './utils'
 
 interface OverviewTabProps {
   application: ApplicationWithCompany
   company: Company | null
-  isEditing: boolean
 }
 
-export function ApplicationOverviewTab({ application, company, isEditing }: OverviewTabProps) {
+export function ApplicationOverviewTab({ application, company }: OverviewTabProps) {
+  const [isEditingRecruiter, setIsEditingRecruiter] = useState(false)
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className="space-y-8">
       {/* Application Details */}
       <Card>
         <CardHeader>
           <CardTitle>Application Details</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {isEditing ? (
-            <Form method="post" className="space-y-4">
-              <input type="hidden" name="operation" value="update_application" />
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <span className="text-sm font-medium text-gray-700">Position</span>
+              <p className="text-gray-900 mt-1">{application.position}</p>
+            </div>
 
+            <div>
+              <span className="text-sm font-medium text-gray-700">Status</span>
+              <span
+                className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${getStatusColor(
+                  application.status
+                )}`}
+              >
+                {application.status.replace(/_/g, ' ')}
+              </span>
+            </div>
+
+            <div>
+              <span className="text-sm font-medium text-gray-700">Applied Date</span>
+              <p className="text-gray-900 mt-1">
+                {new Date(application.startDate).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </p>
+            </div>
+
+            {application.location && (
               <div>
-                <label htmlFor="position" className="text-sm font-medium text-gray-700">
-                  Position
-                </label>
-                <Input name="position" defaultValue={application.position} />
+                <span className="text-sm font-medium text-gray-700">Location</span>
+                <p className="text-gray-900 mt-1">{application.location}</p>
               </div>
+            )}
 
+            {application.salaryQuoted && (
               <div>
-                <label htmlFor="status" className="text-sm font-medium text-gray-700">
-                  Status
-                </label>
-                <Select name="status" defaultValue={application.status}>
-                  {Object.values(JobApplicationStatus).map((status) => (
-                    <option key={status} value={status}>
-                      {status.replace(/_/g, ' ')}
-                    </option>
-                  ))}
-                </Select>
+                <span className="text-sm font-medium text-gray-700">Salary Quoted</span>
+                <p className="text-gray-900 mt-1">{application.salaryQuoted}</p>
               </div>
+            )}
 
+            {application.source && (
               <div>
-                <label htmlFor="location" className="text-sm font-medium text-gray-700">
-                  Location
-                </label>
-                <Input name="location" defaultValue={application.location || ''} />
+                <span className="text-sm font-medium text-gray-700">Source</span>
+                <p className="text-gray-900 mt-1">{application.source}</p>
               </div>
+            )}
+          </div>
 
-              <div>
-                <label htmlFor="jobPosting" className="text-sm font-medium text-gray-700">
-                  Job Posting URL
-                </label>
-                <Input name="jobPosting" type="url" defaultValue={application.jobPosting || ''} />
-              </div>
-
-              <div>
-                <label htmlFor="salaryQuoted" className="text-sm font-medium text-gray-700">
-                  Salary Quoted
-                </label>
-                <Input name="salaryQuoted" defaultValue={application.salaryQuoted || ''} />
-              </div>
-
-              <Button type="submit">Update Application</Button>
-            </Form>
-          ) : (
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="position" className="text-sm font-medium text-gray-700">
-                  Position
-                </label>
-                <p className="text-gray-900">{application.position}</p>
-              </div>
-
-              <div>
-                <label htmlFor="status" className="text-sm font-medium text-gray-700">
-                  Status
-                </label>
-                <span
-                  className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                    application.status
-                  )}`}
-                >
-                  {application.status.replace(/_/g, ' ')}
-                </span>
-              </div>
-
-              <div>
-                <label htmlFor="appliedDate" className="text-sm font-medium text-gray-700">
-                  Applied Date
-                </label>
-                <p className="text-gray-900">
-                  {new Date(application.startDate).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </p>
-              </div>
-
-              {application.location && (
-                <div>
-                  <label htmlFor="location" className="text-sm font-medium text-gray-700">
-                    Location
-                  </label>
-                  <p className="text-gray-900">{application.location}</p>
-                </div>
-              )}
-
-              {application.salaryQuoted && (
-                <div>
-                  <label htmlFor="salaryQuoted" className="text-sm font-medium text-gray-700">
-                    Salary Quoted
-                  </label>
-                  <p className="text-gray-900">{application.salaryQuoted}</p>
-                </div>
-              )}
-
-              {application.jobPosting && (
-                <div className="pt-4">
-                  <a
-                    href={application.jobPosting}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 bg-white border border-gray-300 hover:bg-gray-50 h-9 px-4 py-2"
-                  >
-                    View Job Posting
-                  </a>
-                </div>
-              )}
+          {application.jobPostingUrl && (
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <a
+                href={application.jobPostingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 bg-white border border-gray-300 hover:bg-gray-50 h-9 px-4 py-2"
+              >
+                View Job Posting
+              </a>
             </div>
           )}
         </CardContent>
@@ -144,86 +92,165 @@ export function ApplicationOverviewTab({ application, company, isEditing }: Over
         <CardHeader>
           <CardTitle>Company Information</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {isEditing ? (
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <span className="text-sm font-medium text-gray-700">Company Name</span>
+              <p className="text-gray-900 mt-1">{company?.name || 'Unknown Company'}</p>
+            </div>
+
+            {company?.website && (
+              <div>
+                <span className="text-sm font-medium text-gray-700">Website</span>
+                <a
+                  href={company.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-800 mt-1 block"
+                >
+                  {company.website}
+                </a>
+              </div>
+            )}
+
+            {company?.industry && (
+              <div>
+                <span className="text-sm font-medium text-gray-700">Industry</span>
+                <p className="text-gray-900 mt-1">{company.industry}</p>
+              </div>
+            )}
+
+            {company?.size && (
+              <div>
+                <span className="text-sm font-medium text-gray-700">Company Size</span>
+                <p className="text-gray-900 mt-1">{company.size}</p>
+              </div>
+            )}
+
+            {company?.location && (
+              <div>
+                <span className="text-sm font-medium text-gray-700">Company Location</span>
+                <p className="text-gray-900 mt-1">{company.location}</p>
+              </div>
+            )}
+          </div>
+
+          {application.companyNotes && (
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <span className="text-sm font-medium text-gray-700">Research Notes</span>
+              <p className="text-gray-700 whitespace-pre-wrap mt-1">{application.companyNotes}</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Recruiter Information */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Recruiter Information</CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditingRecruiter(!isEditingRecruiter)}
+            >
+              {isEditingRecruiter ? 'Cancel' : 'Edit'}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {isEditingRecruiter ? (
             <Form method="post" className="space-y-4">
               <input type="hidden" name="operation" value="update_application" />
 
-              <div>
-                <label htmlFor="companyNotes" className="text-sm font-medium text-gray-700">
-                  Company Research
-                </label>
-                <textarea
-                  name="companyNotes"
-                  rows={4}
-                  defaultValue={application.companyNotes || ''}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Notes about the company, culture, values, etc."
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <span className="text-sm font-medium text-gray-700">Recruiter Name</span>
+                  <Input
+                    id="recruiterName"
+                    name="recruiterName"
+                    placeholder="e.g. John Smith"
+                    defaultValue={application.recruiterName || ''}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <span className="text-sm font-medium text-gray-700">Recruiter Email</span>
+                  <Input
+                    id="recruiterEmail"
+                    name="recruiterEmail"
+                    type="email"
+                    placeholder="e.g. john.smith@company.com"
+                    defaultValue={application.recruiterEmail || ''}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <span className="text-sm font-medium text-gray-700">Recruiter LinkedIn URL</span>
+                <Input
+                  id="recruiterLinkedin"
+                  name="recruiterLinkedin"
+                  type="url"
+                  placeholder="e.g. https://linkedin.com/in/johnsmith"
+                  defaultValue={application.recruiterLinkedin || ''}
                 />
               </div>
 
-              <Button type="submit">Update Notes</Button>
+              <div className="flex gap-2 pt-2">
+                <Button type="submit" size="sm" onClick={() => setIsEditingRecruiter(false)}>
+                  Save
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditingRecruiter(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
             </Form>
           ) : (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="companyName" className="text-sm font-medium text-gray-700">
-                  Company Name
-                </label>
-                <p className="text-gray-900">{company?.name || 'Unknown Company'}</p>
+                <span className="text-sm font-medium text-gray-700">Recruiter Name</span>
+                <p className="text-gray-900 mt-1">
+                  {application.recruiterName || (
+                    <span className="text-gray-500 italic">Not specified</span>
+                  )}
+                </p>
               </div>
 
-              {company?.website && (
-                <div>
-                  <label htmlFor="website" className="text-sm font-medium text-gray-700">
-                    Website
-                  </label>
+              <div>
+                <span className="text-sm font-medium text-gray-700">Recruiter Email</span>
+                {application.recruiterEmail ? (
                   <a
-                    href={company.website}
+                    href={`mailto:${application.recruiterEmail}`}
+                    className="text-blue-600 hover:text-blue-800 mt-1 block"
+                  >
+                    {application.recruiterEmail}
+                  </a>
+                ) : (
+                  <p className="text-gray-500 italic mt-1">Not specified</p>
+                )}
+              </div>
+
+              <div className="md:col-span-2">
+                <span className="text-sm font-medium text-gray-700">Recruiter LinkedIn</span>
+                {application.recruiterLinkedin ? (
+                  <a
+                    href={application.recruiterLinkedin}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800"
+                    className="text-blue-600 hover:text-blue-800 mt-1 block"
                   >
-                    {company.website}
+                    View Profile
                   </a>
-                </div>
-              )}
-
-              {company?.industry && (
-                <div>
-                  <label htmlFor="industry" className="text-sm font-medium text-gray-700">
-                    Industry
-                  </label>
-                  <p className="text-gray-900">{company.industry}</p>
-                </div>
-              )}
-
-              {company?.size && (
-                <div>
-                  <label htmlFor="size" className="text-sm font-medium text-gray-700">
-                    Company Size
-                  </label>
-                  <p className="text-gray-900">{company.size}</p>
-                </div>
-              )}
-
-              {company?.location && (
-                <div>
-                  <label htmlFor="location" className="text-sm font-medium text-gray-700">
-                    Company Location
-                  </label>
-                  <p className="text-gray-900">{company.location}</p>
-                </div>
-              )}
-
-              {application.companyNotes && (
-                <div>
-                  <label htmlFor="companyNotes" className="text-sm font-medium text-gray-700">
-                    Research Notes
-                  </label>
-                  <p className="text-gray-700 whitespace-pre-wrap">{application.companyNotes}</p>
-                </div>
-              )}
+                ) : (
+                  <p className="text-gray-500 italic mt-1">Not specified</p>
+                )}
+              </div>
             </div>
           )}
         </CardContent>

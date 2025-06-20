@@ -47,6 +47,10 @@ export interface JobApplication {
   phoneScreen?: string | null
   reference: boolean
   stages: JobApplicationStageEntry[]
+  // Recruiter Information
+  recruiterName?: string | null
+  recruiterEmail?: string | null
+  recruiterLinkedin?: string | null
   createdAt?: Date
   updatedAt?: Date
 }
@@ -69,6 +73,10 @@ export interface JobApplicationInsert {
   phoneScreen?: string | null
   reference: boolean
   stages: JobApplicationStageEntry[]
+  // Recruiter Information
+  recruiterName?: string | null
+  recruiterEmail?: string | null
+  recruiterLinkedin?: string | null
 }
 
 export interface Company {

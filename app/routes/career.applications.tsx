@@ -113,6 +113,9 @@ export async function action(args: ActionFunctionArgs) {
         const location = formData.get('location') as string
         const jobPosting = formData.get('jobPosting') as string
         const salaryQuoted = formData.get('salaryQuoted') as string
+        const recruiterName = formData.get('recruiterName') as string
+        const recruiterEmail = formData.get('recruiterEmail') as string
+        const recruiterLinkedin = formData.get('recruiterLinkedin') as string
 
         if (!position || !companyName) {
           return createErrorResponse('Position and company are required')
@@ -142,6 +145,9 @@ export async function action(args: ActionFunctionArgs) {
             location: location || null,
             jobPosting: jobPosting || null,
             salaryQuoted: salaryQuoted || null,
+            recruiterName: recruiterName || null,
+            recruiterEmail: recruiterEmail || null,
+            recruiterLinkedin: recruiterLinkedin || null,
             reference: false,
             stages: [
               {

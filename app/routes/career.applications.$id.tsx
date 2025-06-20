@@ -1,4 +1,13 @@
 import { and, eq } from 'drizzle-orm'
+import {
+  Briefcase,
+  Calendar,
+  ChevronLeft,
+  DollarSign,
+  MessageSquare,
+  Paperclip,
+  TrendingUp,
+} from 'lucide-react'
 import { useState } from 'react'
 import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
 import { Link, useActionData, useFetcher, useLoaderData, useParams } from 'react-router'
@@ -8,7 +17,6 @@ import {
   ApplicationOverviewTab,
   ApplicationTimelineTab,
 } from '~/components/career'
-import { ResumeCustomizer } from '~/components/ResumeCustomizer'
 import { Button } from '~/components/ui/button'
 import { db } from '~/lib/db'
 import type {
@@ -23,6 +31,11 @@ import {
   withAuthAction,
   withAuthLoader,
 } from '~/lib/route-utils'
+import {
+  formatApplicationDate,
+  formatStatusText,
+  getStatusColor,
+} from '~/lib/utils/applicationUtils'
 
 export async function loader(args: LoaderFunctionArgs) {
   return withAuthLoader(args, async ({ user }) => {
@@ -54,6 +67,9 @@ export async function loader(args: LoaderFunctionArgs) {
           interviewDates: jobApplications.interviewDates,
           companyNotes: jobApplications.companyNotes,
           negotiationNotes: jobApplications.negotiationNotes,
+          recruiterName: jobApplications.recruiterName,
+          recruiterEmail: jobApplications.recruiterEmail,
+          recruiterLinkedin: jobApplications.recruiterLinkedin,
           stages: jobApplications.stages,
           createdAt: jobApplications.createdAt,
           updatedAt: jobApplications.updatedAt,
@@ -131,6 +147,9 @@ export async function action(args: ActionFunctionArgs) {
           'salaryAccepted',
           'companyNotes',
           'negotiationNotes',
+          'recruiterName',
+          'recruiterEmail',
+          'recruiterLinkedin',
         ] as const
 
         for (const field of fields) {
@@ -218,10 +237,8 @@ export default function ApplicationDetail() {
   const actionData = useActionData()
   const params = useParams()
   const fetcher = useFetcher()
-  const [isEditing, setIsEditing] = useState(false)
-  const [activeTab, setActiveTab] = useState<
-    'overview' | 'timeline' | 'notes' | 'files' | 'resume'
-  >('overview')
+  type TabId = 'overview' | 'timeline' | 'notes' | 'files'
+  const [activeTab, setActiveTab] = useState<TabId>('overview')
 
   if (!loaderData.success || !loaderData.data) {
     return (
@@ -246,96 +263,107 @@ export default function ApplicationDetail() {
   }
 
   const { application, notes, files } = loaderData.data
-  const company = application.company
+  const { company } = application
+
+  const tabItems = [
+    { id: 'overview', label: 'Overview', icon: Briefcase },
+    { id: 'timeline', label: 'Timeline', icon: Calendar },
+    { id: 'notes', label: 'Notes', icon: MessageSquare },
+    { id: 'files', label: 'Files', icon: Paperclip },
+  ]
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <div className="container mx-auto py-8 max-w-6xl">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Link
-            to="/career/applications"
-            className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 bg-white border border-gray-300 hover:bg-gray-50 h-9 px-4 py-2"
+    <div className="space-y-6 p-4">
+      {/* Header */}
+      <header className="flex items-center justify-between">
+        <Link
+          to="/career/applications"
+          className="flex items-center text-sm text-gray-500 hover:text-gray-900"
+        >
+          <ChevronLeft className="h-5 w-5" />
+          Back to Applications
+        </Link>
+      </header>
+
+      {/* Application Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">{application.position}</h1>
+          <p className="text-xl text-gray-600">{company?.name}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <span
+            className={`px-4 py-2 text-sm font-semibold rounded-full ${getStatusColor(application.status)}`}
           >
-            <svg
-              className="w-4 h-4 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            Back
-          </Link>
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold text-gray-900">{application.position}</h1>
-            <p className="text-lg text-gray-600">{company?.name || 'Unknown Company'}</p>
-          </div>
-          <Button
-            onClick={() => setIsEditing(!isEditing)}
-            className={isEditing ? 'bg-green-600 hover:bg-green-700' : ''}
-          >
-            {isEditing ? 'Save Changes' : 'Edit Application'}
+            {formatStatusText(application.status)}
+          </span>
+          <Button variant="outline" size="sm">
+            Quick Actions
           </Button>
         </div>
+      </div>
 
-        {/* Tab Navigation */}
-        <div className="flex space-x-8 border-b border-gray-200 mb-8">
-          {[
-            { id: 'overview', label: 'Overview' },
-            { id: 'timeline', label: 'Timeline' },
-            { id: 'notes', label: 'Notes' },
-            { id: 'files', label: 'Files' },
-            { id: 'resume', label: 'AI Resume' },
-          ].map((tab) => (
+      {/* Quick Info Bar */}
+      <div className="flex flex-wrap gap-6 text-sm text-gray-600">
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4" />
+          <span>Applied: {formatApplicationDate(application.startDate)}</span>
+        </div>
+        {application.location && (
+          <div className="flex items-center gap-2">
+            <span>📍</span>
+            <span>{application.location}</span>
+          </div>
+        )}
+        {application.salaryQuoted && (
+          <div className="flex items-center gap-2">
+            <DollarSign className="h-4 w-4" />
+            <span>{application.salaryQuoted}</span>
+          </div>
+        )}
+        {application.source && (
+          <div className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            <span>Source: {application.source}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Tabs */}
+      <div className="border-b border-gray-200">
+        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+          {tabItems.map((tab) => (
             <button
               key={tab.id}
               type="button"
-              onClick={() =>
-                setActiveTab(tab.id as 'overview' | 'timeline' | 'notes' | 'files' | 'resume')
-              }
-              className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+              onClick={() => setActiveTab(tab.id as TabId)}
+              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === tab.id
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
+              <tab.icon className="inline-block h-5 w-5 mr-2" />
               {tab.label}
             </button>
           ))}
-        </div>
+        </nav>
+      </div>
 
-        {/* Tab Content */}
-        <div className="space-y-8">
-          {activeTab === 'overview' && (
-            <ApplicationOverviewTab
-              application={application}
-              company={company}
-              isEditing={isEditing}
-            />
-          )}
-          {activeTab === 'timeline' && (
-            <ApplicationTimelineTab application={application} applicationId={params.id || ''} />
-          )}
-          {activeTab === 'notes' && (
-            <ApplicationNotesTab notes={notes} applicationId={params.id || ''} />
-          )}
-          {activeTab === 'files' && (
-            <ApplicationFilesTab application={application} applicationId={params.id || ''} />
-          )}
-          {activeTab === 'resume' && (
-            <ResumeCustomizer
-              applicationId={params.id || ''}
-              initialJobPosting={application.jobPosting || ''}
-            />
-          )}
-        </div>
+      {/* Tab Content */}
+      <div className="pt-6">
+        {activeTab === 'overview' && (
+          <ApplicationOverviewTab application={application} company={company} />
+        )}
+        {activeTab === 'timeline' && (
+          <ApplicationTimelineTab application={application} applicationId={params.id || ''} />
+        )}
+        {activeTab === 'notes' && (
+          <ApplicationNotesTab notes={notes} applicationId={params.id || ''} />
+        )}
+        {activeTab === 'files' && (
+          <ApplicationFilesTab application={application} applicationId={params.id || ''} />
+        )}
       </div>
     </div>
   )

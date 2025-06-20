@@ -7,7 +7,7 @@ import type { ActionFunctionArgs } from 'react-router'
 import { useFetcher, useOutletContext } from 'react-router'
 import { Button } from '~/components/ui/button'
 import { db } from '~/lib/db'
-import type { NewWorkExperience, WorkExperience } from '~/lib/db/schema'
+import type { NewWorkExperience, WorkExperience, WorkExperienceMetadata } from '~/lib/db/schema'
 import { workExperiences } from '~/lib/db/schema'
 import { useToast } from '../hooks/useToast'
 import type { FullPortfolio } from '../lib/portfolio.server'
@@ -21,7 +21,6 @@ import {
 import {
   formatDateForInput,
   nullArrayToUndefined,
-  nullObjectToUndefined,
   nullToUndefined,
   stringToDate,
 } from '../lib/utils'
@@ -36,7 +35,7 @@ interface WorkExperienceFormValues {
   achievements?: { value: string }[]
   action?: string
   tags?: string[]
-  metadata?: Record<string, unknown>
+  metadata?: WorkExperienceMetadata
   sortOrder?: number
   isVisible?: boolean
   portfolioId: string
@@ -78,7 +77,7 @@ function WorkExperienceForm({
         (experience?.metadata?.achievements as string[])?.map((value) => ({ value })) || [],
       action: nullToUndefined(experience?.action),
       tags: nullArrayToUndefined(experience?.tags) || [],
-      metadata: nullObjectToUndefined(experience?.metadata) || {},
+      metadata: experience?.metadata || {},
       sortOrder: experience?.sortOrder || 0,
       isVisible: experience?.isVisible !== false,
       portfolioId,
@@ -112,7 +111,7 @@ function WorkExperienceForm({
               (result.data.metadata?.achievements as string[])?.map((value) => ({ value })) || [],
             action: nullToUndefined(result.data.action),
             tags: nullArrayToUndefined(result.data.tags) || [],
-            metadata: nullObjectToUndefined(result.data.metadata) || {},
+            metadata: result.data.metadata || {},
           })
         }
       } else {

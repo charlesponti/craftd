@@ -105,16 +105,6 @@ export const nullArrayToUndefined = (value: string[] | null | undefined): string
 }
 
 /**
- * Helper function to safely convert nullable object to undefined
- * Useful for form default values where null objects should become undefined
- */
-export const nullObjectToUndefined = (
-  value: Record<string, unknown> | null | undefined
-): Record<string, unknown> | undefined => {
-  return value === null ? undefined : value
-}
-
-/**
  * Helper function to convert date string to Date object
  * Returns undefined for invalid dates
  */

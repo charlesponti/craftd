@@ -267,9 +267,12 @@ export default function CareerApplications() {
           <div>
             <h1 className="text-3xl font-bold leading-tight text-gray-900">Job Applications</h1>
           </div>
-          <Link to="/career/applications/create" className="btn-primary">
+          <Link
+            to="/career/applications/create"
+            className="btn-primary flex items-center gap-2 p-2 md:px-4"
+          >
             <PlusIcon className="size-4" />
-            Add Application
+            <span className="hidden md:block">Add Application</span>
           </Link>
         </div>
       </div>

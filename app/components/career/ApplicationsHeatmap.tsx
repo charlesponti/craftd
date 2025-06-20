@@ -126,7 +126,7 @@ export function ApplicationsHeatmap({ applications }: ApplicationsHeatmapProps) 
   return (
     <div
       ref={containerRef}
-      className="bg-white shadow-lg rounded-lg border border-gray-200 p-6 relative overflow-x-hidden"
+      className="rounded-lg border border-gray-200 p-6 relative overflow-x-hidden max-w-4xl mx-auto"
     >
       <div className="mb-4">
         <h3 className="text-lg font-medium text-gray-900 font-serif">Application Activity</h3>
@@ -205,19 +205,21 @@ export function ApplicationsHeatmap({ applications }: ApplicationsHeatmapProps) 
       {/* Summary stats */}
       <div className="mt-6 pt-4 border-t border-gray-200">
         <div className="grid grid-cols-3 gap-4 text-center">
-          <div>
-            <div className="text-2xl font-bold text-gray-900">{applications.length}</div>
-            <div className="text-sm text-gray-500">Total Applications</div>
+          <div className="flex items-center justify-center gap-2">
+            <div className="text-base md:text-lg font-bold text-gray-900">
+              {applications.length}
+            </div>
+            <div className="text-sm md:text-base text-gray-500">Total</div>
           </div>
-          <div>
-            <div className="text-2xl font-bold text-gray-900">
+          <div className="flex items-center justify-center gap-2">
+            <div className="text-base md:text-lg font-bold text-gray-900">
               {days.filter((d) => d.count > 0).length}
             </div>
-            <div className="text-sm text-gray-500">Active Days</div>
+            <div className="text-sm md:text-base text-gray-500">Active</div>
           </div>
-          <div>
-            <div className="text-2xl font-bold text-gray-900">{maxCount}</div>
-            <div className="text-sm text-gray-500">Most in One Day</div>
+          <div className="flex items-center justify-center gap-2">
+            <div className="text-base md:text-lg font-bold text-gray-900">{maxCount}</div>
+            <div className="text-sm md:text-base text-gray-500">Most</div>
           </div>
         </div>
       </div>

@@ -1,10 +1,11 @@
+import { Briefcase, Calendar, DollarSign, MapPin, TrendingUp } from 'lucide-react'
 import { useState } from 'react'
 import { Form } from 'react-router'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/Card'
 import { Input } from '~/components/ui/input'
 import type { ApplicationWithCompany, Company } from '~/lib/db/schema'
-import { getStatusColor } from './utils'
+import { formatApplicationDate } from '~/lib/utils/applicationUtils'
 
 interface OverviewTabProps {
   application: ApplicationWithCompany
@@ -15,45 +16,40 @@ export function ApplicationOverviewTab({ application, company }: OverviewTabProp
   const [isEditingRecruiter, setIsEditingRecruiter] = useState(false)
 
   return (
-    <div className="space-y-8">
-      {/* Application Details */}
+    <div className="space-y-2">
       <Card>
         <CardHeader>
           <CardTitle>Application Details</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <span className="text-sm font-medium text-gray-700">Position</span>
-              <p className="text-gray-900 mt-1">{application.position}</p>
+          <div className="grid grid-cols-1 gap-2">
+            <div className="flex items-center gap-2">
+              <Briefcase className="h-4 w-4" />
+              <span>{application.position}</span>
             </div>
 
-            <div>
-              <span className="text-sm font-medium text-gray-700">Status</span>
-              <span
-                className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${getStatusColor(
-                  application.status
-                )}`}
-              >
-                {application.status.replace(/_/g, ' ')}
-              </span>
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              <span>{formatApplicationDate(application.startDate)}</span>
             </div>
 
-            <div>
-              <span className="text-sm font-medium text-gray-700">Applied Date</span>
-              <p className="text-gray-900 mt-1">
-                {new Date(application.startDate).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-              </p>
-            </div>
+            {application.salaryQuoted && (
+              <div className="flex items-center gap-2">
+                <DollarSign className="h-4 w-4" />
+                <span>{application.salaryQuoted}</span>
+              </div>
+            )}
+            {application.source && (
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                <span>Source: {application.source}</span>
+              </div>
+            )}
 
             {application.location && (
-              <div>
-                <span className="text-sm font-medium text-gray-700">Location</span>
-                <p className="text-gray-900 mt-1">{application.location}</p>
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                <span>{application.location}</span>
               </div>
             )}
 
@@ -147,7 +143,7 @@ export function ApplicationOverviewTab({ application, company }: OverviewTabProp
       {/* Recruiter Information */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="w-full  flex items-center justify-between">
             <CardTitle>Recruiter Information</CardTitle>
             <Button
               variant="outline"

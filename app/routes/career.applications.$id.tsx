@@ -1,13 +1,4 @@
-import { and, eq } from 'drizzle-orm'
-import {
-  Briefcase,
-  Calendar,
-  ChevronLeft,
-  DollarSign,
-  MessageSquare,
-  Paperclip,
-  TrendingUp,
-} from 'lucide-react'
+import { Briefcase, Calendar, ChevronLeft, MessageSquare, Paperclip, UserPlus } from 'lucide-react'
 import { useState } from 'react'
 import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
 import { Link, useActionData, useFetcher, useLoaderData, useParams } from 'react-router'
@@ -16,26 +7,21 @@ import {
   ApplicationNotesTab,
   ApplicationOverviewTab,
   ApplicationTimelineTab,
+  QuickActionsDropdown,
 } from '~/components/career'
-import { Button } from '~/components/ui/button'
-import { db } from '~/lib/db'
 import type {
   ApplicationWithRelations,
   InterviewEntry,
   JobApplicationUpdate,
 } from '~/lib/db/schema'
-import { applicationNotes, companies, jobApplications } from '~/lib/db/schema'
 import {
   createErrorResponse,
   createSuccessResponse,
   withAuthAction,
   withAuthLoader,
 } from '~/lib/route-utils'
-import {
-  formatApplicationDate,
-  formatStatusText,
-  getStatusColor,
-} from '~/lib/utils/applicationUtils'
+import { JobApplicationsService } from '~/lib/services/job-applications.service'
+import { formatStatusText, getStatusColor } from '~/lib/utils/applicationUtils'
 
 export async function loader(args: LoaderFunctionArgs) {
   return withAuthLoader(args, async ({ user }) => {
@@ -46,67 +32,13 @@ export async function loader(args: LoaderFunctionArgs) {
     }
 
     try {
-      // Fetch application with company details
-      const applicationData = await db
-        .select({
-          // Application fields
-          id: jobApplications.id,
-          userId: jobApplications.userId,
-          position: jobApplications.position,
-          status: jobApplications.status,
-          startDate: jobApplications.startDate,
-          endDate: jobApplications.endDate,
-          location: jobApplications.location,
-          jobPosting: jobApplications.jobPosting,
-          salaryQuoted: jobApplications.salaryQuoted,
-          salaryAccepted: jobApplications.salaryAccepted,
-          coverLetter: jobApplications.coverLetter,
-          resume: jobApplications.resume,
-          phoneScreen: jobApplications.phoneScreen,
-          reference: jobApplications.reference,
-          interviewDates: jobApplications.interviewDates,
-          companyNotes: jobApplications.companyNotes,
-          negotiationNotes: jobApplications.negotiationNotes,
-          recruiterName: jobApplications.recruiterName,
-          recruiterEmail: jobApplications.recruiterEmail,
-          recruiterLinkedin: jobApplications.recruiterLinkedin,
-          stages: jobApplications.stages,
-          createdAt: jobApplications.createdAt,
-          updatedAt: jobApplications.updatedAt,
-          // Company fields
-          company: {
-            id: companies.id,
-            name: companies.name,
-            website: companies.website,
-            industry: companies.industry,
-            size: companies.size,
-            location: companies.location,
-            description: companies.description,
-          },
-        })
-        .from(jobApplications)
-        .leftJoin(companies, eq(jobApplications.companyId, companies.id))
-        .where(and(eq(jobApplications.id, id), eq(jobApplications.userId, user.id)))
-        .limit(1)
-
-      if (!applicationData.length) {
-        return createErrorResponse('Application not found')
-      }
-
-      // Fetch notes
-      const notes = await db
-        .select()
-        .from(applicationNotes)
-        .where(eq(applicationNotes.applicationId, id))
-        .orderBy(applicationNotes.createdAt)
-
-      return createSuccessResponse({
-        application: applicationData[0],
-        notes,
-        files: [], // TODO: Implement files when file upload is ready
-      })
+      const data = await JobApplicationsService.getApplicationDetail(id, user.id)
+      return createSuccessResponse(data)
     } catch (error) {
       console.error('Error fetching application details:', error)
+      if (error instanceof Error && error.message === 'Application not found') {
+        return createErrorResponse('Application not found')
+      }
       return createErrorResponse('Failed to fetch application details')
     }
   })
@@ -124,13 +56,8 @@ export async function action(args: ActionFunctionArgs) {
 
     try {
       // Verify ownership
-      const application = await db
-        .select()
-        .from(jobApplications)
-        .where(and(eq(jobApplications.id, id), eq(jobApplications.userId, user.id)))
-        .limit(1)
-
-      if (!application.length) {
+      const hasOwnership = await JobApplicationsService.verifyOwnership(id, user.id)
+      if (!hasOwnership) {
         return createErrorResponse('Application not found or access denied')
       }
 
@@ -159,12 +86,7 @@ export async function action(args: ActionFunctionArgs) {
           }
         }
 
-        if (Object.keys(updates).length > 0) {
-          updates.updatedAt = new Date()
-
-          await db.update(jobApplications).set(updates).where(eq(jobApplications.id, id))
-        }
-
+        await JobApplicationsService.updateApplication(id, updates)
         return createSuccessResponse(null, 'Application updated successfully')
       }
 
@@ -177,21 +99,13 @@ export async function action(args: ActionFunctionArgs) {
           return createErrorResponse('Note content is required')
         }
 
-        await db.insert(applicationNotes).values({
-          applicationId: id,
-          type: type || 'general',
-          title: title || null,
-          content,
-        })
-
+        await JobApplicationsService.addNote(id, type, title, content)
         return createSuccessResponse(null, 'Note added successfully')
       }
 
       if (operation === 'delete_note') {
         const noteId = formData.get('noteId') as string
-
-        await db.delete(applicationNotes).where(eq(applicationNotes.id, noteId))
-
+        await JobApplicationsService.deleteNote(noteId)
         return createSuccessResponse(null, 'Note deleted successfully')
       }
 
@@ -205,7 +119,6 @@ export async function action(args: ActionFunctionArgs) {
           return createErrorResponse('Interview date is required')
         }
 
-        const currentInterviews = application[0].interviewDates || []
         const newInterview: InterviewEntry = {
           type: interviewType,
           date: interviewDate,
@@ -213,14 +126,7 @@ export async function action(args: ActionFunctionArgs) {
           notes: notes || undefined,
         }
 
-        await db
-          .update(jobApplications)
-          .set({
-            interviewDates: [...currentInterviews, newInterview],
-            updatedAt: new Date(),
-          })
-          .where(eq(jobApplications.id, id))
-
+        await JobApplicationsService.addInterview(id, newInterview)
         return createSuccessResponse(null, 'Interview added successfully')
       }
 
@@ -239,6 +145,9 @@ export default function ApplicationDetail() {
   const fetcher = useFetcher()
   type TabId = 'overview' | 'timeline' | 'notes' | 'files'
   const [activeTab, setActiveTab] = useState<TabId>('overview')
+  const [showStatusUpdate, setShowStatusUpdate] = useState(false)
+  const [showAddNote, setShowAddNote] = useState(false)
+  const [showAddInterview, setShowAddInterview] = useState(false)
 
   if (!loaderData.success || !loaderData.data) {
     return (
@@ -272,6 +181,33 @@ export default function ApplicationDetail() {
     { id: 'files', label: 'Files', icon: Paperclip },
   ]
 
+  const quickActions = [
+    {
+      id: 'update-status',
+      label: 'Update Status',
+      icon: () => <span className="w-2 h-2 bg-blue-500 rounded-full" />,
+      onClick: () => setShowStatusUpdate(true),
+    },
+    {
+      id: 'add-note',
+      label: 'Add Note',
+      icon: MessageSquare,
+      onClick: () => setShowAddNote(true),
+    },
+    {
+      id: 'add-interview',
+      label: 'Add Interview',
+      icon: UserPlus,
+      onClick: () => setShowAddInterview(true),
+    },
+    {
+      id: 'view-timeline',
+      label: 'View Timeline',
+      icon: Calendar,
+      onClick: () => setActiveTab('timeline'),
+    },
+  ]
+
   return (
     <div className="space-y-6 p-4">
       {/* Header */}
@@ -286,10 +222,10 @@ export default function ApplicationDetail() {
       </header>
 
       {/* Application Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{application.position}</h1>
-          <p className="text-xl text-gray-600">{company?.name}</p>
+          <h1 className="text-lg md:text-xl font-bold text-gray-900">{application.position}</h1>
+          <p className="text-sm md:text-base text-gray-600">{company?.name}</p>
         </div>
         <div className="flex items-center gap-3">
           <span
@@ -297,36 +233,8 @@ export default function ApplicationDetail() {
           >
             {formatStatusText(application.status)}
           </span>
-          <Button variant="outline" size="sm">
-            Quick Actions
-          </Button>
+          <QuickActionsDropdown actions={quickActions} />
         </div>
-      </div>
-
-      {/* Quick Info Bar */}
-      <div className="flex flex-wrap gap-6 text-sm text-gray-600">
-        <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4" />
-          <span>Applied: {formatApplicationDate(application.startDate)}</span>
-        </div>
-        {application.location && (
-          <div className="flex items-center gap-2">
-            <span>📍</span>
-            <span>{application.location}</span>
-          </div>
-        )}
-        {application.salaryQuoted && (
-          <div className="flex items-center gap-2">
-            <DollarSign className="h-4 w-4" />
-            <span>{application.salaryQuoted}</span>
-          </div>
-        )}
-        {application.source && (
-          <div className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
-            <span>Source: {application.source}</span>
-          </div>
-        )}
       </div>
 
       {/* Tabs */}

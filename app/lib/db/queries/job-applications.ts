@@ -340,7 +340,7 @@ export async function getAllApplicationsWithCompany(
 
   // Build where conditions
   const conditions = [eq(jobApplications.userId, userId)]
-  
+
   if (filter) {
     if (filter.status) {
       conditions.push(eq(jobApplications.status, filter.status))
@@ -362,7 +362,7 @@ export async function getAllApplicationsWithCompany(
       // For now, skip to avoid TypeScript complexity
     }
     if (filter.salaryMax) {
-      // Note: Salary filtering can be added later when needed  
+      // Note: Salary filtering can be added later when needed
       // For now, skip to avoid TypeScript complexity
     }
   }
@@ -370,7 +370,7 @@ export async function getAllApplicationsWithCompany(
   // Create ordering SQL
   const orderColumn = pagination?.orderBy || 'applicationDate'
   const orderDirection = pagination?.orderDirection === 'asc' ? asc : desc
-  
+
   let orderBySql: ReturnType<typeof asc | typeof desc>
   switch (orderColumn) {
     case 'applicationDate':
@@ -452,7 +452,9 @@ export async function getAllApplicationsWithCompany(
  * Helper function to get job application metrics for a user
  * This function fetches applications and then computes metrics
  */
-export async function getJobApplicationMetricsForUser(userId: string): Promise<JobApplicationMetrics> {
+export async function getJobApplicationMetricsForUser(
+  userId: string
+): Promise<JobApplicationMetrics> {
   const applicationsResult = await getUserJobApplications(userId)
   const applications = extractJobApplications(applicationsResult)
   return getJobApplicationMetrics(applications)

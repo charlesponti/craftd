@@ -8,8 +8,6 @@ export async function createClient() {
     throw new Error('Supabase client requires browser environment and ENV variables')
   }
 
-  console.log({ env: import.meta.env })
-
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     throw new Error('Missing Supabase environment variables')
   }

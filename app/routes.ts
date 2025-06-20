@@ -5,6 +5,8 @@ export default [
   route('/login', 'routes/login.tsx'),
   route('/account', 'routes/account.tsx'),
   route('/health', 'routes/health.ts'),
+  route('/api/applications/create', 'routes/api.applications.create.ts'),
+  route('/api/job/scrape', 'routes/api.job.scrape.ts'),
   route('/api/portfolio/:userId', 'routes/api.portfolio.$userId.ts'),
   route('/api/resume/convert', 'routes/api.resume.convert.ts'),
   route('/api/validate-slug', 'routes/api.validate-slug.ts'),
@@ -23,7 +25,7 @@ export default [
   route('/onboarding/complete', 'routes/onboarding.complete.tsx'),
   route('/demo', 'routes/demo.tsx'),
   route('/api/resume/customize', 'routes/api.resume.customize.ts'),
-  route('/resume/custom', 'routes/resume-customizer.tsx'),
+  route('/resume/custom', 'routes/resume.custom.tsx'),
   route('/p/:slug', 'routes/p.$slug.tsx'),
   layout('routes/editor.tsx', [
     route('/editor', 'routes/editor.basic.tsx'),

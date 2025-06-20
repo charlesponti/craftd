@@ -317,15 +317,13 @@ export default function CareerApplications() {
         <ApplicationsMetrics metrics={metrics} />
 
         {/* All Applications */}
-        <div className="bg-white shadow-lg rounded-lg border border-gray-200 p-0">
-          <ApplicationTable
-            applications={applications}
-            pagination={pagination}
-            filters={filters}
-            emptyTitle="No applications found"
-            emptyDescription="Start tracking your job applications to see them here"
-          />
-        </div>
+        <ApplicationTable
+          applications={applications}
+          pagination={pagination}
+          filters={filters}
+          emptyTitle="No applications found"
+          emptyDescription="Start tracking your job applications to see them here"
+        />
       </div>
     </div>
   )

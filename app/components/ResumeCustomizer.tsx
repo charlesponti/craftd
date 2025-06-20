@@ -32,6 +32,8 @@ interface ResumeCustomizerProps {
 
 export function ResumeCustomizer({ applicationId, initialJobPosting = '' }: ResumeCustomizerProps) {
   const [jobPosting, setJobPosting] = useState(initialJobPosting)
+  const [jobPostingUrl, setJobPostingUrl] = useState('')
+  const [inputMethod, setInputMethod] = useState<'text' | 'url'>('text')
   const [resumeFormat, setResumeFormat] = useState<
     'professional' | 'modern' | 'technical' | 'executive'
   >('professional')
@@ -43,8 +45,13 @@ export function ResumeCustomizer({ applicationId, initialJobPosting = '' }: Resu
   const [isFormCollapsed, setIsFormCollapsed] = useState(false)
 
   const handleGenerate = async () => {
-    if (!jobPosting.trim()) {
+    if (inputMethod === 'text' && !jobPosting.trim()) {
       setError('Please paste the job posting content')
+      return
+    }
+
+    if (inputMethod === 'url' && !jobPostingUrl.trim()) {
+      setError('Please enter a job posting URL')
       return
     }
 
@@ -53,22 +60,36 @@ export function ResumeCustomizer({ applicationId, initialJobPosting = '' }: Resu
     setResult(null)
 
     try {
+      const requestBody: {
+        resumeFormat: typeof resumeFormat
+        targetLength: typeof targetLength
+        focusAreas: string[]
+        jobPosting?: string
+        jobPostingUrl?: string
+      } = {
+        resumeFormat,
+        targetLength,
+        focusAreas: focusAreas
+          ? focusAreas
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [],
+      }
+
+      // Add the appropriate field based on input method
+      if (inputMethod === 'text') {
+        requestBody.jobPosting = jobPosting.trim()
+      } else {
+        requestBody.jobPostingUrl = jobPostingUrl.trim()
+      }
+
       const response = await fetch('/api/resume/customize', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          jobPosting: jobPosting.trim(),
-          resumeFormat,
-          targetLength,
-          focusAreas: focusAreas
-            ? focusAreas
-                .split(',')
-                .map((s) => s.trim())
-                .filter(Boolean)
-            : [],
-        }),
+        body: JSON.stringify(requestBody),
       })
 
       const data = await response.json()
@@ -172,20 +193,71 @@ export function ResumeCustomizer({ applicationId, initialJobPosting = '' }: Resu
         <CardContent
           className={`space-y-4 transition-all duration-300 ${isFormCollapsed ? 'hidden' : 'block'}`}
         >
+          {/* Input Method Toggle */}
           <div>
-            <label htmlFor="jobPosting" className="block text-sm font-medium text-gray-700 mb-2">
-              Job Posting Content *
+            <label htmlFor="inputMethod" className="block text-sm font-medium text-gray-700 mb-2">
+              Input Method
             </label>
-            <textarea
-              id="jobPosting"
-              value={jobPosting}
-              onChange={(e) => setJobPosting(e.target.value)}
-              placeholder="Paste the complete job posting here..."
-              rows={8}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={isGenerating}
-            />
+            <div className="flex gap-2" id="inputMethod">
+              <Button
+                type="button"
+                variant={inputMethod === 'text' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setInputMethod('text')}
+                disabled={isGenerating}
+              >
+                Paste Text
+              </Button>
+              <Button
+                type="button"
+                variant={inputMethod === 'url' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setInputMethod('url')}
+                disabled={isGenerating}
+              >
+                Job Posting URL
+              </Button>
+            </div>
           </div>
+
+          {/* Job Posting Input */}
+          {inputMethod === 'text' ? (
+            <div>
+              <label htmlFor="jobPosting" className="block text-sm font-medium text-gray-700 mb-2">
+                Job Posting Content *
+              </label>
+              <textarea
+                id="jobPosting"
+                value={jobPosting}
+                onChange={(e) => setJobPosting(e.target.value)}
+                placeholder="Paste the complete job posting here..."
+                rows={8}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isGenerating}
+              />
+            </div>
+          ) : (
+            <div>
+              <label
+                htmlFor="jobPostingUrl"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Job Posting URL *
+              </label>
+              <Input
+                id="jobPostingUrl"
+                type="url"
+                value={jobPostingUrl}
+                onChange={(e) => setJobPostingUrl(e.target.value)}
+                placeholder="https://example.com/job-posting/123"
+                disabled={isGenerating}
+                className="w-full"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                We'll automatically scrape and extract the job posting content from the URL
+              </p>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -244,14 +316,20 @@ export function ResumeCustomizer({ applicationId, initialJobPosting = '' }: Resu
 
           <Button
             onClick={handleGenerate}
-            disabled={isGenerating || !jobPosting.trim()}
+            disabled={
+              isGenerating || (inputMethod === 'text' ? !jobPosting.trim() : !jobPostingUrl.trim())
+            }
             className="w-full"
           >
             {isGenerating ? (
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Generating Customized Resume...
+                {inputMethod === 'url'
+                  ? 'Scraping Job Posting...'
+                  : 'Generating Customized Resume...'}
               </div>
+            ) : inputMethod === 'url' ? (
+              'Scrape & Generate Resume'
             ) : (
               'Generate Customized Resume'
             )}

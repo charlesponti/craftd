@@ -71,22 +71,12 @@ export function ApplicationsMetrics({ metrics }: ApplicationsMetricsProps) {
     <div className="bg-white shadow-lg rounded-lg border border-gray-200">
       {/* Header - Always Visible */}
       <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900 font-serif">Performance Insights</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              {metrics.totalApplications} applications tracked
-              {hasSalaryData && ' • Salary data available'}
-            </p>
-          </div>
+        <div className="flex items-center justify-end">
           <button
             type="button"
             onClick={() => setIsExpanded(!isExpanded)}
             className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           >
-            <span className="text-sm font-medium text-gray-700 mr-2">
-              {isExpanded ? 'Collapse' : 'View Details'}
-            </span>
             {isExpanded ? (
               <ChevronUpIcon className="h-4 w-4 text-gray-500" />
             ) : (

@@ -52,14 +52,20 @@ export function formatApplicationSalary(salary: number | string | null | undefin
  * Extract unique statuses from applications array
  */
 export function getUniqueStatuses(applications: Array<{ status: string }>): string[] {
-  return Array.from(new Set(applications.map(app => app.status))).sort()
+  return Array.from(new Set(applications.map((app) => app.status))).sort()
 }
 
 /**
  * Extract unique sources from applications array, filtering out null/undefined values
  */
-export function getUniqueSources(applications: Array<{ source?: string | null | undefined }>): string[] {
-  return Array.from(new Set(applications.map(app => app.source).filter((source): source is string => Boolean(source)))).sort()
+export function getUniqueSources(
+  applications: Array<{ source?: string | null | undefined }>
+): string[] {
+  return Array.from(
+    new Set(
+      applications.map((app) => app.source).filter((source): source is string => Boolean(source))
+    )
+  ).sort()
 }
 
 /**

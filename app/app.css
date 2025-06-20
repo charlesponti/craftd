@@ -1,7 +1,6 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
-
 @utility input {
   @apply w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-0 focus:border-2 focus:border-blue-500;
 }
@@ -17,7 +16,6 @@
 @utility table-header {
   @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider;
 }
-
 
 @layer components {
   .btn-primary {

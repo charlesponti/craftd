@@ -2,6 +2,7 @@ import { openai } from '@ai-sdk/openai'
 import { generateObject, generateText } from 'ai'
 import type { ActionFunction } from 'react-router'
 import { z } from 'zod'
+import { jobScrapingService } from '~/lib/services/job-scraping.service'
 import { getAuthenticatedUser, requireAuth } from '../lib/auth.server'
 import { getFullUserPortfolio } from '../lib/portfolio.server'
 import { formatPortfolioForLLM } from '../lib/utils/portfolio-formatter'
@@ -10,7 +11,21 @@ const model = openai('gpt-4o')
 
 // Input validation schema
 const customizeResumeSchema = z.object({
-  jobPosting: z.string().min(100, 'Job posting must be at least 100 characters'),
+  jobPosting: z.string().min(100, 'Job posting must be at least 100 characters').optional(),
+  jobPostingUrl: z.string().url('Invalid job posting URL').optional(),
+  jobPostingData: z
+    .object({
+      jobTitle: z.string(),
+      companyName: z.string(),
+      jobDescription: z.string(),
+      requirements: z.array(z.string()),
+      skills: z.array(z.string()),
+      fullText: z.string(),
+      url: z.string(),
+      scrapedAt: z.string(),
+      wordCount: z.number(),
+    })
+    .optional(),
   resumeFormat: z
     .enum(['professional', 'modern', 'technical', 'executive'])
     .default('professional'),
@@ -60,7 +75,68 @@ export const action: ActionFunction = async ({ request }) => {
       )
     }
 
-    const { jobPosting, resumeFormat, focusAreas, targetLength } = validation.data
+    const { jobPosting, jobPostingUrl, jobPostingData, resumeFormat, focusAreas, targetLength } =
+      validation.data
+
+    // Handle job posting input - either direct text, URL to scrape, or structured data
+    let finalJobPosting: string
+    let jobPostingSource: 'text' | 'scraped' | 'structured' = 'text'
+    let jobPostingMetadata: {
+      jobTitle?: string
+      companyName?: string
+      requirements?: string[]
+      skills?: string[]
+    } = {}
+
+    if (jobPostingData) {
+      // Use provided structured job posting data
+      finalJobPosting = jobPostingData.fullText
+      jobPostingSource = 'structured'
+      jobPostingMetadata = {
+        jobTitle: jobPostingData.jobTitle,
+        companyName: jobPostingData.companyName,
+        requirements: jobPostingData.requirements,
+        skills: jobPostingData.skills,
+      }
+    } else if (jobPostingUrl) {
+      const scrapingResult = await jobScrapingService.scrapeAndValidateJobPosting(jobPostingUrl)
+
+      if (!scrapingResult.success || !scrapingResult.jobPosting) {
+        return new Response(
+          JSON.stringify({
+            error: scrapingResult.error || 'Failed to scrape job posting',
+            success: false,
+          }),
+          {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          }
+        )
+      }
+
+      finalJobPosting = scrapingResult.jobPosting.fullText
+      jobPostingSource = 'scraped'
+      jobPostingMetadata = {
+        jobTitle: scrapingResult.jobPosting.jobTitle,
+        companyName: scrapingResult.jobPosting.companyName,
+        requirements: scrapingResult.jobPosting.requirements,
+        skills: scrapingResult.jobPosting.skills,
+      }
+    } else if (jobPosting) {
+      // Use provided job posting text
+      finalJobPosting = jobPosting
+    } else {
+      return new Response(
+        JSON.stringify({
+          error: 'Either jobPosting, jobPostingUrl, or jobPostingData must be provided',
+          success: false,
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      )
+    }
 
     // Fetch user's portfolio data
     const portfolio = await getFullUserPortfolio(user.id)
@@ -99,7 +175,7 @@ ${focusAreas.length > 0 ? `Focus Areas: ${focusAreas.join(', ')}` : ''}
 Return a complete, professional resume in markdown format that is specifically tailored to this job opportunity.`
 
     const userPrompt = `JOB POSTING:
-${jobPosting}
+${finalJobPosting}
 
 USER PORTFOLIO DATA:
 ${portfolioContext}
@@ -123,7 +199,7 @@ Please create a customized resume that highlights the most relevant experience a
         'You are an expert job posting analyzer. Analyze the job posting to extract key information that will help optimize a resume for this position.',
       prompt: `Analyze this job posting and extract the most important information:
 
-${jobPosting}`,
+${finalJobPosting}`,
       temperature: 0.1,
     })
 
@@ -146,6 +222,10 @@ ${jobPosting}`,
         focusAreas,
         generatedAt: new Date().toISOString(),
         portfolioId: portfolio.id,
+        jobPostingSource,
+        jobPostingUrl: jobPostingUrl || null,
+        jobPostingWordCount: finalJobPosting.split(/\s+/).length,
+        jobPostingMetadata,
       },
     }
 

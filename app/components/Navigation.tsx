@@ -190,7 +190,7 @@ export default function Navigation() {
             {/* User Menu or Sign In */}
             <div className="flex items-center gap-2">
               {user ? (
-                <div className="hidden md:flex items-center gap-md">
+                <div className="hidden md:flex items-center gap-4">
                   {AUTH_LINKS.authenticated.map((link) => (
                     <NavLink
                       key={link.href}

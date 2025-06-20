@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
-    formatApplicationDate,
-    formatApplicationSalary,
-    formatStatusText,
-    getCompanyName,
-    getStatusColor,
-    getUniqueSources,
-    getUniqueStatuses,
-    hasActiveFilters,
+  formatApplicationDate,
+  formatApplicationSalary,
+  formatStatusText,
+  getCompanyName,
+  getStatusColor,
+  getUniqueSources,
+  getUniqueStatuses,
+  hasActiveFilters,
 } from '../applicationUtils'
 
 // Mock the utils module
@@ -105,7 +105,7 @@ describe('Application Utils', () => {
         { status: 'OFFER' },
         { status: 'INTERVIEW' },
       ]
-      
+
       const result = getUniqueStatuses(applications)
       expect(result).toEqual(['APPLIED', 'INTERVIEW', 'OFFER'])
     })
@@ -130,7 +130,7 @@ describe('Application Utils', () => {
         { source: undefined },
         { source: 'Company Website' },
       ]
-      
+
       const result = getUniqueSources(applications)
       expect(result).toEqual(['Company Website', 'Indeed', 'LinkedIn'])
     })
@@ -140,10 +140,7 @@ describe('Application Utils', () => {
     })
 
     it('should filter out null and undefined values', () => {
-      const applications = [
-        { source: null },
-        { source: undefined },
-      ]
+      const applications = [{ source: null }, { source: undefined }]
       expect(getUniqueSources(applications)).toEqual([])
     })
   })
@@ -168,11 +165,13 @@ describe('Application Utils', () => {
     })
 
     it('should return true when multiple filters are active', () => {
-      expect(hasActiveFilters({
-        search: 'engineer',
-        statuses: ['APPLIED'],
-        source: 'LinkedIn'
-      })).toBe(true)
+      expect(
+        hasActiveFilters({
+          search: 'engineer',
+          statuses: ['APPLIED'],
+          source: 'LinkedIn',
+        })
+      ).toBe(true)
     })
   })
 

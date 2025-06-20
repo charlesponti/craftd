@@ -3,6 +3,8 @@ import { z } from 'zod'
 // Server-only environment variables (never sent to client)
 const serverEnvSchema = z.object({
   VITE_DATABASE_URL: z.string().url(),
+  VITE_CLOUDFLARE_ACCOUNT_ID: z.string().min(1).optional(),
+  VITE_CLOUDFLARE_API_TOKEN: z.string().min(1).optional(),
 })
 
 // Client-accessible environment variables (prefixed with VITE_PUBLIC_)
@@ -49,6 +51,8 @@ function getEnvironmentVariables(): ClientEnv | ServerEnv {
       VITE_DATABASE_URL: process.env.VITE_DATABASE_URL || process.env.DATABASE_URL,
       VITE_PUBLIC_SUPABASE_URL: process.env.VITE_PUBLIC_SUPABASE_URL,
       VITE_PUBLIC_SUPABASE_ANON_KEY: process.env.VITE_PUBLIC_SUPABASE_ANON_KEY,
+      VITE_CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
+      VITE_CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
     })
   }
 
@@ -61,6 +65,8 @@ function getEnvironmentVariables(): ClientEnv | ServerEnv {
     VITE_PUBLIC_SUPABASE_URL: envSource.VITE_PUBLIC_SUPABASE_URL || envSource.SUPABASE_URL,
     VITE_PUBLIC_SUPABASE_ANON_KEY:
       envSource.VITE_PUBLIC_SUPABASE_ANON_KEY || envSource.SUPABASE_ANON_KEY,
+    VITE_CLOUDFLARE_ACCOUNT_ID: envSource.VITE_CLOUDFLARE_ACCOUNT_ID,
+    VITE_CLOUDFLARE_API_TOKEN: envSource.VITE_CLOUDFLARE_API_TOKEN,
   })
 }
 

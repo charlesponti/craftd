@@ -9,15 +9,11 @@ import {
 } from 'react-router'
 
 import { ApplicationTable } from '~/components/career/ApplicationTable'
-import { ApplicationsMetrics } from '~/components/career/ApplicationsMetrics'
+import { ApplicationsHeatmap } from '~/components/career/ApplicationsHeatmap'
 
 import { useToast } from '~/hooks/useToast'
 import { db } from '~/lib/db'
-import { extractJobApplications, getUserJobApplications } from '~/lib/db/queries/base'
-import {
-  getAllApplicationsWithCompany,
-  getJobApplicationMetrics,
-} from '~/lib/db/queries/job-applications'
+import { getAllApplicationsWithCompany } from '~/lib/db/queries/job-applications'
 import { companies, jobApplications } from '~/lib/db/schema'
 import {
   createErrorResponse,
@@ -62,28 +58,21 @@ export async function loader(args: LoaderFunctionArgs) {
         orderDirection: (searchParams.get('orderDirection') as 'asc' | 'desc') || 'desc',
       }
 
+      // Get all applications for the heatmap
+      const allApplications = await getAllApplicationsWithCompany(user.id)
+
       // Get applications with company data using server-side filtering/pagination
       const paginatedApplications = await getAllApplicationsWithCompany(user.id, filter, pagination)
 
-      // Get total count for pagination (without filters for now, we can optimize this later)
-      const allApplicationsForMetrics = await getAllApplicationsWithCompany(user.id)
-
-      // Get job applications for metrics calculation
-      const applicationsResult = await getUserJobApplications(user.id)
-      const applications = extractJobApplications(applicationsResult)
-
-      // Calculate metrics from the applications
-      const metrics = await getJobApplicationMetrics(applications)
-
       return createSuccessResponse({
         user,
-        metrics,
+        allApplications,
         applications: paginatedApplications,
         pagination: {
           page,
           limit,
-          total: allApplicationsForMetrics.length,
-          totalPages: Math.ceil(allApplicationsForMetrics.length / limit),
+          total: allApplications.length,
+          totalPages: Math.ceil(allApplications.length / limit),
         },
         filters: {
           search: searchQuery,
@@ -95,24 +84,7 @@ export async function loader(args: LoaderFunctionArgs) {
       console.error('Error loading job applications data:', error)
       return createSuccessResponse({
         user,
-        metrics: {
-          totalApplications: 0,
-          responseRate: 0,
-          interviewRate: 0,
-          offerRate: 0,
-          acceptanceRate: 0,
-          averageTimeToResponse: 0,
-          averageTimeToOffer: 0,
-          averageTimeToDecision: 0,
-          salaryMetrics: {
-            averageOffered: 0,
-            averageAccepted: 0,
-            negotiationSuccessRate: 0,
-            averageNegotiationIncrease: 0,
-          },
-          sourceMetrics: [],
-          statusBreakdown: [],
-        },
+        allApplications: [],
         applications: [],
         pagination: {
           page: 1,
@@ -279,28 +251,7 @@ export default function CareerApplications() {
     )
   }
 
-  const { metrics, applications, pagination, filters } = loaderData.data
-
-  if (!metrics) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-blue-800 mb-2 font-serif">
-              No Data Available
-            </h2>
-            <p className="text-blue-700 font-sans">
-              Start tracking your job applications to see analytics here.
-            </p>
-            <Link to="/career/applications/create" className="btn-primary">
-              <PlusIcon className="size-4" />
-              Add Application
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  const { allApplications, applications, pagination, filters } = loaderData.data
 
   return (
     <div className="space-y-8 px-2 sm:px-0">
@@ -310,11 +261,15 @@ export default function CareerApplications() {
           <div>
             <h1 className="text-3xl font-bold leading-tight text-gray-900">Job Applications</h1>
           </div>
+          <Link to="/career/applications/create" className="btn-primary">
+            <PlusIcon className="size-4" />
+            Add Application
+          </Link>
         </div>
       </div>
       <div className="space-y-8">
-        {/* Performance Metrics */}
-        <ApplicationsMetrics metrics={metrics} />
+        {/* Application Activity Heatmap */}
+        <ApplicationsHeatmap applications={allApplications} />
 
         {/* All Applications */}
         <ApplicationTable

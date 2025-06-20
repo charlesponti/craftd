@@ -28,17 +28,19 @@ export function getButtonClasses({
   disabled?: boolean
 }) {
   return clsx(
-    'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+    'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none',
     {
-      'bg-gray-900 text-white hover:bg-gray-800': variant === 'default',
-      'bg-blue-600 text-white hover:bg-blue-700 shadow-sm': variant === 'primary',
-      'bg-gray-100 text-gray-900 hover:bg-gray-200 border border-gray-200': variant === 'secondary',
-      'border border-gray-300 bg-white hover:bg-gray-50': variant === 'outline',
-      'hover:bg-gray-100': variant === 'ghost',
-      'bg-red-600 text-white hover:bg-red-700': variant === 'destructive' || variant === 'error',
-      'bg-green-600 text-white hover:bg-green-700': variant === 'success',
-      'bg-yellow-500 text-white hover:bg-yellow-600': variant === 'warning',
-      'opacity-50 pointer-events-none bg-gray-200 !text-black': disabled,
+      'bg-gray-900 text-white hover:bg-gray-800': variant === 'default' && !disabled,
+      'bg-blue-600 text-white hover:bg-blue-700 shadow-sm': variant === 'primary' && !disabled,
+      'bg-gray-100 text-gray-900 hover:bg-gray-200 border border-gray-200':
+        variant === 'secondary' && !disabled,
+      'border border-gray-300 bg-white hover:bg-gray-50': variant === 'outline' && !disabled,
+      'hover:bg-gray-100': variant === 'ghost' && !disabled,
+      'bg-red-600 text-white hover:bg-red-700':
+        (variant === 'destructive' || variant === 'error') && !disabled,
+      'bg-green-600 text-white hover:bg-green-700': variant === 'success' && !disabled,
+      'bg-yellow-500 text-white hover:bg-yellow-600': variant === 'warning' && !disabled,
+      'bg-gray-200 text-gray-500 cursor-not-allowed': disabled,
     },
     {
       'h-8 px-2 py-1 text-xs': size === 'xs',

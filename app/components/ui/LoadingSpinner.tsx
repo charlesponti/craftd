@@ -1,3 +1,5 @@
+import { clsx } from 'clsx'
+
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg'
   message?: string
@@ -10,23 +12,40 @@ const sizeClasses = {
   lg: 'w-8 h-8',
 }
 
-export function LoadingSpinner({ size = 'md', message, className = '' }: LoadingSpinnerProps) {
+export function LoadingSpinner({
+  size = 'md',
+  className,
+}: {
+  size?: 'sm' | 'md' | 'lg'
+  className?: string
+}) {
   return (
-    <div className={`flex items-center justify-center ${className}`}>
-      <div className="text-center">
-        <div
-          className={`${sizeClasses[size]} border-2 border-gray-200 border-t-blue-600 rounded-full animate-spin mx-auto`}
-        />
-        {message && <p className="text-gray-600 mt-2 text-sm">{message}</p>}
-      </div>
-    </div>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={clsx('animate-spin', className, {
+        'h-4 w-4': size === 'sm',
+        'h-6 w-6': size === 'md',
+        'h-8 w-8': size === 'lg',
+      })}
+    >
+      <title>Loading...</title>
+      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+    </svg>
   )
 }
 
 export function FullPageLoader({ message = 'Loading...' }: { message?: string }) {
   return (
     <div className="flex items-center justify-center">
-      <LoadingSpinner size="lg" message={message} />
+      <LoadingSpinner size="lg" />
     </div>
   )
 }
@@ -34,7 +53,7 @@ export function FullPageLoader({ message = 'Loading...' }: { message?: string })
 export function InlineLoader({ message }: { message?: string }) {
   return (
     <div className="bg-white shadow rounded-lg p-6 text-center">
-      <LoadingSpinner size="md" message={message} />
+      <LoadingSpinner size="md" />
     </div>
   )
 }

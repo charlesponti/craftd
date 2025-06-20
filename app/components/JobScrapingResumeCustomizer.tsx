@@ -36,7 +36,15 @@ interface CustomizeResumeResponse {
 
 type Step = 'scrape' | 'review' | 'generate' | 'result'
 
-export function JobScrapingResumeCustomizer() {
+interface JobScrapingResumeCustomizerProps {
+  onScrapedData?: (data: JobPosting) => void
+  showResumeGeneration?: boolean
+}
+
+export function JobScrapingResumeCustomizer({
+  onScrapedData,
+  showResumeGeneration = true,
+}: JobScrapingResumeCustomizerProps) {
   const [step, setStep] = useState<Step>('scrape')
   const [jobUrl, setJobUrl] = useState('')
   const [isScraping, setIsScraping] = useState(false)
@@ -88,7 +96,11 @@ export function JobScrapingResumeCustomizer() {
 
       if (data.jobPosting) {
         setScrapedJob(data.jobPosting)
-        setStep('review')
+        if (onScrapedData) {
+          onScrapedData(data.jobPosting)
+        } else {
+          setStep('review')
+        }
       } else {
         throw new Error('No job posting data received')
       }
@@ -204,55 +216,57 @@ export function JobScrapingResumeCustomizer() {
   return (
     <div className="space-y-12">
       {/* Step Indicator */}
-      <div className="flex items-center justify-center space-x-8">
-        <div
-          className={`flex items-center space-x-3 ${step === 'scrape' ? 'text-black' : 'text-gray-400'}`}
-        >
+      {showResumeGeneration && (
+        <div className="flex items-center justify-center space-x-8">
           <div
-            className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${step === 'scrape' ? 'border-black bg-black text-white' : 'border-gray-300'}`}
+            className={`flex items-center space-x-3 ${step === 'scrape' ? 'text-black' : 'text-gray-400'}`}
           >
-            <span className="text-sm font-medium">1</span>
+            <div
+              className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${step === 'scrape' ? 'border-black bg-black text-white' : 'border-gray-300'}`}
+            >
+              <span className="text-sm font-medium">1</span>
+            </div>
+            <span className="text-sm font-medium">Scrape</span>
           </div>
-          <span className="text-sm font-medium">Scrape</span>
-        </div>
-        <div
-          className={`w-12 h-px ${step === 'review' || step === 'generate' || step === 'result' ? 'bg-black' : 'bg-gray-300'}`}
-        />
-        <div
-          className={`flex items-center space-x-3 ${step === 'review' ? 'text-black' : step === 'generate' || step === 'result' ? 'text-black' : 'text-gray-400'}`}
-        >
           <div
-            className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${step === 'review' ? 'border-black bg-black text-white' : step === 'generate' || step === 'result' ? 'border-black' : 'border-gray-300'}`}
-          >
-            <span className="text-sm font-medium">2</span>
-          </div>
-          <span className="text-sm font-medium">Review</span>
-        </div>
-        <div
-          className={`w-12 h-px ${step === 'generate' || step === 'result' ? 'bg-black' : 'bg-gray-300'}`}
-        />
-        <div
-          className={`flex items-center space-x-3 ${step === 'generate' ? 'text-black' : step === 'result' ? 'text-black' : 'text-gray-400'}`}
-        >
+            className={`w-12 h-px ${step === 'review' || step === 'generate' || step === 'result' ? 'bg-black' : 'bg-gray-300'}`}
+          />
           <div
-            className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${step === 'generate' ? 'border-black bg-black text-white' : step === 'result' ? 'border-black' : 'border-gray-300'}`}
+            className={`flex items-center space-x-3 ${step === 'review' ? 'text-black' : step === 'generate' || step === 'result' ? 'text-black' : 'text-gray-400'}`}
           >
-            <span className="text-sm font-medium">3</span>
+            <div
+              className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${step === 'review' ? 'border-black bg-black text-white' : step === 'generate' || step === 'result' ? 'border-black' : 'border-gray-300'}`}
+            >
+              <span className="text-sm font-medium">2</span>
+            </div>
+            <span className="text-sm font-medium">Review</span>
           </div>
-          <span className="text-sm font-medium">Generate</span>
-        </div>
-        <div className={`w-12 h-px ${step === 'result' ? 'bg-black' : 'bg-gray-300'}`} />
-        <div
-          className={`flex items-center space-x-3 ${step === 'result' ? 'text-black' : 'text-gray-400'}`}
-        >
           <div
-            className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${step === 'result' ? 'border-black bg-black text-white' : 'border-gray-300'}`}
+            className={`w-12 h-px ${step === 'generate' || step === 'result' ? 'bg-black' : 'bg-gray-300'}`}
+          />
+          <div
+            className={`flex items-center space-x-3 ${step === 'generate' ? 'text-black' : step === 'result' ? 'text-black' : 'text-gray-400'}`}
           >
-            <span className="text-sm font-medium">4</span>
+            <div
+              className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${step === 'generate' ? 'border-black bg-black text-white' : step === 'result' ? 'border-black' : 'border-gray-300'}`}
+            >
+              <span className="text-sm font-medium">3</span>
+            </div>
+            <span className="text-sm font-medium">Generate</span>
           </div>
-          <span className="text-sm font-medium">Result</span>
+          <div className={`w-12 h-px ${step === 'result' ? 'bg-black' : 'bg-gray-300'}`} />
+          <div
+            className={`flex items-center space-x-3 ${step === 'result' ? 'text-black' : 'text-gray-400'}`}
+          >
+            <div
+              className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${step === 'result' ? 'border-black bg-black text-white' : 'border-gray-300'}`}
+            >
+              <span className="text-sm font-medium">4</span>
+            </div>
+            <span className="text-sm font-medium">Result</span>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Step 1: Scrape Job Posting */}
       {step === 'scrape' && (
@@ -283,9 +297,20 @@ export function JobScrapingResumeCustomizer() {
               <Button
                 onClick={handleScrape}
                 disabled={isScraping || !jobUrl.trim()}
-                className="px-8 py-3 bg-black text-white hover:bg-gray-800 border-0 rounded-none"
+                className={`px-8 py-3 border-0 rounded-none transition-all duration-200 ${
+                  isScraping
+                    ? 'bg-gray-400 text-white cursor-not-allowed'
+                    : 'bg-black text-white hover:bg-gray-800'
+                }`}
               >
-                {isScraping ? 'Scraping...' : 'Continue'}
+                {isScraping ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Scraping...</span>
+                  </div>
+                ) : (
+                  'Continue'
+                )}
               </Button>
             </div>
           </div>
@@ -347,9 +372,20 @@ export function JobScrapingResumeCustomizer() {
             <Button
               onClick={handleSaveApplication}
               disabled={isSaving}
-              className="px-8 py-3 bg-black text-white hover:bg-gray-800 border-0 rounded-none"
+              className={`px-8 py-3 border-0 rounded-none transition-all duration-200 ${
+                isSaving
+                  ? 'bg-gray-400 text-white cursor-not-allowed'
+                  : 'bg-black text-white hover:bg-gray-800'
+              }`}
             >
-              {isSaving ? 'Saving...' : 'Save & Continue'}
+              {isSaving ? (
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Saving...</span>
+                </div>
+              ) : (
+                'Save & Continue'
+              )}
             </Button>
             <Button
               variant="outline"
@@ -369,7 +405,7 @@ export function JobScrapingResumeCustomizer() {
       )}
 
       {/* Step 3: Generate Resume */}
-      {step === 'generate' && (
+      {showResumeGeneration && step === 'generate' && (
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="font-serif text-2xl font-light text-gray-900 mb-2">
@@ -444,9 +480,20 @@ export function JobScrapingResumeCustomizer() {
             <Button
               onClick={handleGenerateResume}
               disabled={isGenerating}
-              className="px-8 py-3 bg-black text-white hover:bg-gray-800 border-0 rounded-none"
+              className={`px-8 py-3 border-0 rounded-none transition-all duration-200 ${
+                isGenerating
+                  ? 'bg-gray-400 text-white cursor-not-allowed'
+                  : 'bg-black text-white hover:bg-gray-800'
+              }`}
             >
-              {isGenerating ? 'Generating...' : 'Generate Resume'}
+              {isGenerating ? (
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Generating...</span>
+                </div>
+              ) : (
+                'Generate Resume'
+              )}
             </Button>
             <Button
               variant="outline"
@@ -466,7 +513,7 @@ export function JobScrapingResumeCustomizer() {
       )}
 
       {/* Step 4: Display Results */}
-      {step === 'result' && resumeResult && (
+      {showResumeGeneration && step === 'result' && resumeResult && (
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="font-serif text-2xl font-light text-gray-900 mb-2">

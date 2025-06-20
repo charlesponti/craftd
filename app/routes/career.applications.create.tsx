@@ -1,6 +1,8 @@
 import { eq } from 'drizzle-orm'
+import { useState } from 'react'
 import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
 import { Form, Link, redirect, useActionData } from 'react-router'
+import { JobScrapingResumeCustomizer } from '~/components/JobScrapingResumeCustomizer'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent } from '~/components/ui/Card'
 import { Input } from '~/components/ui/input'
@@ -13,6 +15,7 @@ import {
   withAuthAction,
   withAuthLoader,
 } from '~/lib/route-utils'
+import type { JobPosting } from '~/types/applications'
 import { JobApplicationStage, JobApplicationStatus } from '~/types/career'
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -30,6 +33,7 @@ export async function action(args: ActionFunctionArgs) {
     const status = formData.get('status') as JobApplicationStatus
     const location = formData.get('location') as string
     const jobPosting = formData.get('jobPosting') as string
+    const jobPostingData = formData.get('jobPostingData') as string
     const salaryQuoted = formData.get('salaryQuoted') as string
 
     try {
@@ -49,6 +53,27 @@ export async function action(args: ActionFunctionArgs) {
         company = [newCompany]
       }
 
+      // Use structured data if available, otherwise use the job description text
+      const jobPostingToStore = jobPostingData || jobPosting
+
+      // Parse the structured data if available
+      let requirements: string[] = []
+      let skills: string[] = []
+      let jobPostingUrl: string | null = null
+      let jobPostingWordCount: number | null = null
+
+      if (jobPostingData) {
+        try {
+          const parsedData = JSON.parse(jobPostingData) as JobPosting
+          requirements = parsedData.requirements || []
+          skills = parsedData.skills || []
+          jobPostingUrl = parsedData.url || null
+          jobPostingWordCount = parsedData.wordCount || null
+        } catch (error) {
+          console.error('Error parsing job posting data:', error)
+        }
+      }
+
       // Create job application
       const [newApplication] = await db
         .insert(jobApplications)
@@ -59,7 +84,11 @@ export async function action(args: ActionFunctionArgs) {
           status,
           startDate: new Date(startDate),
           location: location || null,
-          jobPosting: jobPosting || null,
+          jobPosting: jobPostingToStore || null,
+          requirements,
+          skills,
+          jobPostingUrl,
+          jobPostingWordCount,
           salaryQuoted: salaryQuoted || null,
           reference: false,
           stages: [
@@ -81,17 +110,154 @@ export async function action(args: ActionFunctionArgs) {
 
 export default function CreateJobApplication() {
   const actionData = useActionData<{ success: boolean; error?: string }>()
+  const [inputMethod, setInputMethod] = useState<'manual' | 'url' | 'paste'>('manual')
+  const [scrapedData, setScrapedData] = useState<JobPosting | null>(null)
+  const [pastedDescription, setPastedDescription] = useState('')
+
+  const handleScrapedData = (data: JobPosting) => {
+    setScrapedData(data)
+    setInputMethod('manual')
+  }
+
+  const handlePasteDescription = () => {
+    if (pastedDescription.trim()) {
+      // Create a basic JobPosting object from pasted text
+      const basicJobPosting: JobPosting = {
+        jobTitle: '',
+        companyName: '',
+        companyDescription: '',
+        jobDescription: pastedDescription,
+        location: '',
+        requirements: [],
+        skills: [],
+        fullText: pastedDescription,
+        url: '',
+        scrapedAt: new Date().toISOString(),
+        wordCount: pastedDescription.split(' ').length,
+      }
+      setScrapedData(basicJobPosting)
+      setInputMethod('manual')
+    }
+  }
 
   return (
     <div className="bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       <div className="container mx-auto py-12">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Add New Application</h1>
             <p className="text-gray-600">Track your job application journey</p>
           </div>
 
+          {/* Input Method Selection */}
+          <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm mb-6">
+            <CardContent className="p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                How would you like to add this job?
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button
+                  type="button"
+                  onClick={() => setInputMethod('url')}
+                  className={`p-4 rounded-lg border-2 transition-all ${
+                    inputMethod === 'url'
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-gray-200 bg-white hover:border-gray-300'
+                  }`}
+                >
+                  <div className="text-center">
+                    <div className="text-2xl mb-2">🔗</div>
+                    <div className="font-medium">Scrape from URL</div>
+                    <div className="text-sm text-gray-500 mt-1">Paste a job posting URL</div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setInputMethod('paste')}
+                  className={`p-4 rounded-lg border-2 transition-all ${
+                    inputMethod === 'paste'
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-gray-200 bg-white hover:border-gray-300'
+                  }`}
+                >
+                  <div className="text-center">
+                    <div className="text-2xl mb-2">📋</div>
+                    <div className="font-medium">Paste Description</div>
+                    <div className="text-sm text-gray-500 mt-1">Copy & paste job details</div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setInputMethod('manual')}
+                  className={`p-4 rounded-lg border-2 transition-all ${
+                    inputMethod === 'manual'
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-gray-200 bg-white hover:border-gray-300'
+                  }`}
+                >
+                  <div className="text-center">
+                    <div className="text-2xl mb-2">✏️</div>
+                    <div className="font-medium">Manual Entry</div>
+                    <div className="text-sm text-gray-500 mt-1">Fill out form manually</div>
+                  </div>
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* URL Scraping */}
+          {inputMethod === 'url' && (
+            <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm mb-6">
+              <CardContent className="p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Scrape Job Posting</h2>
+                <JobScrapingResumeCustomizer
+                  onScrapedData={handleScrapedData}
+                  showResumeGeneration={false}
+                />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Paste Description */}
+          {inputMethod === 'paste' && (
+            <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm mb-6">
+              <CardContent className="p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Paste Job Description</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="pastedDescription"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Job Description
+                    </label>
+                    <textarea
+                      id="pastedDescription"
+                      value={pastedDescription}
+                      onChange={(e) => setPastedDescription(e.target.value)}
+                      rows={8}
+                      placeholder="Paste the job description here..."
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    />
+                  </div>
+                  <div className="text-center">
+                    <Button
+                      onClick={handlePasteDescription}
+                      disabled={!pastedDescription.trim()}
+                      className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                    >
+                      Use This Description
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Manual Form */}
           <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
             <CardContent className="p-8">
               {actionData && !actionData.success && (
@@ -100,6 +266,79 @@ export default function CreateJobApplication() {
                     <span className="text-red-600 text-sm">!</span>
                   </div>
                   {actionData.error}
+                </div>
+              )}
+
+              {/* Scraped Data Preview */}
+              {scrapedData && (
+                <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h3 className="text-lg font-semibold text-blue-900 mb-4 flex items-center gap-2">
+                    <span className="text-blue-600">📋</span>
+                    Extracted Job Information
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {scrapedData.requirements.length > 0 && (
+                      <div>
+                        <h4 className="font-medium text-blue-800 mb-2">Requirements</h4>
+                        <ul className="space-y-1">
+                          {scrapedData.requirements.slice(0, 5).map((req, index) => (
+                            <li
+                              key={`req-${index}-${req.slice(0, 20)}`}
+                              className="text-sm text-blue-700 flex items-start gap-2"
+                            >
+                              <span className="text-blue-500 mt-1">•</span>
+                              <span>{req}</span>
+                            </li>
+                          ))}
+                          {scrapedData.requirements.length > 5 && (
+                            <li className="text-sm text-blue-600 italic">
+                              +{scrapedData.requirements.length - 5} more requirements
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    )}
+
+                    {scrapedData.skills.length > 0 && (
+                      <div>
+                        <h4 className="font-medium text-blue-800 mb-2">Skills</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {scrapedData.skills.slice(0, 8).map((skill, index) => (
+                            <span
+                              key={`skill-${skill}`}
+                              className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-md"
+                            >
+                              {skill}
+                            </span>
+                          ))}
+                          {scrapedData.skills.length > 8 && (
+                            <span className="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-md italic">
+                              +{scrapedData.skills.length - 8} more
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {scrapedData.companyDescription && (
+                    <div className="mt-4">
+                      <h4 className="font-medium text-blue-800 mb-2">Company Description</h4>
+                      <p className="text-sm text-blue-700 leading-relaxed">
+                        {scrapedData.companyDescription.length > 200
+                          ? `${scrapedData.companyDescription.substring(0, 200)}...`
+                          : scrapedData.companyDescription}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="mt-4 pt-4 border-t border-blue-200">
+                    <div className="flex flex-wrap gap-4 text-xs text-blue-600">
+                      <span>📊 {scrapedData.wordCount} words</span>
+                      <span>🔗 {scrapedData.url ? 'URL available' : 'No URL'}</span>
+                      <span>📅 {new Date(scrapedData.scrapedAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -115,6 +354,7 @@ export default function CreateJobApplication() {
                       placeholder="e.g. Senior Software Engineer"
                       required
                       className="h-11"
+                      defaultValue={scrapedData?.jobTitle || ''}
                     />
                   </div>
 
@@ -128,6 +368,7 @@ export default function CreateJobApplication() {
                       placeholder="e.g. Google, Microsoft"
                       required
                       className="h-11"
+                      defaultValue={scrapedData?.companyName || ''}
                     />
                   </div>
                 </div>
@@ -173,20 +414,30 @@ export default function CreateJobApplication() {
                     name="location"
                     placeholder="e.g. San Francisco, CA or Remote"
                     className="h-11"
+                    defaultValue={scrapedData?.location || ''}
                   />
                 </div>
 
                 <div className="space-y-2">
                   <label htmlFor="jobPosting" className="text-sm font-medium text-gray-700">
-                    Job Posting URL
+                    Job Description
                   </label>
-                  <Input
+                  <textarea
                     id="jobPosting"
                     name="jobPosting"
-                    type="url"
-                    placeholder="https://..."
-                    className="h-11"
+                    rows={6}
+                    placeholder="Paste the job description here..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    defaultValue={scrapedData ? scrapedData.jobDescription : ''}
                   />
+                  {/* Hidden field to store full structured data */}
+                  {scrapedData && (
+                    <input
+                      type="hidden"
+                      name="jobPostingData"
+                      value={JSON.stringify(scrapedData)}
+                    />
+                  )}
                 </div>
 
                 <div className="space-y-2">

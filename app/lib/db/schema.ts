@@ -603,6 +603,12 @@ export const jobApplications = pgTable(
     location: varchar('location', { length: 255 }),
     jobPosting: text('job_posting'),
 
+    // Job posting structured data
+    requirements: json('requirements').$type<string[]>().default([]),
+    skills: json('skills').$type<string[]>().default([]),
+    jobPostingUrl: varchar('job_posting_url', { length: 500 }),
+    jobPostingWordCount: integer('job_posting_word_count'),
+
     // Enhanced Salary Tracking
     salaryQuoted: text('salary_quoted'), // Keep for backward compatibility
     salaryAccepted: text('salary_accepted'), // Keep for backward compatibility
@@ -689,6 +695,10 @@ export const jobApplications = pgTable(
     index('job_applications_user_app_date_idx').on(table.userId, table.applicationDate),
     index('job_applications_user_salary_idx').on(table.userId, table.salaryFinal),
     index('job_applications_status_salary_idx').on(table.status, table.salaryFinal),
+    // Indexes for job posting data
+    index('job_applications_requirements_idx').on(table.requirements),
+    index('job_applications_skills_idx').on(table.skills),
+    index('job_applications_job_posting_url_idx').on(table.jobPostingUrl),
     // Check constraints
     check(
       'job_applications_status_check',
